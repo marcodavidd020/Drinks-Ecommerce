@@ -113,8 +113,8 @@ Sistema completo de gestión de inventario y ecommerce desarrollado con Laravel 
 
 1. **Clonar el repositorio:**
 ```bash
-git clone <repository-url>
-cd example-app
+git clone https://github.com/marcodavidd020/Drinks-Ecommerce.git
+cd Drinks-Ecommerce
 ```
 
 2. **Instalar dependencias:**
