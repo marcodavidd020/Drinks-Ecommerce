@@ -114,7 +114,7 @@ class ProveedorTest extends TestCase
             'proveedor_id' => $proveedor->id,
             'fecha' => now(),
             'total' => 200.00,
-            'estado' => 'completada',
+            'estado' => 'recibida',
         ]);
 
         $this->assertCount(2, $proveedor->notasCompra);

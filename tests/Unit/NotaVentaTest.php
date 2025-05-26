@@ -164,7 +164,7 @@ class NotaVentaTest extends TestCase
 
     public function test_campos_fillable_correctos(): void
     {
-        $fillable = ['fecha', 'total', 'estado'];
+        $fillable = ['fecha', 'total', 'estado', 'observaciones'];
         $notaVenta = new NotaVenta();
 
         $this->assertEquals($fillable, $notaVenta->getFillable());

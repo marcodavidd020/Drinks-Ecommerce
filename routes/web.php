@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return Inertia::render('welcome');
 })->name('home');
 
 Route::get('dashboard', [DashboardController::class, 'index'])
@@ -16,8 +16,37 @@ Route::get('dashboard', [DashboardController::class, 'index'])
 
 // Rutas protegidas con autenticación y permisos
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Gestión de usuarios
-    Route::resource('users', UserController::class);
+    // Gestión de usuarios con permisos específicos
+    Route::get('/users', [UserController::class, 'index'])
+        ->middleware('can:' . PermissionEnum::VER_USUARIOS->value)
+        ->name('users.index');
+    
+    Route::get('/users/create', [UserController::class, 'create'])
+        ->middleware('can:' . PermissionEnum::CREAR_USUARIOS->value)
+        ->name('users.create');
+    
+    Route::post('/users', [UserController::class, 'store'])
+        ->middleware('can:' . PermissionEnum::CREAR_USUARIOS->value)
+        ->name('users.store');
+    
+    Route::get('/users/{user}', [UserController::class, 'show'])
+        ->middleware('can:' . PermissionEnum::VER_USUARIOS->value)
+        ->name('users.show');
+    
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+        ->middleware('can:' . PermissionEnum::EDITAR_USUARIOS->value)
+        ->name('users.edit');
+    
+    Route::put('/users/{user}', [UserController::class, 'update'])
+        ->middleware('can:' . PermissionEnum::EDITAR_USUARIOS->value)
+        ->name('users.update');
+    
+    Route::patch('/users/{user}', [UserController::class, 'update'])
+        ->middleware('can:' . PermissionEnum::EDITAR_USUARIOS->value);
+    
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])
+        ->middleware('can:' . PermissionEnum::ELIMINAR_USUARIOS->value)
+        ->name('users.destroy');
     
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {

@@ -4,138 +4,134 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\AjusteInventario;
-use App\Models\Carrito;
+use App\Models\User;
 use App\Models\Cliente;
-use App\Models\NotaCompra;
-use App\Models\NotaVenta;
 use App\Models\Producto;
-use App\Models\Pqrsona;
+use App\Models\ProductoInventario;
 use App\Models\Proveedor;
+use App\Models\NotaVenta;
+use App\Models\Pqrsona;
+use App\Models\Carrito;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        // Métricas principales
+        // Usar siempre la versión React (Inertia) en lugar de Blade
+        return $this->react();
+    }
+
+    public function react(): Response
+    {
+        // Obtener métricas principales
         $totalVentas = NotaVenta::where('estado', 'completada')->sum('total');
         $totalClientes = Cliente::count();
         $totalProductos = Producto::count();
         $totalProveedores = Proveedor::count();
-        
+
         // Métricas del mes actual
+        $mesActual = now()->month;
+        $añoActual = now()->year;
+        
         $ventasEsteMes = NotaVenta::where('estado', 'completada')
-            ->whereMonth('fecha', now()->month)
-            ->whereYear('fecha', now()->year)
+            ->whereRaw('EXTRACT(MONTH FROM fecha) = ?', [$mesActual])
+            ->whereRaw('EXTRACT(YEAR FROM fecha) = ?', [$añoActual])
             ->sum('total');
-            
-        $clientesEsteMes = Cliente::whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
+
+        $clientesEsteMes = Cliente::whereRaw('EXTRACT(MONTH FROM created_at) = ?', [$mesActual])
+            ->whereRaw('EXTRACT(YEAR FROM created_at) = ?', [$añoActual])
             ->count();
-            
-        // PQRS pendientes
+
+        // Métricas de alerta
         $pqrsPendientes = Pqrsona::where('estado', 'pendiente')->count();
         
-        // Carritos abandonados (más de 7 días sin actividad)
         $carritosAbandonados = Carrito::where('estado', 'activo')
             ->where('updated_at', '<', now()->subDays(7))
             ->count();
-            
-        // Productos con stock bajo (menos de 10 unidades)
-        $productosStockBajo = DB::table('producto_inventarios')
-            ->select('producto_id', DB::raw('SUM(stock) as total_stock'))
+
+        // Corregir consulta de stock bajo usando ProductoInventario
+        $productosStockBajo = ProductoInventario::select('producto_id')
             ->groupBy('producto_id')
             ->havingRaw('SUM(stock) < ?', [10])
             ->count();
-            
-        // Ventas por mes (últimos 6 meses) - Compatible con SQLite y PostgreSQL
-        $ventasPorMes = NotaVenta::where('estado', 'completada')
+
+        // Datos para gráficas - Ventas por mes (últimos 6 meses) - Sintaxis PostgreSQL
+        $ventasPorMes = NotaVenta::selectRaw('EXTRACT(MONTH FROM fecha) as mes, EXTRACT(YEAR FROM fecha) as año, SUM(total) as total')
+            ->where('estado', 'completada')
             ->where('fecha', '>=', now()->subMonths(6))
-            ->get()
-            ->groupBy(function ($venta) {
-                return $venta->fecha->format('Y-m');
-            })
-            ->map(function ($ventas, $periodo) {
-                $fecha = \Carbon\Carbon::createFromFormat('Y-m', $periodo);
-                return [
-                    'mes' => (int) $fecha->month,
-                    'año' => (int) $fecha->year,
-                    'total' => (float) $ventas->sum('total'),
-                    'cantidad' => (int) $ventas->count()
-                ];
-            })
-            ->sortByDesc(function ($item) {
-                return $item['año'] * 100 + $item['mes'];
-            })
-            ->values()
-            ->toArray();
-            
+            ->groupByRaw('EXTRACT(YEAR FROM fecha), EXTRACT(MONTH FROM fecha)')
+            ->orderByRaw('EXTRACT(YEAR FROM fecha) ASC, EXTRACT(MONTH FROM fecha) ASC')
+            ->get();
+
         // Productos más vendidos
         $productosMasVendidos = DB::table('detalle_ventas')
             ->join('productos', 'detalle_ventas.producto_id', '=', 'productos.id')
             ->join('notas_venta', 'detalle_ventas.nota_venta_id', '=', 'notas_venta.id')
             ->where('notas_venta.estado', 'completada')
-            ->select(
-                'productos.id',
-                'productos.nombre',
-                'productos.precio_venta',
-                DB::raw('SUM(detalle_ventas.cantidad) as total_vendido'),
-                DB::raw('SUM(detalle_ventas.total) as ingresos_totales')
-            )
-            ->groupBy('productos.id', 'productos.nombre', 'productos.precio_venta')
+            ->select('productos.nombre', DB::raw('SUM(detalle_ventas.cantidad) as total_vendido'))
+            ->groupBy('productos.id', 'productos.nombre')
             ->orderBy('total_vendido', 'desc')
             ->limit(10)
-            ->get()
-            ->map(function ($producto) {
-                return [
-                    'id' => (int) $producto->id,
-                    'nombre' => $producto->nombre,
-                    'precio_venta' => (float) $producto->precio_venta,
-                    'total_vendido' => (int) $producto->total_vendido,
-                    'ingresos_totales' => (float) $producto->ingresos_totales,
-                ];
-            })
-            ->toArray();
-            
-        // Ventas recientes
-        $ventasRecientes = NotaVenta::with(['detalles.producto'])
-            ->where('estado', 'completada')
-            ->orderBy('fecha', 'desc')
-            ->limit(10)
-            ->get();
-            
-        // PQRS recientes
-        $pqrsRecientes = Pqrsona::orderBy('fecha_creacion', 'desc')
-            ->limit(5)
-            ->get();
-            
-        // Stock crítico (productos con stock menor a 10 unidades)
-        $stockCritico = DB::table('producto_inventarios')
-            ->join('productos', 'producto_inventarios.producto_id', '=', 'productos.id')
-            ->join('almacenes', 'producto_inventarios.almacen_id', '=', 'almacenes.id')
-            ->select(
-                'productos.nombre as producto',
-                'almacenes.nombre as almacen',
-                'producto_inventarios.stock',
-                'productos.cod_producto'
-            )
-            ->where('producto_inventarios.stock', '<=', 10)
-            ->orderBy('producto_inventarios.stock', 'asc')
-            ->limit(20)
             ->get();
 
-        return inertia('Dashboard', [
-            'totalVentas' => (float) $totalVentas,
-            'totalClientes' => (int) $totalClientes,
-            'totalProductos' => (int) $totalProductos,
-            'totalProveedores' => (int) $totalProveedores,
-            'ventasEsteMes' => (float) $ventasEsteMes,
-            'clientesEsteMes' => (int) $clientesEsteMes,
-            'pqrsPendientes' => (int) $pqrsPendientes,
-            'carritosAbandonados' => (int) $carritosAbandonados,
-            'productosStockBajo' => (int) $productosStockBajo,
+        // Ventas recientes
+        $ventasRecientes = NotaVenta::with(['detalles.producto'])
+            ->orderBy('fecha', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($venta) {
+                return [
+                    'id' => $venta->id,
+                    'fecha' => $venta->fecha->format('d/m/Y'),
+                    'total' => $venta->total,
+                    'estado' => $venta->estado,
+                ];
+            });
+
+        // PQRS recientes
+        $pqrsRecientes = Pqrsona::orderBy('fecha_creacion', 'desc')
+            ->limit(6)
+            ->get()
+            ->map(function ($pqrs) {
+                return [
+                    'id' => $pqrs->id,
+                    'tipo' => $pqrs->tipo,
+                    'nombre_completo' => $pqrs->nombre_completo,
+                    'descripcion' => $pqrs->descripcion,
+                    'estado' => $pqrs->estado,
+                    'fecha_creacion' => $pqrs->fecha_creacion,
+                ];
+            });
+
+        // Stock crítico usando ProductoInventario
+        $stockCritico = ProductoInventario::with(['producto', 'almacen'])
+            ->where('stock', '<', 10)
+            ->limit(10)
+            ->get()
+            ->map(function ($inventario) {
+                return [
+                    'id' => $inventario->id,
+                    'producto' => $inventario->producto->nombre ?? 'Producto no encontrado',
+                    'almacen' => $inventario->almacen->nombre ?? 'Almacén no encontrado',
+                    'stock' => $inventario->stock,
+                    'cod_producto' => $inventario->producto->cod_producto ?? 'N/A',
+                ];
+            });
+
+        return Inertia::render('dashboard', [
+            'totalVentas' => $totalVentas,
+            'totalClientes' => $totalClientes,
+            'totalProductos' => $totalProductos,
+            'totalProveedores' => $totalProveedores,
+            'ventasEsteMes' => $ventasEsteMes,
+            'clientesEsteMes' => $clientesEsteMes,
+            'pqrsPendientes' => $pqrsPendientes,
+            'carritosAbandonados' => $carritosAbandonados,
+            'productosStockBajo' => $productosStockBajo,
             'ventasPorMes' => $ventasPorMes,
             'productosMasVendidos' => $productosMasVendidos,
             'ventasRecientes' => $ventasRecientes,
