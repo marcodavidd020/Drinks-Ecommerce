@@ -10,6 +10,11 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+// Ruta de demostración de modos (accesible sin autenticación)
+Route::get('/demo-modos', function () {
+    return Inertia::render('ModesDemo');
+})->name('modes.demo');
+
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'can:' . PermissionEnum::ACCESO_DASHBOARD->value])
     ->name('dashboard');

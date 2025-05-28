@@ -159,3 +159,6 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Importar estilos de modos personalizados */
+@import './modes.css';
