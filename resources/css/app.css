@@ -1,3 +1,8 @@
+/* Importar fuentes de Google Fonts primero */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @import 'tailwindcss';
 
 @plugin 'tailwindcss-animate';
@@ -113,6 +118,10 @@
     --sidebar-accent-foreground: hsl(0 0% 30%);
     --sidebar-border: hsl(0 0% 91%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
+    --app-age-mode: 'adultos';
+    --app-theme-mode: 'día';
+    --app-font-size: 'normal';
+    --app-contrast: 'normal';
 }
 
 .dark {
@@ -162,3 +171,318 @@
 
 /* Importar estilos de modos personalizados */
 @import './modes.css';
+
+/* Fuentes por modo de edad */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+/* === MODOS DE EDAD === */
+.mode-niños {
+  --font-primary: 'Comic Neue', cursive;
+  --color-primary: #ec4899; /* pink-500 */
+  --color-secondary: #8b5cf6; /* violet-500 */
+  --color-accent: #fbbf24; /* amber-400 */
+}
+
+.mode-jóvenes {
+  --font-primary: 'Inter', sans-serif;
+  --color-primary: #6366f1; /* indigo-500 */
+  --color-secondary: #8b5cf6; /* violet-500 */
+  --color-accent: #f59e0b; /* amber-500 */
+}
+
+.mode-adultos {
+  --font-primary: 'Playfair Display', serif;
+  --color-primary: #1f2937; /* gray-800 */
+  --color-secondary: #374151; /* gray-700 */
+  --color-accent: #3b82f6; /* blue-500 */
+}
+
+/* === TEMAS DÍA/NOCHE === */
+.theme-día {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border-color: #e5e7eb;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+.theme-noche {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --border-color: #4b5563;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* === TAMAÑOS DE FUENTE === */
+.font-pequeño {
+  --base-font-size: 0.875rem; /* 14px */
+  --text-scale: 0.875;
+}
+
+.font-normal {
+  --base-font-size: 1rem; /* 16px */
+  --text-scale: 1;
+}
+
+.font-grande {
+  --base-font-size: 1.125rem; /* 18px */
+  --text-scale: 1.125;
+}
+
+.font-extra-grande {
+  --base-font-size: 1.25rem; /* 20px */
+  --text-scale: 1.25;
+}
+
+/* === CONTRASTES === */
+.contrast-normal {
+  --contrast-multiplier: 1;
+}
+
+.contrast-alto {
+  --contrast-multiplier: 1.2;
+  filter: contrast(1.2);
+}
+
+.contrast-extra-alto {
+  --contrast-multiplier: 1.5;
+  filter: contrast(1.5);
+}
+
+/* === CLASES ADAPTATIVAS === */
+
+/* Texto adaptativo por modo */
+.text-adaptive {
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--base-font-size);
+}
+
+.text-adaptive-secondary {
+  color: var(--text-secondary);
+  font-family: var(--font-primary);
+}
+
+.text-adaptive-muted {
+  color: var(--text-muted);
+  font-family: var(--font-primary);
+}
+
+/* Textos específicos por edad */
+.text-adaptive-kids {
+  font-family: 'Comic Neue', cursive;
+  color: var(--text-primary);
+}
+
+.text-adaptive-teen {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+}
+
+.text-adaptive-adult {
+  font-family: 'Playfair Display', serif;
+  color: var(--text-primary);
+}
+
+/* Fondos adaptativos */
+.bg-adaptive {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.bg-adaptive-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.bg-adaptive-tertiary {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Bordes adaptativos */
+.border-adaptive {
+  border-color: var(--border-color);
+}
+
+/* Cards adaptativos */
+.card-adaptive {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+/* Botones adaptativos */
+.btn-adaptive {
+  background-color: var(--color-primary);
+  color: var(--bg-primary);
+  border: 1px solid var(--color-primary);
+  font-family: var(--font-primary);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-adaptive:hover {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+
+.btn-adaptive-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  font-family: var(--font-primary);
+}
+
+.btn-adaptive-secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--bg-primary);
+}
+
+/* Enlaces adaptativos */
+.link-adaptive {
+  color: var(--color-primary);
+  font-family: var(--font-primary);
+  text-decoration: none;
+}
+
+.link-adaptive:hover {
+  color: var(--color-secondary);
+  text-decoration: underline;
+}
+
+/* === FUENTES POR MODO === */
+.font-comic {
+  font-family: 'Comic Neue', cursive !important;
+}
+
+.font-modern {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.font-classic {
+  font-family: 'Playfair Display', serif !important;
+}
+
+/* === UTILIDADES ESPECÍFICAS === */
+
+/* Aplicar tema automáticamente al body */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--base-font-size);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hacer que los elementos dark: respondan al tema */
+.theme-noche .dark\:bg-gray-800 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.theme-noche .dark\:bg-gray-900 {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.theme-noche .dark\:text-gray-100 {
+  color: var(--text-primary) !important;
+}
+
+.theme-noche .dark\:text-gray-300 {
+  color: var(--text-secondary) !important;
+}
+
+.theme-noche .dark\:text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+.theme-noche .dark\:border-gray-700 {
+  border-color: var(--border-color) !important;
+}
+
+/* Forzar tema día */
+.theme-día .dark\:bg-gray-800 {
+  background-color: #f8fafc !important;
+}
+
+.theme-día .dark\:bg-gray-900 {
+  background-color: #f1f5f9 !important;
+}
+
+.theme-día .dark\:text-gray-100 {
+  color: #1f2937 !important;
+}
+
+.theme-día .dark\:text-gray-300 {
+  color: #4b5563 !important;
+}
+
+.theme-día .dark\:text-gray-400 {
+  color: #6b7280 !important;
+}
+
+.theme-día .dark\:border-gray-700 {
+  border-color: #e5e7eb !important;
+}
+
+/* === RESPONSIVE Y ACCESIBILIDAD === */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible para accesibilidad */
+.focus\:ring-adaptive:focus {
+  ring-color: var(--color-primary);
+  ring-width: 2px;
+}
+
+/* Personalización de scrollbars en modo oscuro */
+.theme-noche ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.theme-noche ::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+.theme-noche ::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+}
+
+.theme-noche ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* === TRANSICIONES SUAVES === */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}
+
+/* === MODO DEBUG (solo en desarrollo) === */
+.debug-mode-indicator {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-family: monospace;
+  z-index: 9999;
+  pointer-events: none;
+}

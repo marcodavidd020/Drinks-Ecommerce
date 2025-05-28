@@ -89,7 +89,7 @@
 .mode-niños h1,
 .mode-niños h2,
 .mode-niños h3 {
-  color: var(--primary-color);
+  color: var(--primary-color) !important;
   font-weight: 700;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -217,10 +217,10 @@
 .mode-jóvenes h1,
 .mode-jóvenes h2,
 .mode-jóvenes h3 {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
   font-weight: 600;
 }
 
@@ -290,7 +290,7 @@
 .mode-adultos h1,
 .mode-adultos h2,
 .mode-adultos h3 {
-  color: var(--primary-color);
+  color: var(--primary-color) !important;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -316,17 +316,104 @@
 }
 
 .theme-noche body {
-  background: var(--theme-bg);
-  color: var(--theme-text);
+  background: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
 }
 
 .theme-noche .card {
-  background: var(--theme-surface);
-  border-color: var(--theme-border);
-  color: var(--theme-text);
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-noche h1,
+.theme-noche h2,
+.theme-noche h3 {
+  color: var(--theme-text) !important;
 }
 
 /* ==================== CONFIGURACIONES DE ACCESIBILIDAD ==================== */
+
+/* Tamaños de fuente más notables */
+.font-pequeño {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.font-pequeño h1 { 
+  font-size: 1.125rem !important; 
+  line-height: 1.375rem !important; 
+}
+
+.font-pequeño h2 { 
+  font-size: 1rem !important; 
+  line-height: 1.25rem !important; 
+}
+
+.font-pequeño h3 { 
+  font-size: 0.875rem !important; 
+  line-height: 1.125rem !important; 
+}
+
+.font-normal {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.font-normal h1 { 
+  font-size: 1.875rem !important; 
+  line-height: 2.25rem !important; 
+}
+
+.font-normal h2 { 
+  font-size: 1.5rem !important; 
+  line-height: 2rem !important; 
+}
+
+.font-normal h3 { 
+  font-size: 1.25rem !important; 
+  line-height: 1.75rem !important; 
+}
+
+.font-grande {
+  font-size: 1.25rem !important;
+  line-height: 1.875rem !important;
+}
+
+.font-grande h1 { 
+  font-size: 2.25rem !important; 
+  line-height: 2.75rem !important; 
+}
+
+.font-grande h2 { 
+  font-size: 1.875rem !important; 
+  line-height: 2.25rem !important; 
+}
+
+.font-grande h3 { 
+  font-size: 1.5rem !important; 
+  line-height: 2rem !important; 
+}
+
+.font-extra-grande {
+  font-size: 1.5rem !important;
+  line-height: 2.25rem !important;
+}
+
+.font-extra-grande h1 { 
+  font-size: 3rem !important; 
+  line-height: 3.5rem !important; 
+}
+
+.font-extra-grande h2 { 
+  font-size: 2.25rem !important; 
+  line-height: 2.75rem !important; 
+}
+
+.font-extra-grande h3 { 
+  font-size: 1.875rem !important; 
+  line-height: 2.25rem !important; 
+}
 
 /* Contraste Alto */
 .contrast-alto {

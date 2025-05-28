@@ -20,10 +20,12 @@ interface DataTableProps {
 export default function DataTable({ 
     title, 
     columns, 
-    data, 
+    data = [],
     emptyMessage, 
     badge 
 }: DataTableProps) {
+    const validData = Array.isArray(data) ? data : [];
+
     const formatValue = (value: any, format?: string) => {
         if (!value) return '-';
         
@@ -46,7 +48,7 @@ export default function DataTable({
                     : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
                 
                 return (
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}`}>
+                    <span className={`text-adaptive inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}`}>
                         {value}
                     </span>
                 );
@@ -56,56 +58,54 @@ export default function DataTable({
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="px-4 py-5 sm:p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
-                        {title}
-                    </h3>
-                    {badge && (
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badge.color}`}>
-                            {badge.text}
-                        </span>
-                    )}
-                </div>
-                
-                {data.length === 0 ? (
-                    <div className="text-center py-6">
-                        <p className="text-gray-500 dark:text-gray-400">{emptyMessage}</p>
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    {columns.map((column) => (
-                                        <th
-                                            key={column.key}
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                                        >
-                                            {column.label}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {data.map((row, index) => (
-                                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        {columns.map((column) => (
-                                            <td
-                                                key={column.key}
-                                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
-                                            >
-                                                {formatValue(row[column.key], column.format)}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+        <div className="card card-adaptive p-6">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-adaptive text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+                    {title}
+                </h3>
+                {badge && (
+                    <span className={`text-adaptive inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badge.color}`}>
+                        {badge.text}
+                    </span>
                 )}
             </div>
+            
+            {validData.length === 0 ? (
+                <div className="text-center py-6">
+                    <p className="text-adaptive text-gray-500 dark:text-gray-400">{emptyMessage}</p>
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                {columns.map((column) => (
+                                    <th
+                                        key={column.key}
+                                        className="text-adaptive px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                    >
+                                        {column.label}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {validData.map((row, index) => (
+                                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    {columns.map((column) => (
+                                        <td
+                                            key={column.key}
+                                            className="text-adaptive px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+                                        >
+                                            {formatValue(row[column.key], column.format)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 } 

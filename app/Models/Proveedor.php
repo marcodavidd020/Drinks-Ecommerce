@@ -6,8 +6,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Proveedor extends Model
 {
@@ -30,17 +31,30 @@ class Proveedor extends Model
         'telefono',
         'direccion',
         'email',
-        'tipo',
-        'proveedorable_id',
-        'proveedorable_type',
     ];
 
     /**
-     * Relación polimórfica con Pqrsona o Pempresa
+     * Relación con User
      */
-    public function proveedorable(): MorphTo
+    public function user(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relación con Dirección
+     */
+    public function direccion(): HasOne
+    {
+        return $this->hasOne(Direccion::class);
+    }
+
+    /**
+     * Relación con Productos
+     */
+    public function productos(): HasMany
+    {
+        return $this->hasMany(Producto::class);
     }
 
     /**
@@ -52,29 +66,10 @@ class Proveedor extends Model
     }
 
     /**
-     * Verificar si es persona
-     */
-    public function esPersona(): bool
-    {
-        return $this->tipo === 'persona';
-    }
-
-    /**
-     * Verificar si es empresa
-     */
-    public function esEmpresa(): bool
-    {
-        return $this->tipo === 'empresa';
-    }
-
-    /**
      * Obtener nombre para mostrar
      */
     public function getNombreDisplayAttribute(): string
     {
-        if ($this->proveedorable) {
-            return $this->proveedorable->nombre_display;
-        }
-        return $this->nombre;
+        return $this->razon_social ?: $this->user->nombre;
     }
 }

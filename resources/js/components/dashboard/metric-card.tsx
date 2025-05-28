@@ -37,43 +37,41 @@ export default function MetricCard({
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="p-6">
-                <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                        <div className={`w-12 h-12 ${colorClass} rounded-md flex items-center justify-center`}>
-                            <span className="text-white text-xl">{icon}</span>
-                        </div>
+        <div className="card card-adaptive p-6">
+            <div className="flex items-center">
+                <div className="flex-shrink-0">
+                    <div className={`w-12 h-12 ${colorClass} rounded-md flex items-center justify-center`}>
+                        <span className="text-white text-xl">{icon}</span>
                     </div>
-                    <div className="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                {title}
-                            </dt>
-                            <dd className="flex items-baseline">
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                    {value}
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt className="text-adaptive text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            {title}
+                        </dt>
+                        <dd className="flex items-baseline">
+                            <div className="text-adaptive text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                {value}
+                            </div>
+                            {trend && trendValue && (
+                                <div className="ml-2 flex items-baseline text-sm">
+                                    {getTrendIcon()}
+                                    <span className={`text-adaptive ml-1 ${
+                                        trend === 'up' ? 'text-green-600' : 
+                                        trend === 'down' ? 'text-red-600' : 
+                                        'text-gray-600'
+                                    }`}>
+                                        {trendValue}
+                                    </span>
                                 </div>
-                                {trend && trendValue && (
-                                    <div className="ml-2 flex items-baseline text-sm">
-                                        {getTrendIcon()}
-                                        <span className={`ml-1 ${
-                                            trend === 'up' ? 'text-green-600' : 
-                                            trend === 'down' ? 'text-red-600' : 
-                                            'text-gray-600'
-                                        }`}>
-                                            {trendValue}
-                                        </span>
-                                    </div>
-                                )}
-                            </dd>
-                        </dl>
-                        {subtitle && (
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                {subtitle}
-                            </p>
-                        )}
-                    </div>
+                            )}
+                        </dd>
+                    </dl>
+                    {subtitle && (
+                        <p className="text-adaptive mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            {subtitle}
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

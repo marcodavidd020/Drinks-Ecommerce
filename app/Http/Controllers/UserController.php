@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -18,12 +20,35 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $users = User::with(['roles', 'cliente', 'administrativo'])->paginate(10);
+        $search = $request->get('search', '');
+        $role = $request->get('role', '');
+        $estado = $request->get('estado', '');
+        $perPage = $request->get('per_page', 10);
+
+        $users = User::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('nombre', 'like', "%{$search}%")
+                             ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->when($role, function ($query, $role) {
+                return $query->where('role', $role);
+            })
+            ->when($estado, function ($query, $estado) {
+                return $query->where('estado', $estado);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
         
         return Inertia::render('Users/Index', [
-            'users' => $users
+            'users' => $users,
+            'filters' => [
+                'search' => $search,
+                'role' => $role,
+                'estado' => $estado,
+                'per_page' => $perPage,
+            ],
         ]);
     }
 
@@ -41,17 +66,23 @@ class UserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'celular' => 'nullable|string|max:20',
-            'genero' => 'nullable|in:masculino,femenino,otro',
-            'password' => 'required|string|min:8|confirmed',
-            'estado' => 'required|in:activo,inactivo',
+            'nombre' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'celular' => ['nullable', 'string', 'max:20'],
+            'role' => ['required', 'string', 'in:admin,manager,employee,user'],
+            'estado' => ['required', 'string', 'in:activo,inactivo'],
         ]);
 
-        $validated['password'] = bcrypt($validated['password']);
-
-        $user = User::create($validated);
+        $user = User::create([
+            'nombre' => $validated['nombre'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'celular' => $validated['celular'],
+            'role' => $validated['role'],
+            'estado' => $validated['estado'],
+            'email_verified_at' => now(), // Auto-verificar para usuarios creados por admin
+        ]);
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario creado exitosamente.');
@@ -85,19 +116,28 @@ class UserController extends Controller
     public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'celular' => 'nullable|string|max:20',
-            'genero' => 'nullable|in:masculino,femenino,otro',
-            'estado' => 'required|in:activo,inactivo',
+            'nombre' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'celular' => ['nullable', 'string', 'max:20'],
+            'role' => ['required', 'string', 'in:admin,manager,employee,user'],
+            'estado' => ['required', 'string', 'in:activo,inactivo'],
         ]);
 
-        if ($request->filled('password')) {
-            $request->validate(['password' => 'string|min:8|confirmed']);
-            $validated['password'] = bcrypt($request->password);
+        $updateData = [
+            'nombre' => $validated['nombre'],
+            'email' => $validated['email'],
+            'celular' => $validated['celular'],
+            'role' => $validated['role'],
+            'estado' => $validated['estado'],
+        ];
+
+        // Solo actualizar contraseña si se proporciona
+        if (!empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
         }
 
-        $user->update($validated);
+        $user->update($updateData);
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario actualizado exitosamente.');
@@ -108,8 +148,8 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        // Prevenir eliminación del usuario autenticado
-        if ($user->id === request()->user()->id) {
+        // Verificar que no se elimine a sí mismo
+        if ($user->id === Auth::id()) {
             return redirect()->route('users.index')
                 ->with('error', 'No puedes eliminar tu propio usuario.');
         }
@@ -118,5 +158,28 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario eliminado exitosamente.');
+    }
+
+    /**
+     * Toggle user status between active and inactive.
+     */
+    public function toggleStatus(User $user): RedirectResponse
+    {
+        // Verificar que no se desactive a sí mismo
+        if ($user->id === Auth::id()) {
+            return redirect()->route('users.index')
+                ->with('error', 'No puedes cambiar tu propio estado.');
+        }
+
+        $user->update([
+            'estado' => $user->estado === 'activo' ? 'inactivo' : 'activo'
+        ]);
+
+        $mensaje = $user->estado === 'activo' 
+            ? 'Usuario activado exitosamente.' 
+            : 'Usuario desactivado exitosamente.';
+
+        return redirect()->route('users.index')
+            ->with('success', $mensaje);
     }
 }

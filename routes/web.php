@@ -1,14 +1,17 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ProductoController;
 use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+// Página principal usando el HomeController
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Ruta de demostración de modos (accesible sin autenticación)
 Route::get('/demo-modos', function () {
@@ -52,6 +55,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])
         ->middleware('can:' . PermissionEnum::ELIMINAR_USUARIOS->value)
         ->name('users.destroy');
+    
+    Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
+        ->middleware('can:' . PermissionEnum::EDITAR_USUARIOS->value)
+        ->name('users.toggle-status');
+
+    // Gestión de clientes - CRUD completo
+    Route::resource('clientes', ClienteController::class);
+    Route::patch('/clientes/{cliente}/toggle-status', [ClienteController::class, 'toggleStatus'])
+        ->name('clientes.toggle-status');
+    
+    // Gestión de proveedores - CRUD completo
+    Route::resource('proveedores', ProveedorController::class);
+    Route::patch('/proveedores/{proveedor}/toggle-status', [ProveedorController::class, 'toggleStatus'])
+        ->name('proveedores.toggle-status');
+
+    // Gestión de productos - CRUD completo
+    Route::resource('productos', ProductoController::class);
+    Route::patch('/productos/{producto}/toggle-status', [ProductoController::class, 'toggleStatus'])
+        ->name('productos.toggle-status');
+    Route::patch('/productos/{producto}/update-stock', [ProductoController::class, 'updateStock'])
+        ->name('productos.update-stock');
     
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {
