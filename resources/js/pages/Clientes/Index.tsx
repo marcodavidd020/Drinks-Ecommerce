@@ -118,14 +118,7 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 {/* Header */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className={`text-2xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '👨‍💼 ¡Lista de Amigos Clientes!',
-                                jóvenes: '👨‍💼 Lista de Clientes',
-                                adultos: 'Gestión de Clientes'
-                            })}
-                        </h1>
-                        <p className={`text-gray-600 dark:text-gray-400 mt-1 ${getModeClasses()}`}>
+                        <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                             {getTextByMode({
                                 niños: '¡Aquí puedes ver a todos tus amigos clientes!',
                                 jóvenes: 'Administra la información de tus clientes',

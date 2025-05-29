@@ -109,6 +109,30 @@ export default function ProveedoresIndex({ proveedores, filters }: ProveedoresIn
             <Head title="Proveedores" />
             
             <div className={`space-y-6 ${getModeClasses()}`}>
+                {/* Header con botón de agregar */}
+                <div className="flex justify-between items-center">
+                    <div>
+                        <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '¡Aquí puedes ver a todos tus amigos proveedores!',
+                                jóvenes: 'Administra la información de tus proveedores',
+                                adultos: 'Administre la información de todos los proveedores registrados'
+                            })}
+                        </p>
+                    </div>
+                    
+                    <Link
+                        href="/proveedores/create"
+                        className={`bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors ${getModeClasses()}`}
+                    >
+                        {getTextByMode({
+                            niños: '➕ ¡Agregar Amigo!',
+                            jóvenes: '➕ Nuevo Proveedor',
+                            adultos: '➕ Agregar Proveedor'
+                        })}
+                    </Link>
+                </div>
+
                 {/* Filtros de búsqueda */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -135,17 +159,6 @@ export default function ProveedoresIndex({ proveedores, filters }: ProveedoresIn
                                 <option value={25}>25 por página</option>
                                 <option value={50}>50 por página</option>
                             </select>
-                            
-                            <Link
-                                href="/proveedores/create"
-                                className={`bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${getModeClasses()}`}
-                            >
-                                {getTextByMode({
-                                    niños: '➕ ¡Agregar!',
-                                    jóvenes: '➕ Nuevo',
-                                    adultos: '➕ Agregar'
-                                })}
-                            </Link>
                         </div>
                     </div>
                 </div>

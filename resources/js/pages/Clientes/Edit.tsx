@@ -1,6 +1,6 @@
-import { Head, useForm } from '@inertiajs/react';
-import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
+import DashboardLayout from '@/layouts/DashboardLayout';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 
 interface User {
@@ -25,7 +25,7 @@ interface ClienteEditProps {
 
 export default function ClienteEdit({ cliente }: ClienteEditProps) {
     const { settings } = useAppMode();
-    
+
     const { data, setData, put, processing, errors } = useForm({
         nombre: cliente.user.nombre,
         email: cliente.user.email,
@@ -57,43 +57,54 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
     };
 
     return (
-        <DashboardLayout title={getTextByMode({
-            niños: '✏️ Editar Amigo Cliente',
-            jóvenes: '✏️ Editar Cliente',
-            adultos: 'Editar Cliente'
-        })}>
+        <DashboardLayout
+            title={getTextByMode({
+                niños: '✏️ Editar Amigo Cliente',
+                jóvenes: '✏️ Editar Cliente',
+                adultos: 'Editar Cliente',
+            })}
+        >
             <Head title="Editar Cliente" />
-            
+
             <div className={`space-y-6 ${getModeClasses()}`}>
                 {/* Header */}
-                <div>
-                    <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                        {getTextByMode({
-                            niños: '✏️ Editar información de mi amigo',
-                            jóvenes: '✏️ Editar Cliente',
-                            adultos: 'Editar Cliente'
-                        })}
-                    </h1>
-                    <p className={`text-gray-600 dark:text-gray-400 mt-2 ${getModeClasses()}`}>
+                <div className="mb-6">
+                    <div className="flex items-center space-x-4">
+                        <Link
+                            href="/clientes"
+                            className={`font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 ${getModeClasses()}`}
+                        >
+                            ←{' '}
+                            {getTextByMode({
+                                niños: 'Volver a la lista',
+                                jóvenes: 'Volver a la lista',
+                                adultos: 'Volver a la lista',
+                            })}
+                        </Link>
+                    </div>
+                    <p className={`mt-2 text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: 'Actualiza la información de tu amigo cliente',
                             jóvenes: 'Actualiza la información del cliente',
-                            adultos: 'Modifique la información del cliente en el sistema'
+                            adultos: 'Modifique la información del cliente en el sistema',
                         })}
                     </p>
                 </div>
 
                 {/* Formulario */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
                     <form onSubmit={submit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* Nombre */}
                             <div>
-                                <label htmlFor="nombre" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                <label
+                                    htmlFor="nombre"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '😊 Nombre del amigo',
                                         jóvenes: '👤 Nombre completo',
-                                        adultos: 'Nombre completo'
+                                        adultos: 'Nombre completo',
                                     })}
                                 </label>
                                 <input
@@ -101,21 +112,22 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     type="text"
                                     value={data.nombre}
                                     onChange={(e) => setData('nombre', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     required
                                 />
-                                {errors.nombre && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
-                                )}
+                                {errors.nombre && <p className="mt-1 text-xs text-red-500">{errors.nombre}</p>}
                             </div>
 
                             {/* Email */}
                             <div>
-                                <label htmlFor="email" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                <label
+                                    htmlFor="email"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '📧 Email del amigo',
                                         jóvenes: '📧 Correo electrónico',
-                                        adultos: 'Correo electrónico'
+                                        adultos: 'Correo electrónico',
                                     })}
                                 </label>
                                 <input
@@ -123,21 +135,22 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     type="email"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     required
                                 />
-                                {errors.email && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-                                )}
+                                {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                             </div>
 
                             {/* Celular */}
                             <div>
-                                <label htmlFor="celular" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                <label
+                                    htmlFor="celular"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '📱 Celular del amigo',
                                         jóvenes: '📱 Número celular',
-                                        adultos: 'Número celular'
+                                        adultos: 'Número celular',
                                     })}
                                 </label>
                                 <input
@@ -145,20 +158,21 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     type="tel"
                                     value={data.celular}
                                     onChange={(e) => setData('celular', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 />
-                                {errors.celular && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.celular}</p>
-                                )}
+                                {errors.celular && <p className="mt-1 text-xs text-red-500">{errors.celular}</p>}
                             </div>
 
                             {/* NIT */}
                             <div>
-                                <label htmlFor="nit" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                <label
+                                    htmlFor="nit"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '🆔 Documento del amigo',
                                         jóvenes: '🆔 NIT/Documento',
-                                        adultos: 'NIT/Documento de identidad'
+                                        adultos: 'NIT/Documento de identidad',
                                     })}
                                 </label>
                                 <input
@@ -166,20 +180,21 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     type="text"
                                     value={data.nit}
                                     onChange={(e) => setData('nit', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 />
-                                {errors.nit && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.nit}</p>
-                                )}
+                                {errors.nit && <p className="mt-1 text-xs text-red-500">{errors.nit}</p>}
                             </div>
 
                             {/* Teléfono */}
                             <div>
-                                <label htmlFor="telefono" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                <label
+                                    htmlFor="telefono"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '📞 Teléfono fijo',
                                         jóvenes: '📞 Teléfono fijo',
-                                        adultos: 'Teléfono fijo'
+                                        adultos: 'Teléfono fijo',
                                     })}
                                 </label>
                                 <input
@@ -187,20 +202,21 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     type="tel"
                                     value={data.telefono}
                                     onChange={(e) => setData('telefono', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 />
-                                {errors.telefono && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
-                                )}
+                                {errors.telefono && <p className="mt-1 text-xs text-red-500">{errors.telefono}</p>}
                             </div>
 
                             {/* Fecha nacimiento */}
                             <div>
-                                <label htmlFor="fecha_nacimiento" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                <label
+                                    htmlFor="fecha_nacimiento"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '🎂 Cumpleaños',
                                         jóvenes: '🎂 Fecha de nacimiento',
-                                        adultos: 'Fecha de nacimiento'
+                                        adultos: 'Fecha de nacimiento',
                                     })}
                                 </label>
                                 <input
@@ -208,27 +224,28 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     type="date"
                                     value={data.fecha_nacimiento}
                                     onChange={(e) => setData('fecha_nacimiento', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 />
-                                {errors.fecha_nacimiento && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.fecha_nacimiento}</p>
-                                )}
+                                {errors.fecha_nacimiento && <p className="mt-1 text-xs text-red-500">{errors.fecha_nacimiento}</p>}
                             </div>
 
                             {/* Género */}
                             <div>
-                                <label htmlFor="genero" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                <label
+                                    htmlFor="genero"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '👫 Género',
                                         jóvenes: '👫 Género',
-                                        adultos: 'Género'
+                                        adultos: 'Género',
                                     })}
                                 </label>
                                 <select
                                     id="genero"
                                     value={data.genero}
                                     onChange={(e) => setData('genero', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 >
                                     <option value="">Seleccionar género</option>
                                     <option value="masculino">Masculino</option>
@@ -236,9 +253,7 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     <option value="otro">Otro</option>
                                     <option value="prefiero_no_decir">Prefiero no decir</option>
                                 </select>
-                                {errors.genero && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.genero}</p>
-                                )}
+                                {errors.genero && <p className="mt-1 text-xs text-red-500">{errors.genero}</p>}
                             </div>
                         </div>
 
@@ -246,32 +261,30 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                         <div className="flex justify-end space-x-3">
                             <a
                                 href="/clientes"
-                                className={`px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${getModeClasses()}`}
+                                className={`rounded-md border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 ${getModeClasses()}`}
                             >
                                 {getTextByMode({
                                     niños: '❌ Cancelar',
                                     jóvenes: 'Cancelar',
-                                    adultos: 'Cancelar'
+                                    adultos: 'Cancelar',
                                 })}
                             </a>
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md transition-colors ${getModeClasses()}`}
+                                className={`rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400 ${getModeClasses()}`}
                             >
-                                {processing ? (
-                                    getTextByMode({
-                                        niños: '💾 Guardando...',
-                                        jóvenes: 'Guardando...',
-                                        adultos: 'Guardando...'
-                                    })
-                                ) : (
-                                    getTextByMode({
-                                        niños: '💾 Guardar Cambios',
-                                        jóvenes: 'Guardar Cambios',
-                                        adultos: 'Guardar Cambios'
-                                    })
-                                )}
+                                {processing
+                                    ? getTextByMode({
+                                          niños: '💾 Guardando...',
+                                          jóvenes: 'Guardando...',
+                                          adultos: 'Guardando...',
+                                      })
+                                    : getTextByMode({
+                                          niños: '💾 Guardar Cambios',
+                                          jóvenes: 'Guardar Cambios',
+                                          adultos: 'Guardar Cambios',
+                                      })}
                             </button>
                         </div>
                     </form>
@@ -279,4 +292,4 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
             </div>
         </DashboardLayout>
     );
-} 
+}

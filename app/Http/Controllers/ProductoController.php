@@ -22,12 +22,11 @@ class ProductoController extends Controller
     {
         $search = $request->get('search', '');
         $categoria = $request->get('categoria', '');
-        $estado = $request->get('estado', '');
         $orden = $request->get('orden', 'nombre');
         $perPage = $request->get('per_page', 12);
 
         $productos = Producto::query()
-            ->with(['categoria', 'promociones'])
+            ->with(['categoria', 'promociones', 'inventarios'])
             ->when($search, function ($query, $search) {
                 return $query->where('nombre', 'like', "%{$search}%")
                              ->orWhere('cod_producto', 'like', "%{$search}%")
@@ -36,11 +35,21 @@ class ProductoController extends Controller
             ->when($categoria, function ($query, $categoria) {
                 return $query->where('categoria_id', $categoria);
             })
-            ->when($estado, function ($query, $estado) {
-                return $query->where('estado', $estado);
-            })
             ->orderBy($orden, 'asc')
             ->paginate($perPage);
+
+        // Agregar cálculo de stock total para cada producto
+        $productos->getCollection()->transform(function ($producto) {
+            $producto->stock_total = $producto->inventarios->sum('stock');
+            // Simulamos stock_minimo y stock_maximo para la UI
+            $producto->stock_minimo = 10;
+            $producto->stock_maximo = 100;
+            // Simulamos estado activo para todos los productos
+            $producto->estado = 'activo';
+            // Usamos precio_venta como precio principal
+            $producto->precio = $producto->precio_venta ?? $producto->precio_compra ?? 0;
+            return $producto;
+        });
 
         $categorias = Categoria::orderBy('nombre')->get();
         
@@ -50,7 +59,7 @@ class ProductoController extends Controller
             'filters' => [
                 'search' => $search,
                 'categoria' => $categoria,
-                'estado' => $estado,
+                'estado' => '', // Removemos filtro de estado
                 'orden' => $orden,
                 'per_page' => $perPage,
             ],
@@ -81,47 +90,20 @@ class ProductoController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
             'categoria_id' => ['required', 'exists:categorias,id'],
-            'precio' => ['required', 'numeric', 'min:0'],
-            'stock_minimo' => ['required', 'integer', 'min:0'],
-            'stock_maximo' => ['required', 'integer', 'min:1'],
-            'stock_total' => ['required', 'integer', 'min:0'],
-            'imagen' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
-            'estado' => ['required', 'string', 'in:activo,inactivo'],
-            'promociones' => ['nullable', 'array'],
-            'promociones.*' => ['exists:promociones,id'],
+            'precio_compra' => ['required', 'numeric', 'min:0'],
+            'precio_venta' => ['required', 'numeric', 'min:0'],
+            'imagen' => ['nullable', 'string', 'max:500'], // URL de imagen
         ]);
-
-        // Validar que stock_total esté entre stock_minimo y stock_maximo
-        if ($validated['stock_total'] < $validated['stock_minimo'] || 
-            $validated['stock_total'] > $validated['stock_maximo']) {
-            return back()->withErrors([
-                'stock_total' => 'El stock actual debe estar entre el stock mínimo y máximo.'
-            ]);
-        }
-
-        // Procesar imagen si existe
-        $imagenPath = null;
-        if ($request->hasFile('imagen')) {
-            $imagenPath = $request->file('imagen')->store('productos', 'public');
-        }
 
         $producto = Producto::create([
             'cod_producto' => $validated['cod_producto'],
             'nombre' => $validated['nombre'],
             'descripcion' => $validated['descripcion'],
             'categoria_id' => $validated['categoria_id'],
-            'precio' => $validated['precio'],
-            'stock_minimo' => $validated['stock_minimo'],
-            'stock_maximo' => $validated['stock_maximo'],
-            'stock_total' => $validated['stock_total'],
-            'imagen' => $imagenPath,
-            'estado' => $validated['estado'],
+            'precio_compra' => $validated['precio_compra'],
+            'precio_venta' => $validated['precio_venta'],
+            'imagen' => $validated['imagen'],
         ]);
-
-        // Asociar promociones si existen
-        if (!empty($validated['promociones'])) {
-            $producto->promociones()->attach($validated['promociones']);
-        }
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto creado exitosamente.');
@@ -132,7 +114,10 @@ class ProductoController extends Controller
      */
     public function show(Producto $producto): Response
     {
-        $producto->load(['categoria', 'promociones']);
+        $producto->load(['categoria', 'promociones', 'inventarios.almacen']);
+        
+        // Calcular stock total
+        $producto->stock_total = $producto->inventarios->sum('stock');
         
         return Inertia::render('Productos/Show', [
             'producto' => $producto
@@ -146,12 +131,10 @@ class ProductoController extends Controller
     {
         $producto->load(['categoria', 'promociones']);
         $categorias = Categoria::orderBy('nombre')->get();
-        $promociones = Promocion::where('estado', 'activa')->orderBy('nombre')->get();
         
         return Inertia::render('Productos/Edit', [
             'producto' => $producto,
             'categorias' => $categorias,
-            'promociones' => $promociones,
         ]);
     }
 
@@ -165,53 +148,20 @@ class ProductoController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
             'categoria_id' => ['required', 'exists:categorias,id'],
-            'precio' => ['required', 'numeric', 'min:0'],
-            'stock_minimo' => ['required', 'integer', 'min:0'],
-            'stock_maximo' => ['required', 'integer', 'min:1'],
-            'stock_total' => ['required', 'integer', 'min:0'],
-            'imagen' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
-            'estado' => ['required', 'string', 'in:activo,inactivo'],
-            'promociones' => ['nullable', 'array'],
-            'promociones.*' => ['exists:promociones,id'],
+            'precio_compra' => ['required', 'numeric', 'min:0'],
+            'precio_venta' => ['required', 'numeric', 'min:0'],
+            'imagen' => ['nullable', 'string', 'max:500'], // URL de imagen
         ]);
-
-        // Validar que stock_total esté entre stock_minimo y stock_maximo
-        if ($validated['stock_total'] < $validated['stock_minimo'] || 
-            $validated['stock_total'] > $validated['stock_maximo']) {
-            return back()->withErrors([
-                'stock_total' => 'El stock actual debe estar entre el stock mínimo y máximo.'
-            ]);
-        }
-
-        // Procesar nueva imagen si existe
-        $imagenPath = $producto->imagen;
-        if ($request->hasFile('imagen')) {
-            // Eliminar imagen anterior si existe
-            if ($producto->imagen) {
-                Storage::disk('public')->delete($producto->imagen);
-            }
-            $imagenPath = $request->file('imagen')->store('productos', 'public');
-        }
 
         $producto->update([
             'cod_producto' => $validated['cod_producto'],
             'nombre' => $validated['nombre'],
             'descripcion' => $validated['descripcion'],
             'categoria_id' => $validated['categoria_id'],
-            'precio' => $validated['precio'],
-            'stock_minimo' => $validated['stock_minimo'],
-            'stock_maximo' => $validated['stock_maximo'],
-            'stock_total' => $validated['stock_total'],
-            'imagen' => $imagenPath,
-            'estado' => $validated['estado'],
+            'precio_compra' => $validated['precio_compra'],
+            'precio_venta' => $validated['precio_venta'],
+            'imagen' => $validated['imagen'],
         ]);
-
-        // Actualizar promociones
-        if (isset($validated['promociones'])) {
-            $producto->promociones()->sync($validated['promociones']);
-        } else {
-            $producto->promociones()->detach();
-        }
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto actualizado exitosamente.');
@@ -222,37 +172,13 @@ class ProductoController extends Controller
      */
     public function destroy(Producto $producto): RedirectResponse
     {
-        // Eliminar imagen si existe
-        if ($producto->imagen) {
-            Storage::disk('public')->delete($producto->imagen);
-        }
-
-        // Desconectar promociones
+        // Desconectar promociones si existen
         $producto->promociones()->detach();
 
         $producto->delete();
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto eliminado exitosamente.');
-    }
-
-    /**
-     * Toggle product status between active and inactive.
-     */
-    public function toggleStatus(Producto $producto): RedirectResponse
-    {
-        $newStatus = $producto->estado === 'activo' ? 'inactivo' : 'activo';
-        
-        $producto->update([
-            'estado' => $newStatus
-        ]);
-
-        $mensaje = $newStatus === 'activo' 
-            ? 'Producto activado exitosamente.' 
-            : 'Producto desactivado exitosamente.';
-
-        return redirect()->route('productos.index')
-            ->with('success', $mensaje);
     }
 
     /**

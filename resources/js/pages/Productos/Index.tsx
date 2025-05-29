@@ -1,6 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { useState, useEffect } from 'react';
 
 interface Producto {
     id: number;
@@ -40,7 +42,6 @@ interface ProductosIndexProps {
     filters: {
         search: string;
         categoria: string;
-        estado: string;
         orden: string;
         per_page: number;
     };
@@ -48,6 +49,16 @@ interface ProductosIndexProps {
 
 export default function ProductosIndex({ productos, categorias, filters }: ProductosIndexProps) {
     const { settings } = useAppMode();
+    const [search, setSearch] = useState(filters.search);
+    const [categoria, setCategoria] = useState(filters.categoria);
+    const [orden, setOrden] = useState(filters.orden);
+    const [perPage, setPerPage] = useState(filters.per_page);
+    const [isLoading, setIsLoading] = useState(false);
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        producto?: Producto;
+        action?: 'delete';
+    }>({ isOpen: false });
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
@@ -64,44 +75,108 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
         }
     };
 
+    // Debounce para búsqueda y filtros
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (search !== filters.search || categoria !== filters.categoria || 
+                orden !== filters.orden) {
+                router.get('/productos', {
+                    search,
+                    categoria,
+                    orden,
+                    per_page: perPage,
+                }, {
+                    preserveState: true,
+                    replace: true,
+                });
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [search, categoria, orden]);
+
+    const handlePerPageChange = (newPerPage: number) => {
+        setPerPage(newPerPage);
+        router.get('/productos', {
+            search,
+            categoria,
+            orden,
+            per_page: newPerPage,
+        }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleDeleteClick = (producto: Producto) => {
+        setConfirmDialog({
+            isOpen: true,
+            producto,
+            action: 'delete',
+        });
+    };
+
+    const handleConfirm = () => {
+        if (confirmDialog.producto && confirmDialog.action) {
+            setIsLoading(true);
+            
+            if (confirmDialog.action === 'delete') {
+                router.delete(`/productos/${confirmDialog.producto.id}`, {
+                    preserveScroll: true,
+                    onFinish: () => {
+                        setIsLoading(false);
+                        setConfirmDialog({ isOpen: false });
+                    },
+                });
+            }
+        }
+    };
+
+    const handleCancel = () => {
+        setConfirmDialog({ isOpen: false });
+    };
+
     const formatPrice = (precio: number) => {
         return new Intl.NumberFormat('es-CO', {
             style: 'currency',
             currency: 'COP',
-            minimumFractionDigits: 0
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         }).format(precio);
     };
 
     const getStockStatus = (producto: Producto) => {
         if (producto.stock_total <= producto.stock_minimo) {
-            return { text: 'Crítico', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' };
+            return { 
+                text: getTextByMode({ niños: '😱 ¡Crítico!', jóvenes: 'Crítico', adultos: 'Crítico' }), 
+                color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' 
+            };
         } else if (producto.stock_total <= producto.stock_minimo * 1.5) {
-            return { text: 'Bajo', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
+            return { 
+                text: getTextByMode({ niños: '⚠️ Bajo', jóvenes: 'Bajo', adultos: 'Bajo' }), 
+                color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' 
+            };
         } else {
-            return { text: 'Normal', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
+            return { 
+                text: getTextByMode({ niños: '✅ Normal', jóvenes: 'Normal', adultos: 'Normal' }), 
+                color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
+            };
         }
     };
 
     return (
         <DashboardLayout title={getTextByMode({
             niños: '📦 ¡Mis Productos Geniales!',
-            jóvenes: '📦 Gestión de Productos',
+            jóvenes: '📦 Productos',
             adultos: 'Gestión de Productos'
         })}>
             <Head title="Productos" />
             
             <div className={`space-y-6 ${getModeClasses()}`}>
-                {/* Header */}
+                {/* Header con botón de agregar */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '📦 ¡Mis Productos Súper Geniales!',
-                                jóvenes: '📦 Gestión de Productos',
-                                adultos: 'Gestión de Productos'
-                            })}
-                        </h1>
-                        <p className={`text-gray-600 dark:text-gray-400 mt-2 ${getModeClasses()}`}>
+                        <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                             {getTextByMode({
                                 niños: '¡Administra todos tus productos increíbles!',
                                 jóvenes: 'Administra el inventario de productos',
@@ -109,260 +184,264 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
                             })}
                         </p>
                     </div>
+                    
                     <Link
                         href="/productos/create"
-                        className={`bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${getModeClasses()}`}
+                        className={`bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors ${getModeClasses()}`}
                     >
-                        <span>➕</span>
-                        <span>{getTextByMode({
-                            niños: '¡Agregar Producto!',
-                            jóvenes: 'Agregar Producto',
-                            adultos: 'Agregar Producto'
-                        })}</span>
+                        {getTextByMode({
+                            niños: '➕ ¡Agregar Producto!',
+                            jóvenes: '➕ Nuevo Producto',
+                            adultos: '➕ Agregar Producto'
+                        })}
                     </Link>
                 </div>
 
-                {/* Filtros */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div>
-                            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '🔍 Buscar',
-                                    jóvenes: '🔍 Buscar',
-                                    adultos: 'Buscar'
-                                })}
-                            </label>
+                {/* Filtros de búsqueda */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="md:col-span-2">
                             <input
                                 type="text"
-                                defaultValue={filters.search}
                                 placeholder={getTextByMode({
-                                    niños: 'Buscar productos...',
-                                    jóvenes: 'Buscar por nombre o código...',
+                                    niños: '🔍 ¿Buscas algún producto?',
+                                    jóvenes: '🔍 Buscar producto...',
                                     adultos: 'Buscar por nombre, código o descripción...'
                                 })}
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100"
                             />
                         </div>
                         <div>
-                            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '📂 Categoría',
-                                    jóvenes: '📂 Categoría',
-                                    adultos: 'Categoría'
-                                })}
-                            </label>
                             <select
-                                defaultValue={filters.categoria}
+                                value={categoria}
+                                onChange={(e) => setCategoria(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option value="">Todas las categorías</option>
-                                {categorias.map((categoria) => (
-                                    <option key={categoria.id} value={categoria.id}>
-                                        {categoria.nombre}
+                                {categorias.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.nombre}
                                     </option>
                                 ))}
                             </select>
                         </div>
                         <div>
-                            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '⚡ Estado',
-                                    jóvenes: '⚡ Estado',
-                                    adultos: 'Estado'
-                                })}
-                            </label>
                             <select
-                                defaultValue={filters.estado}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                            >
-                                <option value="">Todos los estados</option>
-                                <option value="activo">Activo</option>
-                                <option value="inactivo">Inactivo</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '🔄 Ordenar',
-                                    jóvenes: '🔄 Ordenar por',
-                                    adultos: 'Ordenar por'
-                                })}
-                            </label>
-                            <select
-                                defaultValue={filters.orden}
+                                value={orden}
+                                onChange={(e) => setOrden(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option value="nombre">Nombre</option>
-                                <option value="precio">Precio</option>
-                                <option value="stock_total">Stock</option>
+                                <option value="precio_venta">Precio</option>
                                 <option value="created_at">Fecha</option>
                             </select>
                         </div>
                         <div>
-                            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '📄 Por página',
-                                    jóvenes: '📄 Por página',
-                                    adultos: 'Elementos por página'
-                                })}
-                            </label>
                             <select
-                                defaultValue={filters.per_page}
+                                value={perPage}
+                                onChange={(e) => handlePerPageChange(Number(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100"
                             >
-                                <option value={12}>12 por página</option>
-                                <option value={24}>24 por página</option>
-                                <option value={48}>48 por página</option>
+                                <option value={10}>10 por página</option>
+                                <option value={25}>25 por página</option>
+                                <option value={50}>50 por página</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                {/* Grid de productos */}
-                {productos.data.length === 0 ? (
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
-                        <div className="text-6xl mb-4">
-                            {settings.ageMode === 'niños' ? '📦' : '📦'}
+                {/* Tabla de productos */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    {productos.data.length === 0 ? (
+                        <div className="p-12 text-center">
+                            <div className="text-6xl mb-4">
+                                {settings.ageMode === 'niños' ? '😔' : '📦'}
+                            </div>
+                            <h3 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-2 ${getModeClasses()}`}>
+                                {search || categoria || orden ? getTextByMode({
+                                    niños: `¡No encontré productos con esos filtros!`,
+                                    jóvenes: `No se encontraron productos para los filtros aplicados`,
+                                    adultos: `No se encontraron productos que coincidan con los filtros`
+                                }) : getTextByMode({
+                                    niños: '¡No hay productos todavía!',
+                                    jóvenes: 'No hay productos registrados',
+                                    adultos: 'No se encontraron productos'
+                                })}
+                            </h3>
+                            <p className={`text-gray-600 dark:text-gray-400 mb-4 ${getModeClasses()}`}>
+                                {search || categoria || orden ? getTextByMode({
+                                    niños: '¡Intenta cambiar los filtros!',
+                                    jóvenes: 'Intenta con otros filtros de búsqueda',
+                                    adultos: 'Intente con diferentes filtros de búsqueda'
+                                }) : getTextByMode({
+                                    niños: '¡Agrega tu primer producto para empezar!',
+                                    jóvenes: 'Comienza agregando tu primer producto',
+                                    adultos: 'Comience agregando el primer producto al sistema'
+                                })}
+                            </p>
+                            {!search && !categoria && !orden && (
+                                <Link
+                                    href="/productos/create"
+                                    className={`inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors ${getModeClasses()}`}
+                                >
+                                    ➕ {getTextByMode({
+                                        niños: 'Agregar Primer Producto',
+                                        jóvenes: 'Agregar Producto',
+                                        adultos: 'Agregar Producto'
+                                    })}
+                                </Link>
+                            )}
                         </div>
-                        <h3 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-2 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '¡No hay productos todavía!',
-                                jóvenes: 'No hay productos registrados',
-                                adultos: 'No se encontraron productos'
-                            })}
-                        </h3>
-                        <p className={`text-gray-600 dark:text-gray-400 mb-4 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '¡Agrega tu primer producto para empezar!',
-                                jóvenes: 'Comienza agregando tu primer producto',
-                                adultos: 'Comience agregando el primer producto al catálogo'
-                            })}
-                        </p>
-                        <Link
-                            href="/productos/create"
-                            className={`inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors ${getModeClasses()}`}
-                        >
-                            ➕ {getTextByMode({
-                                niños: 'Agregar Primer Producto',
-                                jóvenes: 'Agregar Producto',
-                                adultos: 'Agregar Producto'
-                            })}
-                        </Link>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {productos.data.map((producto) => {
-                            const stockStatus = getStockStatus(producto);
-                            return (
-                                <div key={producto.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow">
-                                    {/* Imagen del producto */}
-                                    <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-t-lg flex items-center justify-center">
-                                        {producto.imagen ? (
-                                            <img
-                                                src={`/storage/${producto.imagen}`}
-                                                alt={producto.nombre}
-                                                className="h-full w-full object-cover rounded-t-lg"
-                                            />
-                                        ) : (
-                                            <div className="text-4xl">
-                                                {settings.ageMode === 'niños' ? '📦' : '📦'}
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    {/* Contenido */}
-                                    <div className="p-4">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className={`text-lg font-medium text-gray-900 dark:text-gray-100 truncate ${getModeClasses()}`}>
-                                                {producto.nombre}
-                                            </h3>
-                                            <span className={`px-2 py-1 rounded-full text-xs ${stockStatus.color}`}>
-                                                {stockStatus.text}
-                                            </span>
-                                        </div>
-                                        
-                                        <p className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-900">
+                                    <tr>
+                                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${getModeClasses()}`}>
                                             {getTextByMode({
-                                                niños: '🔢 Código',
-                                                jóvenes: 'Código',
+                                                niños: '📦 Producto',
+                                                jóvenes: '📦 Producto',
+                                                adultos: 'Producto'
+                                            })}
+                                        </th>
+                                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${getModeClasses()}`}>
+                                            {getTextByMode({
+                                                niños: '🏷️ Código',
+                                                jóvenes: '🏷️ Código',
                                                 adultos: 'Código'
-                                            })}: {producto.cod_producto}
-                                        </p>
-                                        
-                                        <p className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
+                                            })}
+                                        </th>
+                                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${getModeClasses()}`}>
                                             {getTextByMode({
                                                 niños: '📂 Categoría',
-                                                jóvenes: 'Categoría',
+                                                jóvenes: '📂 Categoría',
                                                 adultos: 'Categoría'
-                                            })}: {producto.categoria.nombre}
-                                        </p>
-                                        
-                                        <div className="mt-3 space-y-2">
-                                            <div className="flex justify-between">
-                                                <span className={`text-lg font-bold text-purple-600 dark:text-purple-400 ${getModeClasses()}`}>
+                                            })}
+                                        </th>
+                                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${getModeClasses()}`}>
+                                            {getTextByMode({
+                                                niños: '💰 Precio',
+                                                jóvenes: '💰 Precio',
+                                                adultos: 'Precio'
+                                            })}
+                                        </th>
+                                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${getModeClasses()}`}>
+                                            {getTextByMode({
+                                                niños: '📊 Stock',
+                                                jóvenes: '📊 Stock',
+                                                adultos: 'Stock'
+                                            })}
+                                        </th>
+                                        <th className={`px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${getModeClasses()}`}>
+                                            {getTextByMode({
+                                                niños: '🔧 Acciones',
+                                                jóvenes: '🔧 Acciones',
+                                                adultos: 'Acciones'
+                                            })}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    {productos.data.map((producto) => {
+                                        const stockStatus = getStockStatus(producto);
+                                        return (
+                                            <tr key={producto.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td className={`px-6 py-4 whitespace-nowrap ${getModeClasses()}`}>
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0 h-10 w-10">
+                                                            {producto.imagen ? (
+                                                                <img 
+                                                                    className="h-10 w-10 rounded-lg object-cover" 
+                                                                    src={producto.imagen} 
+                                                                    alt={producto.nombre}
+                                                                />
+                                                            ) : (
+                                                                <div className="h-10 w-10 rounded-lg bg-purple-500 flex items-center justify-center text-white font-medium">
+                                                                    {producto.nombre.charAt(0).toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                {producto.nombre}
+                                                            </div>
+                                                            {producto.descripcion && (
+                                                                <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                                                                    {producto.descripcion}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-mono ${getModeClasses()}`}>
+                                                    {producto.cod_producto}
+                                                </td>
+                                                <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                                        {producto.categoria.nombre}
+                                                    </span>
+                                                </td>
+                                                <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium ${getModeClasses()}`}>
                                                     {formatPrice(producto.precio)}
-                                                </span>
-                                                <span className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                                                    Stock: {producto.stock_total}
-                                                </span>
-                                            </div>
-                                            
-                                            {producto.promociones && producto.promociones.length > 0 && (
-                                                <div className="flex flex-wrap gap-1">
-                                                    {producto.promociones.map((promo) => (
-                                                        <span key={promo.id} className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full dark:bg-green-900 dark:text-green-200">
-                                                            -{promo.descuento}%
+                                                </td>
+                                                <td className={`px-6 py-4 whitespace-nowrap ${getModeClasses()}`}>
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {producto.stock_total}
                                                         </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                        
-                                        {/* Acciones */}
-                                        <div className="mt-4 flex justify-between items-center">
-                                            <div className="flex space-x-2">
-                                                <Link
-                                                    href={`/productos/${producto.id}`}
-                                                    className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
-                                                    title={getTextByMode({
-                                                        niños: 'Ver producto',
-                                                        jóvenes: 'Ver detalles',
-                                                        adultos: 'Ver detalles'
-                                                    })}
-                                                >
-                                                    {settings.ageMode === 'niños' ? '👀' : '👁️'}
-                                                </Link>
-                                                <Link
-                                                    href={`/productos/${producto.id}/edit`}
-                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                                    title={getTextByMode({
-                                                        niños: 'Editar producto',
-                                                        jóvenes: 'Editar',
-                                                        adultos: 'Editar producto'
-                                                    })}
-                                                >
-                                                    {settings.ageMode === 'niños' ? '✏️' : '📝'}
-                                                </Link>
-                                            </div>
-                                            
-                                            <span className={`px-2 py-1 rounded-full text-xs ${
-                                                producto.estado === 'activo' 
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                            }`}>
-                                                {producto.estado === 'activo' ? 
-                                                    getTextByMode({ niños: '✅ Activo', jóvenes: 'Activo', adultos: 'Activo' }) :
-                                                    getTextByMode({ niños: '❌ Inactivo', jóvenes: 'Inactivo', adultos: 'Inactivo' })
-                                                }
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockStatus.color}`}>
+                                                            {stockStatus.text}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium ${getModeClasses()}`}>
+                                                    <div className="flex justify-end space-x-2">
+                                                        <Link
+                                                            href={`/productos/${producto.id}`}
+                                                            className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                                                            title={getTextByMode({
+                                                                niños: 'Ver producto',
+                                                                jóvenes: 'Ver producto',
+                                                                adultos: 'Ver detalles'
+                                                            })}
+                                                        >
+                                                            {settings.ageMode === 'niños' ? '👀' : '👁️'}
+                                                        </Link>
+                                                        <Link
+                                                            href={`/productos/${producto.id}/edit`}
+                                                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 ml-3"
+                                                            title={getTextByMode({
+                                                                niños: 'Editar producto',
+                                                                jóvenes: 'Editar producto',
+                                                                adultos: 'Editar información'
+                                                            })}
+                                                        >
+                                                            {settings.ageMode === 'niños' ? '✏️' : '📝'}
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => handleDeleteClick(producto)}
+                                                            disabled={isLoading}
+                                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 ml-3 disabled:opacity-50"
+                                                            title={getTextByMode({
+                                                                niños: 'Eliminar producto',
+                                                                jóvenes: 'Eliminar producto',
+                                                                adultos: 'Eliminar producto'
+                                                            })}
+                                                        >
+                                                            {settings.ageMode === 'niños' ? '🗑️' : '🗑️'}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
 
                 {/* Paginación */}
                 {productos.data.length > 0 && productos.links && productos.meta && (
@@ -370,9 +449,9 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
                         <div className="flex justify-between items-center">
                             <div className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                                 {getTextByMode({
-                                    niños: `Mostrando ${productos.meta?.from || 0} a ${productos.meta?.to || 0} de ${productos.meta?.total || 0} productos`,
-                                    jóvenes: `Mostrando ${productos.meta?.from || 0} a ${productos.meta?.to || 0} de ${productos.meta?.total || 0} productos`,
-                                    adultos: `Mostrando ${productos.meta?.from || 0} a ${productos.meta?.to || 0} de ${productos.meta?.total || 0} productos`
+                                    niños: `Mostrando ${productos.meta?.from || 1} a ${productos.meta?.to || productos.data.length} de ${productos.meta?.total || productos.data.length} productos`,
+                                    jóvenes: `Mostrando ${productos.meta?.from || 1} a ${productos.meta?.to || productos.data.length} de ${productos.meta?.total || productos.data.length} productos`,
+                                    adultos: `Mostrando ${productos.meta?.from || 1} a ${productos.meta?.to || productos.data.length} de ${productos.meta?.total || productos.data.length} productos`
                                 })}
                             </div>
                             <div className="flex space-x-1">
@@ -381,6 +460,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
                                         <Link
                                             key={index}
                                             href={link.url}
+                                            data={{ search, categoria, orden, per_page: perPage }}
                                             className={`px-3 py-2 text-sm rounded-md transition-colors ${
                                                 link.active 
                                                     ? 'bg-purple-600 text-white' 
@@ -401,6 +481,38 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
                     </div>
                 )}
             </div>
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                title={getTextByMode({
+                    niños: '¿Eliminar producto?',
+                    jóvenes: '¿Eliminar producto?',
+                    adultos: 'Confirmar eliminación'
+                })}
+                message={
+                    confirmDialog.producto
+                        ? getTextByMode({
+                            niños: `¿Estás seguro de que quieres eliminar "${confirmDialog.producto.nombre}"? ¡No podrás recuperarlo después!`,
+                            jóvenes: `¿Eliminar "${confirmDialog.producto.nombre}"? Esta acción no se puede deshacer.`,
+                            adultos: `¿Está seguro de que desea eliminar el producto "${confirmDialog.producto.nombre}"? Esta acción no se puede deshacer.`
+                        })
+                        : ''
+                }
+                confirmText={getTextByMode({
+                    niños: '🗑️ Sí, eliminar',
+                    jóvenes: 'Eliminar',
+                    adultos: 'Eliminar'
+                })}
+                cancelText={getTextByMode({
+                    niños: 'No, cancelar',
+                    jóvenes: 'Cancelar',
+                    adultos: 'Cancelar'
+                })}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+                type="danger"
+            />
         </DashboardLayout>
     );
 } 

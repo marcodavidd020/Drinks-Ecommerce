@@ -188,17 +188,10 @@ export default function UsersIndex({ users, allRoles, filters }: UsersIndexProps
             <Head title="Usuarios" />
             
             <div className={`space-y-6 ${getModeClasses()}`}>
-                {/* Header */}
+                {/* Header con botón de agregar */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className={`text-2xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '👥 ¡Lista de Usuarios Súper!',
-                                jóvenes: '👥 Lista de Usuarios',
-                                adultos: 'Gestión de Usuarios'
-                            })}
-                        </h1>
-                        <p className={`text-gray-600 dark:text-gray-400 mt-1 ${getModeClasses()}`}>
+                        <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                             {getTextByMode({
                                 niños: '¡Aquí puedes ver a todos los usuarios del sistema!',
                                 jóvenes: 'Administra usuarios y sus roles en el sistema',

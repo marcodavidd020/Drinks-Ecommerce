@@ -328,68 +328,80 @@ export default function Dashboard({ stats, chartData, recentActivity, alerts }: 
                 </div>
 
                 {/* Actividad reciente */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <DataTable 
-                        title={getTextByMode({
-                            niños: '🛒 Últimas Ventas',
-                            jóvenes: '🛒 Recent Sales',
-                            adultos: 'Ventas Recientes'
-                        })}
-                        columns={[
-                            { key: 'cliente_nombre', label: 'Cliente' },
-                            { key: 'total', label: 'Total', format: 'currency' },
-                            { key: 'fecha', label: 'Fecha', format: 'date' },
-                            { key: 'estado', label: 'Estado', format: 'badge' }
-                        ]}
-                        data={recentActivity.recentSales}
-                        emptyMessage={getTextByMode({
-                            niños: '¡No hay ventas todavía!',
-                            jóvenes: 'No recent sales',
-                            adultos: 'No hay ventas recientes'
-                        })}
-                    />
-                    
-                    <DataTable 
-                        title={getTextByMode({
-                            niños: '⚠️ Stock Crítico',
-                            jóvenes: '⚠️ Low Stock',
-                            adultos: 'Productos Stock Crítico'
-                        })}
-                        columns={[
-                            { key: 'nombre', label: 'Producto' },
-                            { key: 'cod_producto', label: 'Código' },
-                            { key: 'stock_total', label: 'Stock', format: 'number' }
-                        ]}
-                        data={recentActivity.lowStockProducts}
-                        emptyMessage={getTextByMode({
-                            niños: '¡Todo el stock está bien!',
-                            jóvenes: 'All stock levels are good',
-                            adultos: 'No hay productos con stock crítico'
-                        })}
-                        badge={{
-                            text: stats.lowStockProducts.toString(),
-                            color: 'bg-red-100 text-red-800'
-                        }}
-                    />
+                <div className="space-y-6">
+                    {/* Primera fila - Ventas recientes (ancho completo) */}
+                    <div className="grid grid-cols-1">
+                        <DataTable 
+                            title={getTextByMode({
+                                niños: '🛒 Últimas Ventas Súper Geniales',
+                                jóvenes: '🛒 Ventas Recientes',
+                                adultos: 'Ventas Recientes'
+                            })}
+                            columns={[
+                                { key: 'numero_venta', label: 'N° Venta' },
+                                { key: 'cliente_nombre', label: 'Cliente' },
+                                { key: 'total', label: 'Total', format: 'currency' },
+                                { key: 'fecha', label: 'Fecha', format: 'date' },
+                                { key: 'estado', label: 'Estado', format: 'badge' }
+                            ]}
+                            data={recentActivity.recentSales}
+                            emptyMessage={getTextByMode({
+                                niños: '¡No hay ventas todavía! 😔',
+                                jóvenes: 'No hay ventas recientes',
+                                adultos: 'No hay ventas recientes'
+                            })}
+                        />
+                    </div>
 
-                    <DataTable 
-                        title={getTextByMode({
-                            niños: '📝 PQRS Recientes',
-                            jóvenes: '📝 Recent PQRS',
-                            adultos: 'PQRS Recientes'
-                        })}
-                        columns={[
-                            { key: 'tipo', label: 'Tipo' },
-                            { key: 'asunto', label: 'Asunto' },
-                            { key: 'estado', label: 'Estado', format: 'badge' }
-                        ]}
-                        data={recentActivity.recentPqrs}
-                        emptyMessage={getTextByMode({
-                            niños: '¡No hay PQRS nuevas!',
-                            jóvenes: 'No recent PQRS',
-                            adultos: 'No hay PQRS recientes'
-                        })}
-                    />
+                    {/* Segunda fila - Stock crítico y PQRS (2 columnas) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <DataTable 
+                            title={getTextByMode({
+                                niños: '⚠️ ¡Productos que se Están Acabando!',
+                                jóvenes: '⚠️ Stock Crítico',
+                                adultos: 'Productos con Stock Crítico'
+                            })}
+                            columns={[
+                                { key: 'nombre', label: 'Producto' },
+                                { key: 'cod_producto', label: 'Código' },
+                                { key: 'stock_total', label: 'Stock', format: 'number' }
+                            ]}
+                            data={recentActivity.lowStockProducts}
+                            emptyMessage={getTextByMode({
+                                niños: '¡Todo el stock está súper bien! 🎉',
+                                jóvenes: 'Stock niveles están bien',
+                                adultos: 'No hay productos con stock crítico'
+                            })}
+                            badge={{
+                                text: stats.lowStockProducts.toString(),
+                                color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
+                            }}
+                        />
+
+                        <DataTable 
+                            title={getTextByMode({
+                                niños: '📝 Últimas Quejas y Sugerencias',
+                                jóvenes: '📝 PQRS Recientes',
+                                adultos: 'PQRS Recientes'
+                            })}
+                            columns={[
+                                { key: 'tipo', label: 'Tipo' },
+                                { key: 'cliente_nombre', label: 'Cliente' },
+                                { key: 'estado', label: 'Estado', format: 'badge' },
+                                { key: 'created_at', label: 'Fecha', format: 'date' }
+                            ]}
+                            data={recentActivity.recentPqrs}
+                            emptyMessage={getTextByMode({
+                                niños: '¡No hay quejas! ¡Todo está genial! 😊',
+                                jóvenes: 'No hay PQRS recientes',
+                                adultos: 'No hay PQRS recientes'
+                            })}
+                            badge={stats.pendingPqrs > 0 ? {
+                                text: `${stats.pendingPqrs} pendientes`,
+                                color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200'
+                            } : undefined}
+                        />
+                    </div>
                 </div>
             </div>
         </DashboardLayout>
