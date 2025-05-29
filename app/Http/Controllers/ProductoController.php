@@ -12,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProductoController extends Controller
 {
@@ -22,45 +24,72 @@ class ProductoController extends Controller
     {
         $search = $request->get('search', '');
         $categoria = $request->get('categoria', '');
-        $orden = $request->get('orden', 'nombre');
+        
+        // Configurar opciones de ordenamiento
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = strtolower($request->get('sort_order', 'desc'));
+        
+        // Validar campos de ordenamiento permitidos
+        $validSortFields = ['nombre', 'created_at', 'updated_at', 'precio_venta', 'precio_compra', 'cod_producto'];
+        
+        // Verificar y corregir el campo de ordenamiento
+        if (!in_array($sortBy, $validSortFields)) {
+            $sortBy = 'created_at';
+        }
+        
+        // Verificar y corregir el orden
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+        
         $perPage = $request->get('per_page', 12);
 
-        $productos = Producto::query()
-            ->with(['categoria', 'promociones', 'inventarios'])
-            ->when($search, function ($query, $search) {
-                return $query->where('nombre', 'like', "%{$search}%")
-                             ->orWhere('cod_producto', 'like', "%{$search}%")
-                             ->orWhere('descripcion', 'like', "%{$search}%");
-            })
-            ->when($categoria, function ($query, $categoria) {
-                return $query->where('categoria_id', $categoria);
-            })
-            ->orderBy($orden, 'asc')
-            ->paginate($perPage);
+        // Construir la consulta
+        $query = Producto::query()
+            ->with(['categoria', 'promociones', 'inventarios']);
+            
+        // Aplicar filtros de búsqueda
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                  ->orWhere('cod_producto', 'like', "%{$search}%")
+                  ->orWhere('descripcion', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filtrar por categoría
+        if ($categoria) {
+            $query->where('categoria_id', $categoria);
+        }
+        
+        // Aplicar ordenamiento
+        $query->orderBy($sortBy, $sortOrder);
+        
+        // Ejecutar la consulta con paginación
+        $productos = $query->paginate($perPage);
 
-        // Agregar cálculo de stock total para cada producto
+        // Procesar los resultados
         $productos->getCollection()->transform(function ($producto) {
             $producto->stock_total = $producto->inventarios->sum('stock');
-            // Simulamos stock_minimo y stock_maximo para la UI
-            $producto->stock_minimo = 10;
-            $producto->stock_maximo = 100;
-            // Simulamos estado activo para todos los productos
-            $producto->estado = 'activo';
-            // Usamos precio_venta como precio principal
+            $producto->stock_minimo = 10; // Simulado
+            $producto->stock_maximo = 100; // Simulado
+            $producto->estado = 'activo'; // Simulado
             $producto->precio = $producto->precio_venta ?? $producto->precio_compra ?? 0;
             return $producto;
         });
 
+        // Obtener categorías para el filtro
         $categorias = Categoria::orderBy('nombre')->get();
         
+        // Renderizar la vista
         return Inertia::render('Productos/Index', [
             'productos' => $productos,
             'categorias' => $categorias,
             'filters' => [
                 'search' => $search,
                 'categoria' => $categoria,
-                'estado' => '', // Removemos filtro de estado
-                'orden' => $orden,
+                'sort_by' => $sortBy,
+                'sort_order' => $sortOrder,
                 'per_page' => $perPage,
             ],
         ]);

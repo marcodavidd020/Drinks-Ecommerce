@@ -42,15 +42,20 @@ interface ProductosIndexProps {
 
 export default function ProductosIndex({ productos, categorias, filters }: ProductosIndexProps) {
     const { settings } = useAppMode();
-    const [search, setSearch] = useState(filters.search);
-    const [categoria, setCategoria] = useState(filters.categoria);
-    const [sortBy, setSortBy] = useState(filters.sort_by);
-    const [sortOrder, setSortOrder] = useState(filters.sort_order);
-    const [perPage, setPerPage] = useState(filters.per_page);
+    const [search, setSearch] = useState(filters.search || '');
+    const [categoria, setCategoria] = useState(filters.categoria || '');
+    const [sortBy, setSortBy] = useState(filters.sort_by || 'created_at');
+    const [sortOrder, setSortOrder] = useState(filters.sort_order || 'desc');
+    const [perPage, setPerPage] = useState(filters.per_page || 10);
     const [confirmDialog, setConfirmDialog] = useState<{
         isOpen: boolean;
         producto?: Producto;
     }>({ isOpen: false });
+
+    // Debug: Log para ver qué filtros llegan del backend
+    console.log('Filtros recibidos del backend:', filters);
+    console.log('Estado actual - sortBy:', sortBy, 'sortOrder:', sortOrder);
+    console.log('Valor del dropdown:', `${sortBy}_${sortOrder}`);
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
@@ -96,21 +101,30 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
     };
 
     const handleFilterChange = (newFilters: any) => {
-        router.get(
-            '/productos',
-            {
-                search,
-                categoria,
-                sort_by: sortBy,
-                sort_order: sortOrder,
-                per_page: perPage,
-                ...newFilters,
-            },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
+        // Determinar los valores a usar para cada parámetro
+        const params = {
+            search,
+            categoria,
+            sort_by: sortBy,
+            sort_order: sortOrder,
+            per_page: perPage,
+            ...newFilters, // Sobrescribe solo los parámetros proporcionados
+        };
+
+        // Actualizar los estados locales si cambiaron
+        if (newFilters.sort_by !== undefined) setSortBy(newFilters.sort_by);
+        if (newFilters.sort_order !== undefined) setSortOrder(newFilters.sort_order);
+        if (newFilters.per_page !== undefined) setPerPage(newFilters.per_page);
+        if (newFilters.categoria !== undefined) setCategoria(newFilters.categoria);
+
+        // Debug log para ver qué valores se envían
+        console.log('Filtros aplicados:', params);
+        console.log('URL que se va a llamar:', '/productos?' + new URLSearchParams(params).toString());
+
+        router.get('/productos', params, {
+            preserveState: true,
+            replace: true,
+        });
     };
 
     const handleDeleteClick = (producto: Producto) => {
@@ -182,10 +196,32 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
             type: 'select' as const,
             value: `${sortBy}_${sortOrder}`,
             onChange: (value: string) => {
-                const [newSortBy, newSortOrder] = value.split('_');
+                // Dividir correctamente: tomar todo menos la última parte como campo, y la última como orden
+                const parts = value.split('_');
+                const newSortOrder = parts.pop() || 'desc'; // Última parte es el orden
+                const newSortBy = parts.join('_'); // Todo lo demás es el campo
+
+                console.log(`Ordenamiento seleccionado: campo=${newSortBy}, orden=${newSortOrder}`);
+
+                // Actualizar estados inmediatamente para la UI
                 setSortBy(newSortBy);
                 setSortOrder(newSortOrder);
-                handleFilterChange({ sort_by: newSortBy, sort_order: newSortOrder });
+
+                // Enviar la petición con los nuevos valores
+                const params = {
+                    search,
+                    categoria,
+                    sort_by: newSortBy,
+                    sort_order: newSortOrder,
+                    per_page: perPage,
+                };
+
+                console.log('Parámetros de ordenamiento enviados:', params);
+
+                router.get('/productos', params, {
+                    preserveState: true,
+                    replace: true,
+                });
             },
             options: [
                 {

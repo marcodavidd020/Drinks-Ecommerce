@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
 import { useAppMode } from '@/contexts/AppModeContext';
+import { Link } from '@inertiajs/react';
 
 interface PaginationLink {
     url?: string;
@@ -11,6 +11,8 @@ interface PaginationMeta {
     from?: number;
     to?: number;
     total?: number;
+    current_page?: number;
+    last_page?: number;
 }
 
 interface PaginationProps {
@@ -22,6 +24,11 @@ interface PaginationProps {
 
 export default function Pagination({ links, meta, searchParams, entityName }: PaginationProps) {
     const { settings } = useAppMode();
+
+    // Si no hay metadatos o enlaces válidos, no renderizar el componente
+    if (!meta || !meta.total || meta.total === 0 || !links || links.length === 0) {
+        return null;
+    }
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
@@ -38,40 +45,41 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
         }
     };
 
+    // Información de paginación formateada
+    const from = meta?.from || 0;
+    const to = meta?.to || 0;
+    const total = meta?.total || 0;
+    const currentPage = meta?.current_page || 1;
+    const lastPage = meta?.last_page || 1;
+
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex justify-between items-center">
+        <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                 <div className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                     {getTextByMode({
-                        niños: `Mostrando ${meta?.from || 0} a ${meta?.to || 0} de ${meta?.total || 0} ${entityName}`,
-                        jóvenes: `Mostrando ${meta?.from || 0} a ${meta?.to || 0} de ${meta?.total || 0} ${entityName}`,
-                        adultos: `Mostrando ${meta?.from || 0} a ${meta?.to || 0} de ${meta?.total || 0} ${entityName}`
+                        niños: `Mostrando ${from} a ${to} de ${total} ${entityName}`,
+                        jóvenes: `Mostrando ${from} a ${to} de ${total} ${entityName}`,
+                        adultos: `Mostrando ${from} a ${to} de ${total} ${entityName}`,
                     })}
                 </div>
-                <div className="flex space-x-1">
-                    {links?.map((link, index) => (
-                        link.url ? (
+                <div className="flex flex-wrap justify-center gap-2">
+                    {links
+                        ?.filter((link) => link.url)
+                        .map((link, index) => (
                             <Link
                                 key={index}
-                                href={link.url}
+                                href={link.url || '#'}
                                 data={searchParams}
-                                className={`px-3 py-2 text-sm rounded-md transition-colors ${
-                                    link.active 
-                                        ? 'bg-blue-600 text-white' 
-                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                className={`rounded-md px-3 py-2 text-sm transition-colors ${
+                                    link.active
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                                 } ${getModeClasses()}`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
-                        ) : (
-                            <span
-                                key={index}
-                                className={`px-3 py-2 text-sm rounded-md text-gray-400 dark:text-gray-600 ${getModeClasses()}`}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                            />
-                        )
-                    )) || []}
+                        ))}
                 </div>
             </div>
         </div>
     );
-} 
+}

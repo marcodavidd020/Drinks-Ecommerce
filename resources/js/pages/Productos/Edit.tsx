@@ -1,8 +1,8 @@
+import { FormButtons, FormSection } from '@/components/Form';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { FormSection, FormButtons } from '@/components/Form';
 
 interface Producto {
     id: number;
@@ -258,7 +258,7 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                             type="number"
                                             value={data.precio_compra}
                                             onChange={(e) => setData('precio_compra', Number(e.target.value))}
-                                            className={`w-full rounded-md border border-gray-300 pl-7 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
+                                            className={`w-full rounded-md border border-gray-300 py-2 pr-3 pl-7 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                             placeholder="0.00"
                                             step="0.01"
                                             min="0"
@@ -287,7 +287,7 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                             type="number"
                                             value={data.precio_venta}
                                             onChange={(e) => setData('precio_venta', Number(e.target.value))}
-                                            className={`w-full rounded-md border border-gray-300 pl-7 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
+                                            className={`w-full rounded-md border border-gray-300 py-2 pr-3 pl-7 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                             placeholder="0.00"
                                             step="0.01"
                                             min="0"

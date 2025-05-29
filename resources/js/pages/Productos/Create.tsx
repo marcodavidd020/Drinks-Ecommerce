@@ -1,8 +1,8 @@
+import { FormButtons, FormPage, FormSection } from '@/components/Form';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { FormPage, FormSection, FormButtons } from '@/components/Form';
 
 interface Categoria {
     id: number;
@@ -228,7 +228,7 @@ export default function ProductoCreate({ categorias }: ProductoCreateProps) {
                                             type="number"
                                             value={data.precio_compra}
                                             onChange={(e) => setData('precio_compra', e.target.value)}
-                                            className={`w-full rounded-md border border-gray-300 pl-7 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
+                                            className={`w-full rounded-md border border-gray-300 py-2 pr-3 pl-7 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                             placeholder="0.00"
                                             step="0.01"
                                             min="0"
@@ -258,7 +258,7 @@ export default function ProductoCreate({ categorias }: ProductoCreateProps) {
                                             type="number"
                                             value={data.precio_venta}
                                             onChange={(e) => setData('precio_venta', e.target.value)}
-                                            className={`w-full rounded-md border border-gray-300 pl-7 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
+                                            className={`w-full rounded-md border border-gray-300 py-2 pr-3 pl-7 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                             placeholder="0.00"
                                             step="0.01"
                                             min="0"
@@ -307,7 +307,7 @@ export default function ProductoCreate({ categorias }: ProductoCreateProps) {
                                         <div className="flex justify-center rounded-lg border border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700">
                                             <img
                                                 src={data.imagen}
-                                                alt={data.nombre || "Producto"}
+                                                alt={data.nombre || 'Producto'}
                                                 className="h-32 w-auto object-contain"
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Error';
@@ -339,4 +339,4 @@ export default function ProductoCreate({ categorias }: ProductoCreateProps) {
             </FormPage>
         </DashboardLayout>
     );
-} 
+}
