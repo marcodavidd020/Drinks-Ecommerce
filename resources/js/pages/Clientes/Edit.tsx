@@ -2,6 +2,7 @@ import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
+import { FormSection, FormButtons } from '@/components/Form';
 
 interface User {
     id: number;
@@ -56,6 +57,147 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
         put(`/clientes/${cliente.id}`);
     };
 
+    // Configuración de campos para FormSection
+    const personalFields = [
+        {
+            type: 'text' as const,
+            name: 'nombre',
+            label: getTextByMode({
+                niños: '😊 Nombre del amigo',
+                jóvenes: '👤 Nombre completo',
+                adultos: 'Nombre completo',
+            }),
+            value: data.nombre,
+            onChange: (value: string) => setData('nombre', value),
+            placeholder: getTextByMode({
+                niños: 'Escribe el nombre de tu amigo...',
+                jóvenes: 'Ingresa el nombre completo',
+                adultos: 'Ingrese el nombre completo del cliente',
+            }),
+            required: true,
+            error: errors.nombre
+        },
+        {
+            type: 'email' as const,
+            name: 'email',
+            label: getTextByMode({
+                niños: '📧 Email del amigo',
+                jóvenes: '📧 Correo electrónico',
+                adultos: 'Correo electrónico',
+            }),
+            value: data.email,
+            onChange: (value: string) => setData('email', value),
+            placeholder: getTextByMode({
+                niños: 'email@ejemplo.com',
+                jóvenes: 'correo@ejemplo.com',
+                adultos: 'correo@empresa.com',
+            }),
+            required: true,
+            error: errors.email
+        },
+        {
+            type: 'tel' as const,
+            name: 'celular',
+            label: getTextByMode({
+                niños: '📱 Celular del amigo',
+                jóvenes: '📱 Número celular',
+                adultos: 'Número celular',
+            }),
+            value: data.celular,
+            onChange: (value: string) => setData('celular', value),
+            placeholder: getTextByMode({
+                niños: '📱 3001234567',
+                jóvenes: '3001234567',
+                adultos: '+57 300 123 4567',
+            }),
+            error: errors.celular
+        },
+        {
+            type: 'text' as const,
+            name: 'nit',
+            label: getTextByMode({
+                niños: '🆔 Documento del amigo',
+                jóvenes: '🆔 NIT/Documento',
+                adultos: 'NIT/Documento de identidad',
+            }),
+            value: data.nit,
+            onChange: (value: string) => setData('nit', value),
+            placeholder: getTextByMode({
+                niños: '12345678',
+                jóvenes: '12345678-9',
+                adultos: '12345678-9 o CC 12345678',
+            }),
+            error: errors.nit
+        }
+    ];
+
+    const contactFields = [
+        {
+            type: 'tel' as const,
+            name: 'telefono',
+            label: getTextByMode({
+                niños: '📞 Teléfono fijo',
+                jóvenes: '📞 Teléfono fijo',
+                adultos: 'Teléfono fijo',
+            }),
+            value: data.telefono,
+            onChange: (value: string) => setData('telefono', value),
+            placeholder: getTextByMode({
+                niños: '📞 6012345678',
+                jóvenes: '601 234 5678',
+                adultos: '(601) 234-5678',
+            }),
+            error: errors.telefono
+        },
+        {
+            type: 'date' as const,
+            name: 'fecha_nacimiento',
+            label: getTextByMode({
+                niños: '🎂 Cumpleaños del amigo',
+                jóvenes: '🎂 Fecha de nacimiento',
+                adultos: 'Fecha de nacimiento',
+            }),
+            value: data.fecha_nacimiento,
+            onChange: (value: string) => setData('fecha_nacimiento', value),
+            error: errors.fecha_nacimiento
+        },
+        {
+            type: 'select' as const,
+            name: 'genero',
+            label: getTextByMode({
+                niños: '🚻 Género del amigo',
+                jóvenes: '🚻 Género',
+                adultos: 'Género',
+            }),
+            value: data.genero,
+            onChange: (value: string) => setData('genero', value),
+            options: [
+                { value: '', label: getTextByMode({
+                    niños: '🤔 Elige una opción',
+                    jóvenes: 'Seleccionar género',
+                    adultos: 'Seleccione una opción',
+                })},
+                { value: 'masculino', label: getTextByMode({
+                    niños: '👨 Niño',
+                    jóvenes: '👨 Masculino',
+                    adultos: 'Masculino',
+                })},
+                { value: 'femenino', label: getTextByMode({
+                    niños: '👩 Niña',
+                    jóvenes: '👩 Femenino',
+                    adultos: 'Femenino',
+                })},
+                { value: 'otro', label: getTextByMode({
+                    niños: '🧑 Otro',
+                    jóvenes: '🧑 Otro',
+                    adultos: 'Otro',
+                })}
+            ],
+            span: 2 as const,
+            error: errors.genero
+        }
+    ];
+
     return (
         <DashboardLayout
             title={getTextByMode({
@@ -82,6 +224,13 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                             })}
                         </Link>
                     </div>
+                    <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                        {getTextByMode({
+                            niños: `✏️ Editando a ${cliente.user.nombre}`,
+                            jóvenes: `Editar Cliente: ${cliente.user.nombre}`,
+                            adultos: `Editar Cliente: ${cliente.user.nombre}`,
+                        })}
+                    </h1>
                     <p className={`mt-2 text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: 'Actualiza la información de tu amigo cliente',
@@ -93,200 +242,46 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
 
                 {/* Formulario */}
                 <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                    <form onSubmit={submit} className="space-y-6">
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            {/* Nombre */}
-                            <div>
-                                <label
-                                    htmlFor="nombre"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '😊 Nombre del amigo',
-                                        jóvenes: '👤 Nombre completo',
-                                        adultos: 'Nombre completo',
-                                    })}
-                                </label>
-                                <input
-                                    id="nombre"
-                                    type="text"
-                                    value={data.nombre}
-                                    onChange={(e) => setData('nombre', e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    required
-                                />
-                                {errors.nombre && <p className="mt-1 text-xs text-red-500">{errors.nombre}</p>}
-                            </div>
+                    <form onSubmit={submit} className="space-y-8">
+                        <FormSection
+                            title={getTextByMode({
+                                niños: '👤 Información Personal',
+                                jóvenes: '👤 Datos Personales',
+                                adultos: 'Información Personal',
+                            })}
+                            fields={personalFields}
+                            columns={2}
+                        />
 
-                            {/* Email */}
-                            <div>
-                                <label
-                                    htmlFor="email"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📧 Email del amigo',
-                                        jóvenes: '📧 Correo electrónico',
-                                        adultos: 'Correo electrónico',
-                                    })}
-                                </label>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    required
-                                />
-                                {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
-                            </div>
+                        <FormSection
+                            title={getTextByMode({
+                                niños: '📞 Información de Contacto',
+                                jóvenes: '📞 Datos de Contacto',
+                                adultos: 'Información de Contacto',
+                            })}
+                            fields={contactFields}
+                            columns={2}
+                        />
 
-                            {/* Celular */}
-                            <div>
-                                <label
-                                    htmlFor="celular"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📱 Celular del amigo',
-                                        jóvenes: '📱 Número celular',
-                                        adultos: 'Número celular',
-                                    })}
-                                </label>
-                                <input
-                                    id="celular"
-                                    type="tel"
-                                    value={data.celular}
-                                    onChange={(e) => setData('celular', e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                                {errors.celular && <p className="mt-1 text-xs text-red-500">{errors.celular}</p>}
-                            </div>
-
-                            {/* NIT */}
-                            <div>
-                                <label
-                                    htmlFor="nit"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '🆔 Documento del amigo',
-                                        jóvenes: '🆔 NIT/Documento',
-                                        adultos: 'NIT/Documento de identidad',
-                                    })}
-                                </label>
-                                <input
-                                    id="nit"
-                                    type="text"
-                                    value={data.nit}
-                                    onChange={(e) => setData('nit', e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                                {errors.nit && <p className="mt-1 text-xs text-red-500">{errors.nit}</p>}
-                            </div>
-
-                            {/* Teléfono */}
-                            <div>
-                                <label
-                                    htmlFor="telefono"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📞 Teléfono fijo',
-                                        jóvenes: '📞 Teléfono fijo',
-                                        adultos: 'Teléfono fijo',
-                                    })}
-                                </label>
-                                <input
-                                    id="telefono"
-                                    type="tel"
-                                    value={data.telefono}
-                                    onChange={(e) => setData('telefono', e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                                {errors.telefono && <p className="mt-1 text-xs text-red-500">{errors.telefono}</p>}
-                            </div>
-
-                            {/* Fecha nacimiento */}
-                            <div>
-                                <label
-                                    htmlFor="fecha_nacimiento"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '🎂 Cumpleaños',
-                                        jóvenes: '🎂 Fecha de nacimiento',
-                                        adultos: 'Fecha de nacimiento',
-                                    })}
-                                </label>
-                                <input
-                                    id="fecha_nacimiento"
-                                    type="date"
-                                    value={data.fecha_nacimiento}
-                                    onChange={(e) => setData('fecha_nacimiento', e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                                {errors.fecha_nacimiento && <p className="mt-1 text-xs text-red-500">{errors.fecha_nacimiento}</p>}
-                            </div>
-
-                            {/* Género */}
-                            <div>
-                                <label
-                                    htmlFor="genero"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '👫 Género',
-                                        jóvenes: '👫 Género',
-                                        adultos: 'Género',
-                                    })}
-                                </label>
-                                <select
-                                    id="genero"
-                                    value={data.genero}
-                                    onChange={(e) => setData('genero', e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                >
-                                    <option value="">Seleccionar género</option>
-                                    <option value="masculino">Masculino</option>
-                                    <option value="femenino">Femenino</option>
-                                    <option value="otro">Otro</option>
-                                    <option value="prefiero_no_decir">Prefiero no decir</option>
-                                </select>
-                                {errors.genero && <p className="mt-1 text-xs text-red-500">{errors.genero}</p>}
-                            </div>
-                        </div>
-
-                        {/* Botones */}
-                        <div className="flex justify-end space-x-3">
-                            <a
-                                href="/clientes"
-                                className={`rounded-md border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 ${getModeClasses()}`}
-                            >
-                                {getTextByMode({
-                                    niños: '❌ Cancelar',
-                                    jóvenes: 'Cancelar',
-                                    adultos: 'Cancelar',
-                                })}
-                            </a>
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className={`rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400 ${getModeClasses()}`}
-                            >
-                                {processing
-                                    ? getTextByMode({
-                                          niños: '💾 Guardando...',
-                                          jóvenes: 'Guardando...',
-                                          adultos: 'Guardando...',
-                                      })
-                                    : getTextByMode({
-                                          niños: '💾 Guardar Cambios',
-                                          jóvenes: 'Guardar Cambios',
-                                          adultos: 'Guardar Cambios',
-                                      })}
-                            </button>
-                        </div>
+                        <FormButtons
+                            cancelHref="/clientes"
+                            isProcessing={processing}
+                            cancelText={getTextByMode({
+                                niños: '❌ Cancelar',
+                                jóvenes: 'Cancelar',
+                                adultos: 'Cancelar',
+                            })}
+                            submitText={getTextByMode({
+                                niños: '💾 Guardar cambios del amigo',
+                                jóvenes: '💾 Guardar cambios',
+                                adultos: 'Guardar cambios',
+                            })}
+                            processingText={getTextByMode({
+                                niños: '⏳ Guardando a tu amigo...',
+                                jóvenes: '⏳ Guardando cambios...',
+                                adultos: '⏳ Guardando información...',
+                            })}
+                        />
                     </form>
                 </div>
             </div>

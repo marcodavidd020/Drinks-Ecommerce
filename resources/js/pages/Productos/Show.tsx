@@ -1,6 +1,7 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, Link } from '@inertiajs/react';
+import { ShowHeader, InfoCard } from '@/components/Show';
 
 interface Producto {
     id: number;
@@ -40,11 +41,10 @@ export default function ProductoShow({ producto }: ProductoShowProps) {
     const { settings } = useAppMode();
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
-        return textos[settings.ageMode] || textos.adultos;
+        return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
     };
 
     const getModeClasses = () => {
-        const baseClasses = 'transition-all duration-300';
         switch (settings.ageMode) {
             case 'niños':
                 return 'font-comic text-adaptive-kids';
@@ -71,6 +71,154 @@ export default function ProductoShow({ producto }: ProductoShowProps) {
 
     const stockTotal = getStockTotal();
 
+    // Configuración de campos para InfoCard
+    const infoBasicaFields = [
+        {
+            label: getTextByMode({
+                niños: '📦 Producto',
+                jóvenes: '📦 Producto',
+                adultos: 'Nombre del Producto',
+            }),
+            value: (
+                <div className="flex items-center space-x-3">
+                    <span className="font-medium">{producto.nombre}</span>
+                </div>
+            ),
+            span: 2 as const
+        },
+        {
+            label: getTextByMode({
+                niños: '🏷️ Código',
+                jóvenes: '🏷️ Código',
+                adultos: 'Código de Producto',
+            }),
+            value: producto.cod_producto
+        },
+        {
+            label: getTextByMode({
+                niños: '📂 Categoría',
+                jóvenes: '📂 Categoría',
+                adultos: 'Categoría',
+            }),
+            value: producto.categoria.nombre
+        }
+    ];
+
+    // Si tiene descripción, agregarla
+    if (producto.descripcion) {
+        infoBasicaFields.push({
+            label: getTextByMode({
+                niños: '📝 Descripción',
+                jóvenes: '📝 Descripción',
+                adultos: 'Descripción',
+            }),
+            value: <span>{producto.descripcion}</span>,
+            span: 2 as const
+        });
+    }
+
+    const precioPrecioFields = [
+        {
+            label: getTextByMode({
+                niños: '💰 Precio de Compra',
+                jóvenes: '💰 Precio de Compra',
+                adultos: 'Precio de Compra',
+            }),
+            value: formatPrice(producto.precio_compra)
+        },
+        {
+            label: getTextByMode({
+                niños: '💲 Precio de Venta',
+                jóvenes: '💲 Precio de Venta',
+                adultos: 'Precio de Venta',
+            }),
+            value: (
+                <span className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {formatPrice(producto.precio_venta)}
+                </span>
+            )
+        }
+    ];
+
+    const stockTotalFields = [
+        {
+            label: getTextByMode({
+                niños: '🎯 Stock Total',
+                jóvenes: '📊 Stock Total',
+                adultos: 'Stock Total',
+            }),
+            value: (
+                <span className={`text-xl font-bold ${
+                    stockTotal > 10
+                        ? 'text-green-600 dark:text-green-400'
+                        : stockTotal > 5
+                          ? 'text-yellow-600 dark:text-yellow-400'
+                          : 'text-red-600 dark:text-red-400'
+                }`}>
+                    {stockTotal} {getTextByMode({
+                        niños: 'unidades',
+                        jóvenes: 'unidades',
+                        adultos: 'und.',
+                    })}
+                </span>
+            ),
+            span: 2 as const
+        }
+    ];
+
+    const fechasFields = [
+        {
+            label: getTextByMode({
+                niños: '📅 Fecha de Creación',
+                jóvenes: '📅 Creado el',
+                adultos: 'Fecha de Creación',
+            }),
+            value: new Date(producto.created_at).toLocaleDateString('es-CO')
+        },
+        {
+            label: getTextByMode({
+                niños: '🔄 Última Actualización',
+                jóvenes: '🔄 Actualizado el',
+                adultos: 'Última Actualización',
+            }),
+            value: new Date(producto.updated_at).toLocaleDateString('es-CO')
+        }
+    ];
+
+    // Campos para inventarios por almacén
+    const inventariosAlmacenFields = producto.inventarios?.map(inventario => ({
+        label: inventario.almacen.nombre,
+        value: (
+            <span className={`text-lg font-bold ${
+                inventario.stock > 10
+                    ? 'text-green-600 dark:text-green-400'
+                    : inventario.stock > 5
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-red-600 dark:text-red-400'
+            }`}>
+                {inventario.stock} {getTextByMode({
+                    niños: 'unidades',
+                    jóvenes: 'unidades',
+                    adultos: 'und.',
+                })}
+            </span>
+        )
+    })) || [];
+
+    // Campos para promociones
+    const promocionesFields = producto.promociones?.map(promocion => ({
+        label: promocion.nombre,
+        value: (
+            <span className="text-lg font-bold text-red-600 dark:text-red-400">
+                {promocion.descuento}% {getTextByMode({
+                    niños: 'de descuento',
+                    jóvenes: 'de descuento',
+                    adultos: 'descuento',
+                })}
+            </span>
+        )
+    })) || [];
+
     return (
         <DashboardLayout
             title={getTextByMode({
@@ -82,59 +230,41 @@ export default function ProductoShow({ producto }: ProductoShowProps) {
             <Head title={`Producto: ${producto.nombre}`} />
 
             <div className={`space-y-6 ${getModeClasses()}`}>
-                {/* Header con botones de acciones */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: `� Información de ${producto.nombre}`,
-                                jóvenes: `Detalles de ${producto.nombre}`,
-                                adultos: `Información del Producto`,
-                            })}
-                        </h1>
-                        <p className={`mt-2 text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '¡Aquí están todos los detalles de tu producto!',
-                                jóvenes: 'Información completa del producto',
-                                adultos: 'Información detallada del producto',
-                            })}
-                        </p>
-                    </div>
+                <ShowHeader
+                    title={getTextByMode({
+                        niños: `📦 Información de ${producto.nombre}`,
+                        jóvenes: `Detalles de ${producto.nombre}`,
+                        adultos: `Información del Producto`,
+                    })}
+                    description={getTextByMode({
+                        niños: '¡Aquí están todos los detalles de tu producto!',
+                        jóvenes: 'Información completa del producto',
+                        adultos: 'Información detallada del producto',
+                    })}
+                    editHref={`/productos/${producto.id}/edit`}
+                    backHref="/productos"
+                    editText={getTextByMode({
+                        niños: '✏️ Editar',
+                        jóvenes: 'Editar',
+                        adultos: 'Editar',
+                    })}
+                    backText={getTextByMode({
+                        niños: '⬅️ Volver',
+                        jóvenes: 'Volver',
+                        adultos: 'Volver',
+                    })}
+                />
 
-                    <div className="flex space-x-2">
-                        <Link
-                            href={`/productos/${producto.id}/edit`}
-                            className={`flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 ${getModeClasses()}`}
-                        >
-                            <span>✏️</span>
-                            <span>
-                                {getTextByMode({
-                                    niños: 'Editar',
-                                    jóvenes: 'Editar',
-                                    adultos: 'Editar',
-                                })}
-                            </span>
-                        </Link>
-                        <Link
-                            href="/productos"
-                            className={`flex items-center space-x-2 rounded-lg bg-gray-600 px-4 py-2 font-medium text-white transition-colors hover:bg-gray-700 ${getModeClasses()}`}
-                        >
-                            <span>⬅️</span>
-                            <span>
-                                {getTextByMode({
-                                    niños: 'Volver',
-                                    jóvenes: 'Volver',
-                                    adultos: 'Volver',
-                                })}
-                            </span>
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Información del producto */}
-                <div className="overflow-hidden rounded-lg bg-white shadow-lg dark:bg-gray-800">
-                    <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
-                        {/* Imagen del producto */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {/* Imagen del producto */}
+                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                        <h3 className={`mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '🖼️ Imagen del Producto',
+                                jóvenes: '🖼️ Imagen',
+                                adultos: 'Imagen del Producto',
+                            })}
+                        </h3>
                         <div className="flex justify-center">
                             {producto.imagen ? (
                                 <img src={producto.imagen} alt={producto.nombre} className="h-auto max-w-full rounded-lg shadow-md" />
@@ -144,194 +274,79 @@ export default function ProductoShow({ producto }: ProductoShowProps) {
                                 </div>
                             )}
                         </div>
+                    </div>
 
-                        {/* Información básica */}
-                        <div className="space-y-4">
-                            <div>
-                                <h2 className={`mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>{producto.nombre}</h2>
-                                {producto.descripcion && (
-                                    <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>{producto.descripcion}</p>
-                                )}
-                            </div>
+                    {/* Información básica */}
+                    <div className="space-y-6">
+                        <InfoCard
+                            title={getTextByMode({
+                                niños: '📋 Información Básica',
+                                jóvenes: '📋 Información Básica',
+                                adultos: 'Información Básica',
+                            })}
+                            fields={infoBasicaFields}
+                            columns={2}
+                        />
 
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                                    <h3 className={`mb-2 font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '🏷️ Código',
-                                            jóvenes: '🏷️ Código',
-                                            adultos: 'Código',
-                                        })}
-                                    </h3>
-                                    <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>{producto.cod_producto}</p>
-                                </div>
+                        <InfoCard
+                            title={getTextByMode({
+                                niños: '💰 Precios',
+                                jóvenes: '💰 Precios',
+                                adultos: 'Información de Precios',
+                            })}
+                            fields={precioPrecioFields}
+                            columns={2}
+                        />
 
-                                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                                    <h3 className={`mb-2 font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '📂 Categoría',
-                                            jóvenes: '📂 Categoría',
-                                            adultos: 'Categoría',
-                                        })}
-                                    </h3>
-                                    <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>{producto.categoria.nombre}</p>
-                                </div>
-
-                                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                                    <h3 className={`mb-2 font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '💰 Precio de Compra',
-                                            jóvenes: '💰 Precio de Compra',
-                                            adultos: 'Precio de Compra',
-                                        })}
-                                    </h3>
-                                    <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>{formatPrice(producto.precio_compra)}</p>
-                                </div>
-
-                                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                                    <h3 className={`mb-2 font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '💲 Precio de Venta',
-                                            jóvenes: '💲 Precio de Venta',
-                                            adultos: 'Precio de Venta',
-                                        })}
-                                    </h3>
-                                    <p className={`text-xl font-bold text-green-600 dark:text-green-400 ${getModeClasses()}`}>
-                                        {formatPrice(producto.precio_venta)}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                        <InfoCard
+                            title={getTextByMode({
+                                niños: '📦 Stock Total',
+                                jóvenes: '📦 Stock Total',
+                                adultos: 'Stock Total',
+                            })}
+                            fields={stockTotalFields}
+                            columns={1}
+                        />
                     </div>
                 </div>
 
-                {/* Stock por almacén */}
-                {producto.inventarios && producto.inventarios.length > 0 && (
-                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                        <h3 className={`mb-4 text-xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {/* Inventarios por almacén */}
+                    {inventariosAlmacenFields.length > 0 && (
+                        <InfoCard
+                            title={getTextByMode({
                                 niños: '📊 Stock en Almacenes',
                                 jóvenes: '📊 Stock por Almacén',
                                 adultos: 'Inventario por Almacén',
                             })}
-                        </h3>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {producto.inventarios.map((inventario) => (
-                                <div key={inventario.id} className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                                    <h4 className={`mb-2 font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {inventario.almacen.nombre}
-                                    </h4>
-                                    <p
-                                        className={`text-2xl font-bold ${
-                                            inventario.stock > 10
-                                                ? 'text-green-600 dark:text-green-400'
-                                                : inventario.stock > 5
-                                                  ? 'text-yellow-600 dark:text-yellow-400'
-                                                  : 'text-red-600 dark:text-red-400'
-                                        } ${getModeClasses()}`}
-                                    >
-                                        {inventario.stock}{' '}
-                                        {getTextByMode({
-                                            niños: 'unidades',
-                                            jóvenes: 'unidades',
-                                            adultos: 'und.',
-                                        })}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                            <p className={`text-lg font-semibold text-blue-800 dark:text-blue-300 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: `🎯 Stock Total: ${stockTotal} unidades`,
-                                    jóvenes: `📊 Stock Total: ${stockTotal} unidades`,
-                                    adultos: `Stock Total: ${stockTotal} unidades`,
-                                })}
-                            </p>
-                        </div>
-                    </div>
-                )}
+                            fields={inventariosAlmacenFields}
+                            columns={2}
+                        />
+                    )}
 
-                {/* Promociones */}
-                {producto.promociones && producto.promociones.length > 0 && (
-                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                        <h3 className={`mb-4 text-xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
+                    {/* Promociones */}
+                    {promocionesFields.length > 0 && (
+                        <InfoCard
+                            title={getTextByMode({
                                 niños: '🎉 Promociones',
                                 jóvenes: '🎉 Promociones Activas',
                                 adultos: 'Promociones Activas',
                             })}
-                        </h3>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            {producto.promociones.map((promocion) => (
-                                <div
-                                    key={promocion.id}
-                                    className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20"
-                                >
-                                    <h4 className={`mb-2 font-semibold text-green-800 dark:text-green-300 ${getModeClasses()}`}>
-                                        {promocion.nombre}
-                                    </h4>
-                                    <p className={`text-lg font-bold text-green-600 dark:text-green-400 ${getModeClasses()}`}>
-                                        {promocion.descuento}%{' '}
-                                        {getTextByMode({
-                                            niños: 'de descuento',
-                                            jóvenes: 'descuento',
-                                            adultos: 'descuento',
-                                        })}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                            fields={promocionesFields}
+                            columns={1}
+                        />
+                    )}
 
-                {/* Información de fechas */}
-                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                    <h3 className={`mb-4 text-xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                        {getTextByMode({
-                            niños: '📅 Información de Fechas',
+                    {/* Fechas */}
+                    <InfoCard
+                        title={getTextByMode({
+                            niños: '📅 Fechas',
                             jóvenes: '📅 Fechas',
-                            adultos: 'Información de Registro',
+                            adultos: 'Información de Fechas',
                         })}
-                    </h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                            <h4 className={`mb-2 font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '📝 Creado',
-                                    jóvenes: '📝 Fecha de Creación',
-                                    adultos: 'Fecha de Creación',
-                                })}
-                            </h4>
-                            <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                                {new Date(producto.created_at).toLocaleDateString('es-CO', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })}
-                            </p>
-                        </div>
-                        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                            <h4 className={`mb-2 font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '📝 Última Actualización',
-                                    jóvenes: '📝 Última Modificación',
-                                    adultos: 'Última Modificación',
-                                })}
-                            </h4>
-                            <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                                {new Date(producto.updated_at).toLocaleDateString('es-CO', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })}
-                            </p>
-                        </div>
-                    </div>
+                        fields={fechasFields}
+                        columns={2}
+                    />
                 </div>
             </div>
         </DashboardLayout>

@@ -2,6 +2,8 @@ import { Head, useForm } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
 import { FormEvent } from 'react';
+import { FormSection, FormButtons } from '@/components/Form';
+import { Link } from '@inertiajs/react';
 
 interface Proveedor {
     id: number;
@@ -63,9 +65,21 @@ export default function ProveedorEdit({ proveedor }: ProveedorEditProps) {
             <Head title="Editar Proveedor" />
             
             <div className={`space-y-6 ${getModeClasses()}`}>
-                {/* Header */}
-                <div>
-                    <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                <div className="mb-6">
+                    <div className="flex items-center space-x-4">
+                        <Link
+                            href="/proveedores"
+                            className={`font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 ${getModeClasses()}`}
+                        >
+                            ←{' '}
+                            {getTextByMode({
+                                niños: '¡Volver a la lista!',
+                                jóvenes: 'Volver a proveedores',
+                                adultos: 'Volver a proveedores',
+                            })}
+                        </Link>
+                    </div>
+                    <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2 ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: '✏️ Editar información del proveedor',
                             jóvenes: '✏️ Editar Proveedor',
@@ -81,163 +95,157 @@ export default function ProveedorEdit({ proveedor }: ProveedorEditProps) {
                     </p>
                 </div>
 
-                {/* Formulario */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <form onSubmit={submit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Nombre */}
-                            <div>
-                                <label htmlFor="nombre" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🏭 Nombre del proveedor *',
-                                        jóvenes: '🏭 Nombre de la empresa *',
-                                        adultos: 'Nombre de la empresa *'
-                                    })}
-                                </label>
-                                <input
-                                    id="nombre"
-                                    type="text"
-                                    value={data.nombre}
-                                    onChange={(e) => setData('nombre', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
-                                    required
-                                />
-                                {errors.nombre && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
-                                )}
-                            </div>
+                <form onSubmit={submit} className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <FormSection
+                            title={getTextByMode({
+                                niños: '📝 Información Principal',
+                                jóvenes: '📝 Datos Principales',
+                                adultos: 'Información Principal',
+                            })}
+                        >
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="nombre" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                        {getTextByMode({
+                                            niños: '🏭 Nombre del proveedor *',
+                                            jóvenes: '🏭 Nombre de la empresa *',
+                                            adultos: 'Nombre de la empresa *'
+                                        })}
+                                    </label>
+                                    <input
+                                        id="nombre"
+                                        type="text"
+                                        value={data.nombre}
+                                        onChange={(e) => setData('nombre', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
+                                        required
+                                    />
+                                    {errors.nombre && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
+                                    )}
+                                </div>
 
-                            {/* Email */}
-                            <div>
-                                <label htmlFor="email" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '📧 Email del proveedor',
-                                        jóvenes: '📧 Correo electrónico',
-                                        adultos: 'Correo electrónico'
-                                    })}
-                                </label>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                                {errors.email && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-                                )}
-                            </div>
+                                <div>
+                                    <label htmlFor="email" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                        {getTextByMode({
+                                            niños: '📧 Email del proveedor',
+                                            jóvenes: '📧 Correo electrónico',
+                                            adultos: 'Correo electrónico'
+                                        })}
+                                    </label>
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
+                                    />
+                                    {errors.email && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                                    )}
+                                </div>
 
-                            {/* Teléfono */}
-                            <div>
-                                <label htmlFor="telefono" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '📞 Teléfono del proveedor',
-                                        jóvenes: '📞 Número de teléfono',
-                                        adultos: 'Número de teléfono'
-                                    })}
-                                </label>
-                                <input
-                                    id="telefono"
-                                    type="tel"
-                                    value={data.telefono}
-                                    onChange={(e) => setData('telefono', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                                {errors.telefono && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
-                                )}
+                                <div>
+                                    <label htmlFor="telefono" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                        {getTextByMode({
+                                            niños: '📞 Teléfono del proveedor',
+                                            jóvenes: '📞 Número de teléfono',
+                                            adultos: 'Número de teléfono'
+                                        })}
+                                    </label>
+                                    <input
+                                        id="telefono"
+                                        type="tel"
+                                        value={data.telefono}
+                                        onChange={(e) => setData('telefono', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
+                                    />
+                                    {errors.telefono && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
+                                    )}
+                                </div>
                             </div>
+                        </FormSection>
 
-                            {/* Tipo */}
-                            <div>
-                                <label htmlFor="tipo" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🏷️ ¿Qué tipo de proveedor es?',
-                                        jóvenes: '🏷️ Tipo de proveedor',
-                                        adultos: 'Tipo de proveedor'
-                                    })}
-                                </label>
-                                <select
-                                    id="tipo"
-                                    value={data.tipo}
-                                    onChange={(e) => setData('tipo', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
-                                >
-                                    <option value="">Seleccionar tipo</option>
-                                    <option value="Distribuidor">Distribuidor</option>
-                                    <option value="Importador">Importador</option>
-                                    <option value="Fabricante">Fabricante</option>
-                                    <option value="Mayorista">Mayorista</option>
-                                    <option value="Representante">Representante</option>
-                                    <option value="Otro">Otro</option>
-                                </select>
-                                {errors.tipo && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.tipo}</p>
-                                )}
+                        <FormSection
+                            title={getTextByMode({
+                                niños: '🔍 Detalles Adicionales',
+                                jóvenes: '🔍 Información Complementaria',
+                                adultos: 'Información Complementaria',
+                            })}
+                        >
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="tipo" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                        {getTextByMode({
+                                            niños: '🏷️ ¿Qué tipo de proveedor es?',
+                                            jóvenes: '🏷️ Tipo de proveedor',
+                                            adultos: 'Tipo de proveedor'
+                                        })}
+                                    </label>
+                                    <select
+                                        id="tipo"
+                                        value={data.tipo}
+                                        onChange={(e) => setData('tipo', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
+                                    >
+                                        <option value="">Seleccionar tipo</option>
+                                        <option value="Distribuidor">Distribuidor</option>
+                                        <option value="Importador">Importador</option>
+                                        <option value="Fabricante">Fabricante</option>
+                                        <option value="Mayorista">Mayorista</option>
+                                        <option value="Representante">Representante</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                    {errors.tipo && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.tipo}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label htmlFor="direccion" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                        {getTextByMode({
+                                            niños: '📍 Dirección del proveedor',
+                                            jóvenes: '📍 Dirección',
+                                            adultos: 'Dirección completa'
+                                        })}
+                                    </label>
+                                    <textarea
+                                        id="direccion"
+                                        value={data.direccion}
+                                        onChange={(e) => setData('direccion', e.target.value)}
+                                        rows={3}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
+                                        placeholder={getTextByMode({
+                                            niños: 'Escribe la dirección completa aquí...',
+                                            jóvenes: 'Dirección completa de la empresa...',
+                                            adultos: 'Dirección completa de la empresa'
+                                        })}
+                                    />
+                                    {errors.direccion && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
+                                    )}
+                                </div>
                             </div>
+                        </FormSection>
+                    </div>
 
-                            {/* Dirección */}
-                            <div className="md:col-span-2">
-                                <label htmlFor="direccion" className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '📍 Dirección del proveedor',
-                                        jóvenes: '📍 Dirección',
-                                        adultos: 'Dirección completa'
-                                    })}
-                                </label>
-                                <textarea
-                                    id="direccion"
-                                    value={data.direccion}
-                                    onChange={(e) => setData('direccion', e.target.value)}
-                                    rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100"
-                                    placeholder={getTextByMode({
-                                        niños: 'Escribe la dirección completa aquí...',
-                                        jóvenes: 'Dirección completa de la empresa...',
-                                        adultos: 'Dirección completa de la empresa'
-                                    })}
-                                />
-                                {errors.direccion && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Botones */}
-                        <div className="flex justify-end space-x-3">
-                            <a
-                                href="/proveedores"
-                                className={`px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${getModeClasses()}`}
-                            >
-                                {getTextByMode({
-                                    niños: '❌ Cancelar',
-                                    jóvenes: 'Cancelar',
-                                    adultos: 'Cancelar'
-                                })}
-                            </a>
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className={`px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-md transition-colors ${getModeClasses()}`}
-                            >
-                                {processing ? (
-                                    getTextByMode({
-                                        niños: '💾 Guardando...',
-                                        jóvenes: 'Guardando...',
-                                        adultos: 'Guardando...'
-                                    })
-                                ) : (
-                                    getTextByMode({
-                                        niños: '💾 Guardar Cambios',
-                                        jóvenes: 'Guardar Cambios',
-                                        adultos: 'Guardar Cambios'
-                                    })
-                                )}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <FormButtons
+                        isProcessing={processing}
+                        submitLabel={getTextByMode({
+                            niños: '💾 ¡Guardar Cambios!',
+                            jóvenes: '💾 Guardar Cambios',
+                            adultos: 'Guardar Cambios',
+                        })}
+                        cancelHref="/proveedores"
+                        cancelLabel={getTextByMode({
+                            niños: '❌ Cancelar',
+                            jóvenes: 'Cancelar',
+                            adultos: 'Cancelar',
+                        })}
+                    />
+                </form>
             </div>
         </DashboardLayout>
     );

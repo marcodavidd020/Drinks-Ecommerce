@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
+import { ShowHeader, InfoCard } from '@/components/Show';
 
 interface Proveedor {
     id: number;
@@ -84,6 +85,163 @@ export default function ProveedorShow({ proveedor }: ProveedorShowProps) {
         return name.charAt(0).toUpperCase();
     };
 
+    // Configuración de campos para InfoCard
+    const infoBasicaFields = [
+        {
+            label: getTextByMode({
+                niños: '🏭 Nombre',
+                jóvenes: '🏭 Nombre',
+                adultos: 'Nombre',
+            }),
+            value: (
+                <div className="flex items-center space-x-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-lg font-bold text-white">
+                        {getInitials(proveedor.nombre)}
+                    </div>
+                    <span className="font-medium">{proveedor.nombre}</span>
+                </div>
+            ),
+            span: 2 as const
+        },
+        {
+            label: getTextByMode({
+                niños: '📧 Email',
+                jóvenes: '📧 Email',
+                adultos: 'Correo Electrónico',
+            }),
+            value: proveedor.email || getTextByMode({
+                niños: '❌ Sin email',
+                jóvenes: 'No registrado',
+                adultos: 'No registrado',
+            })
+        },
+        {
+            label: getTextByMode({
+                niños: '📞 Teléfono',
+                jóvenes: '📞 Teléfono',
+                adultos: 'Número de Teléfono',
+            }),
+            value: proveedor.telefono || getTextByMode({
+                niños: '❌ Sin teléfono',
+                jóvenes: 'No registrado',
+                adultos: 'No registrado',
+            })
+        },
+        {
+            label: getTextByMode({
+                niños: '🏠 Dirección',
+                jóvenes: '🏠 Dirección',
+                adultos: 'Dirección',
+            }),
+            value: proveedor.direccion || getTextByMode({
+                niños: '❌ Sin dirección',
+                jóvenes: 'No registrada',
+                adultos: 'No registrada',
+            }),
+            span: 2 as const
+        }
+    ];
+
+    // Campos para empresas (si es empresa)
+    const empresaFields = proveedor.tipo === 'empresa' || proveedor.razon_social || proveedor.nit ? [
+        {
+            label: getTextByMode({
+                niños: '🏢 Tipo',
+                jóvenes: '🏢 Tipo',
+                adultos: 'Tipo de Proveedor',
+            }),
+            value: proveedor.tipo || 'Empresa'
+        },
+        {
+            label: getTextByMode({
+                niños: '📝 Razón Social',
+                jóvenes: '📝 Razón Social',
+                adultos: 'Razón Social',
+            }),
+            value: proveedor.razon_social || getTextByMode({
+                niños: '❌ Sin razón social',
+                jóvenes: 'No registrada',
+                adultos: 'No registrada',
+            })
+        },
+        {
+            label: getTextByMode({
+                niños: '🔢 NIT',
+                jóvenes: '🔢 NIT',
+                adultos: 'NIT/Identificación Fiscal',
+            }),
+            value: proveedor.nit || getTextByMode({
+                niños: '❌ Sin NIT',
+                jóvenes: 'No registrado',
+                adultos: 'No registrado',
+            })
+        },
+        {
+            label: getTextByMode({
+                niños: '👨‍💼 Representante Legal',
+                jóvenes: '👨‍💼 Representante Legal',
+                adultos: 'Representante Legal',
+            }),
+            value: proveedor.representante_legal || getTextByMode({
+                niños: '❌ Sin representante',
+                jóvenes: 'No registrado',
+                adultos: 'No registrado',
+            })
+        }
+    ] : [];
+
+    // Campos para personas (si es persona)
+    const personaFields = proveedor.tipo === 'persona' || proveedor.apellido || proveedor.nombre_completo ? [
+        {
+            label: getTextByMode({
+                niños: '🧑 Tipo',
+                jóvenes: '🧑 Tipo',
+                adultos: 'Tipo de Proveedor',
+            }),
+            value: proveedor.tipo || 'Persona'
+        },
+        {
+            label: getTextByMode({
+                niños: '👤 Nombre Completo',
+                jóvenes: '👤 Nombre Completo',
+                adultos: 'Nombre Completo',
+            }),
+            value: proveedor.nombre_completo || `${proveedor.nombre} ${proveedor.apellido || ''}`
+        },
+        {
+            label: getTextByMode({
+                niños: '👨‍👩‍👧‍👦 Apellidos',
+                jóvenes: '👨‍👩‍👧‍👦 Apellidos',
+                adultos: 'Apellidos',
+            }),
+            value: proveedor.apellido || getTextByMode({
+                niños: '❌ Sin apellidos',
+                jóvenes: 'No registrados',
+                adultos: 'No registrados',
+            })
+        }
+    ] : [];
+
+    // Campos de fechas
+    const fechasFields = [
+        {
+            label: getTextByMode({
+                niños: '📅 Fecha de Registro',
+                jóvenes: '📅 Registrado',
+                adultos: 'Fecha de Registro',
+            }),
+            value: formatDate(proveedor.created_at)
+        },
+        {
+            label: getTextByMode({
+                niños: '🔄 Última Actualización',
+                jóvenes: '🔄 Actualizado',
+                adultos: 'Última Actualización',
+            }),
+            value: formatDate(proveedor.updated_at)
+        }
+    ];
+
     return (
         <DashboardLayout title={getTextByMode({
             niños: '👀 Ver Proveedor Genial',
@@ -93,307 +251,79 @@ export default function ProveedorShow({ proveedor }: ProveedorShowProps) {
             <Head title={`Proveedor: ${proveedor.nombre}`} />
             
             <div className={`space-y-6 ${getModeClasses()}`}>
-                {/* Header */}
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: `🏭 Información de ${proveedor.nombre}`,
-                                jóvenes: `Detalles de ${proveedor.nombre}`,
-                                adultos: `Información del Proveedor`
-                            })}
-                        </h1>
-                        <p className={`text-gray-600 dark:text-gray-400 mt-2 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: 'Aquí puedes ver toda la información de tu proveedor genial',
-                                jóvenes: 'Información completa del proveedor',
-                                adultos: 'Información detallada del proveedor en el sistema'
-                            })}
-                        </p>
-                    </div>
-                    
-                    <div className="flex space-x-3">
-                        <Link
-                            href={`/proveedores/${proveedor.id}/edit`}
-                            className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${getModeClasses()}`}
-                        >
-                            <span>✏️</span>
-                            <span>{getTextByMode({
-                                niños: 'Editar',
-                                jóvenes: 'Editar',
-                                adultos: 'Editar'
-                            })}</span>
-                        </Link>
-                        <Link
-                            href="/proveedores"
-                            className={`bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${getModeClasses()}`}
-                        >
-                            <span>⬅️</span>
-                            <span>{getTextByMode({
-                                niños: 'Volver',
-                                jóvenes: 'Volver',
-                                adultos: 'Volver'
-                            })}</span>
-                        </Link>
-                    </div>
-                </div>
+                <ShowHeader
+                    title={getTextByMode({
+                        niños: `🏭 Información de ${proveedor.nombre}`,
+                        jóvenes: `Detalles de ${proveedor.nombre}`,
+                        adultos: `Información del Proveedor`
+                    })}
+                    description={getTextByMode({
+                        niños: 'Aquí puedes ver toda la información de tu proveedor genial',
+                        jóvenes: 'Información completa del proveedor',
+                        adultos: 'Información detallada del proveedor en el sistema'
+                    })}
+                    editHref={`/proveedores/${proveedor.id}/edit`}
+                    backHref="/proveedores"
+                    editText={getTextByMode({
+                        niños: '✏️ Editar',
+                        jóvenes: 'Editar',
+                        adultos: 'Editar'
+                    })}
+                    backText={getTextByMode({
+                        niños: '⬅️ Volver',
+                        jóvenes: 'Volver',
+                        adultos: 'Volver'
+                    })}
+                />
 
-                {/* Información del proveedor */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Información principal */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h2 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '🏭 Información Principal',
-                                jóvenes: '🏭 Información Principal',
-                                adultos: 'Información Principal'
-                            })}
-                        </h2>
-                        
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-4">
-                                <div className="flex-shrink-0 h-16 w-16">
-                                    <div className="h-16 w-16 rounded-full bg-green-500 flex items-center justify-center text-white text-2xl font-bold">
-                                        {getInitials(proveedor.nombre)}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className={`text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {proveedor.nombre}
-                                    </h3>
-                                    <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {proveedor.tipo || getTextByMode({
-                                            niños: '🏭 Mi proveedor genial',
-                                            jóvenes: '🏭 Proveedor',
-                                            adultos: 'Proveedor'
-                                        })}
-                                    </p>
-                                </div>
-                            </div>
+                    <InfoCard
+                        title={getTextByMode({
+                            niños: '🏭 Información Principal',
+                            jóvenes: '🏭 Información Principal',
+                            adultos: 'Información Principal'
+                        })}
+                        fields={infoBasicaFields}
+                        columns={2}
+                    />
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '📧 Email',
-                                            jóvenes: '📧 Email',
-                                            adultos: 'Correo Electrónico'
-                                        })}
-                                    </label>
-                                    <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {proveedor.email || getTextByMode({
-                                            niños: '❌ Sin email',
-                                            jóvenes: 'No registrado',
-                                            adultos: 'No registrado'
-                                        })}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '📞 Teléfono',
-                                            jóvenes: '📞 Teléfono',
-                                            adultos: 'Número de Teléfono'
-                                        })}
-                                    </label>
-                                    <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {proveedor.telefono || getTextByMode({
-                                            niños: '❌ Sin número',
-                                            jóvenes: 'No registrado',
-                                            adultos: 'No registrado'
-                                        })}
-                                    </p>
-                                </div>
-
-                                <div className="sm:col-span-2">
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '📍 Dirección',
-                                            jóvenes: '📍 Dirección',
-                                            adultos: 'Dirección'
-                                        })}
-                                    </label>
-                                    <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {proveedor.direccion || getTextByMode({
-                                            niños: '❌ Sin dirección',
-                                            jóvenes: 'No especificada',
-                                            adultos: 'No especificada'
-                                        })}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '🏷️ Tipo de Proveedor',
-                                            jóvenes: '🏷️ Tipo',
-                                            adultos: 'Tipo de Proveedor'
-                                        })}
-                                    </label>
-                                    <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {proveedor.tipo || getTextByMode({
-                                            niños: '❓ Sin especificar',
-                                            jóvenes: 'No especificado',
-                                            adultos: 'No especificado'
-                                        })}
-                                    </p>
-                                </div>
-
-                                {/* Información específica para empresas */}
-                                {proveedor.tipo === 'empresa' && (
-                                    <>
-                                        {proveedor.razon_social && (
-                                            <div>
-                                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                                    {getTextByMode({
-                                                        niños: '🏢 Razón Social',
-                                                        jóvenes: '🏢 Razón Social',
-                                                        adultos: 'Razón Social'
-                                                    })}
-                                                </label>
-                                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                                    {proveedor.razon_social}
-                                                </p>
-                                            </div>
-                                        )}
-                                        
-                                        {proveedor.nit && (
-                                            <div>
-                                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                                    {getTextByMode({
-                                                        niños: '🆔 NIT',
-                                                        jóvenes: '🆔 NIT',
-                                                        adultos: 'NIT'
-                                                    })}
-                                                </label>
-                                                <p className={`text-gray-900 dark:text-gray-100 font-mono ${getModeClasses()}`}>
-                                                    {proveedor.nit}
-                                                </p>
-                                            </div>
-                                        )}
-                                        
-                                        {proveedor.representante_legal && (
-                                            <div className="sm:col-span-2">
-                                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                                    {getTextByMode({
-                                                        niños: '👤 Representante Legal',
-                                                        jóvenes: '👤 Representante',
-                                                        adultos: 'Representante Legal'
-                                                    })}
-                                                </label>
-                                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                                    {proveedor.representante_legal}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* Información específica para personas */}
-                                {proveedor.tipo === 'persona' && proveedor.apellido && (
-                                    <div>
-                                        <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                            {getTextByMode({
-                                                niños: '👤 Apellido',
-                                                jóvenes: '👤 Apellido',
-                                                adultos: 'Apellido'
-                                            })}
-                                        </label>
-                                        <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                            {proveedor.apellido}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Información del sistema */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h2 className={`text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '⚙️ Información del Sistema',
-                                jóvenes: '⚙️ Info del Sistema',
-                                adultos: 'Información del Sistema'
-                            })}
-                        </h2>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '📅 Fecha de Registro',
-                                        jóvenes: '📅 Registrado el',
-                                        adultos: 'Fecha de Registro'
-                                    })}
-                                </label>
-                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                    {formatDate(proveedor.created_at)}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🔄 Última Actualización',
-                                        jóvenes: '🔄 Actualizado el',
-                                        adultos: 'Última Actualización'
-                                    })}
-                                </label>
-                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                    {formatDate(proveedor.updated_at)}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🆔 ID en el Sistema',
-                                        jóvenes: '🆔 ID Proveedor',
-                                        adultos: 'ID del Proveedor'
-                                    })}
-                                </label>
-                                <p className={`text-gray-900 dark:text-gray-100 font-mono ${getModeClasses()}`}>
-                                    #{proveedor.id}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Estadísticas básicas */}
-                        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                            <h3 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-3 ${getModeClasses()}`}>
-                                {getTextByMode({
-                                    niños: '📊 Estadísticas del Proveedor',
-                                    jóvenes: '📊 Estadísticas',
-                                    adultos: 'Estadísticas del Proveedor'
-                                })}
-                            </h3>
-                            <div className="grid grid-cols-2 gap-4 text-center">
-                                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                                    <p className={`text-2xl font-bold text-green-600 dark:text-green-400 ${getModeClasses()}`}>0</p>
-                                    <p className={`text-sm text-green-600 dark:text-green-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: 'Productos',
-                                            jóvenes: 'Productos',
-                                            adultos: 'Productos'
-                                        })}
-                                    </p>
-                                </div>
-                                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                                    <p className={`text-2xl font-bold text-blue-600 dark:text-blue-400 ${getModeClasses()}`}>$0</p>
-                                    <p className={`text-sm text-blue-600 dark:text-blue-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: 'Compras',
-                                            jóvenes: 'Total Compras',
-                                            adultos: 'Total Compras'
-                                        })}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Fechas */}
+                    <InfoCard
+                        title={getTextByMode({
+                            niños: '📅 Fechas',
+                            jóvenes: '📅 Fechas',
+                            adultos: 'Información de Fechas'
+                        })}
+                        fields={fechasFields}
+                        columns={2}
+                    />
                 </div>
+
+                {/* Información adicional según tipo */}
+                {empresaFields.length > 0 && (
+                    <InfoCard
+                        title={getTextByMode({
+                            niños: '🏢 Datos de Empresa',
+                            jóvenes: '🏢 Datos de Empresa',
+                            adultos: 'Información de Empresa'
+                        })}
+                        fields={empresaFields}
+                        columns={2}
+                    />
+                )}
+
+                {personaFields.length > 0 && (
+                    <InfoCard
+                        title={getTextByMode({
+                            niños: '👤 Datos Personales',
+                            jóvenes: '👤 Datos Personales',
+                            adultos: 'Información Personal'
+                        })}
+                        fields={personaFields}
+                        columns={2}
+                    />
+                )}
             </div>
         </DashboardLayout>
     );

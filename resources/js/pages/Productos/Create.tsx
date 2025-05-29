@@ -1,47 +1,29 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { FormSection, FormButtons } from '@/components/Form';
-
-interface Producto {
-    id: number;
-    cod_producto: string;
-    nombre: string;
-    descripcion?: string;
-    precio_compra: number;
-    precio_venta: number;
-    imagen?: string;
-    categoria_id: number;
-    categoria: {
-        id: number;
-        nombre: string;
-    };
-    created_at: string;
-    updated_at: string;
-}
+import { FormPage, FormSection, FormButtons } from '@/components/Form';
 
 interface Categoria {
     id: number;
     nombre: string;
 }
 
-interface ProductoEditProps {
-    producto: Producto;
+interface ProductoCreateProps {
     categorias: Categoria[];
 }
 
-export default function ProductoEdit({ producto, categorias }: ProductoEditProps) {
+export default function ProductoCreate({ categorias }: ProductoCreateProps) {
     const { settings } = useAppMode();
 
-    const { data, setData, patch, processing, errors } = useForm({
-        cod_producto: producto.cod_producto,
-        nombre: producto.nombre,
-        descripcion: producto.descripcion || '',
-        precio_compra: producto.precio_compra,
-        precio_venta: producto.precio_venta,
-        imagen: producto.imagen || '',
-        categoria_id: producto.categoria_id,
+    const { data, setData, post, processing, errors } = useForm({
+        cod_producto: '',
+        nombre: '',
+        descripcion: '',
+        precio_compra: '',
+        precio_venta: '',
+        imagen: '',
+        categoria_id: '',
     });
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
@@ -61,52 +43,37 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        patch(`/productos/${producto.id}`, {
-            preserveScroll: true,
-        });
+        post('/productos');
     };
 
     return (
         <DashboardLayout
             title={getTextByMode({
-                niños: `✏️ Editando ${producto.nombre}`,
-                jóvenes: `✏️ Editar Producto`,
-                adultos: `Editar Producto`,
+                niños: '➕ ¡Crear Producto Nuevo!',
+                jóvenes: '➕ Crear Producto',
+                adultos: 'Crear Nuevo Producto',
             })}
         >
-            <Head title={`Editar Producto: ${producto.nombre}`} />
+            <Head title="Crear Producto" />
 
-            <div className={`space-y-6 ${getModeClasses()}`}>
-                <div className="mb-6">
-                    <div className="flex items-center space-x-4">
-                        <Link
-                            href="/productos"
-                            className={`font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 ${getModeClasses()}`}
-                        >
-                            ←{' '}
-                            {getTextByMode({
-                                niños: '¡Volver a la lista!',
-                                jóvenes: 'Volver a productos',
-                                adultos: 'Volver a productos',
-                            })}
-                        </Link>
-                    </div>
-                    <h1 className={`mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                        {getTextByMode({
-                            niños: `✏️ Editar ${producto.nombre}`,
-                            jóvenes: 'Editar Producto',
-                            adultos: 'Editar Producto',
-                        })}
-                    </h1>
-                    <p className={`mt-2 text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                        {getTextByMode({
-                            niños: '¡Modifica la información de tu producto!',
-                            jóvenes: 'Actualiza la información del producto',
-                            adultos: 'Modifique la información del producto',
-                        })}
-                    </p>
-                </div>
-
+            <FormPage
+                title={getTextByMode({
+                    niños: '🎉 ¡Crear Producto Súper Genial!',
+                    jóvenes: '✨ Crear Nuevo Producto',
+                    adultos: 'Crear Nuevo Producto',
+                })}
+                description={getTextByMode({
+                    niños: '¡Completa todos los campos para crear un producto increíble!',
+                    jóvenes: 'Completa la información para crear el nuevo producto',
+                    adultos: 'Complete la información requerida para crear el nuevo producto',
+                })}
+                backHref="/productos"
+                backText={getTextByMode({
+                    niños: '¡Volver a la lista!',
+                    jóvenes: 'Volver a productos',
+                    adultos: 'Volver a productos',
+                })}
+            >
                 <form onSubmit={submit} className="space-y-6">
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         <FormSection
@@ -123,9 +90,9 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                         className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
                                     >
                                         {getTextByMode({
-                                            niños: '🏷️ Código del Producto',
+                                            niños: '🏷️ Código del Producto *',
                                             jóvenes: '🏷️ Código',
-                                            adultos: 'Código del Producto',
+                                            adultos: 'Código del Producto *',
                                         })}
                                     </label>
                                     <input
@@ -139,6 +106,7 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                             jóvenes: 'Código del producto',
                                             adultos: 'Ingrese el código del producto',
                                         })}
+                                        required
                                     />
                                     {errors.cod_producto && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.cod_producto}</p>}
                                 </div>
@@ -149,9 +117,9 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                         className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
                                     >
                                         {getTextByMode({
-                                            niños: '📦 Nombre del Producto',
+                                            niños: '📦 Nombre del Producto *',
                                             jóvenes: '📦 Nombre',
-                                            adultos: 'Nombre del Producto',
+                                            adultos: 'Nombre del Producto *',
                                         })}
                                     </label>
                                     <input
@@ -165,6 +133,7 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                             jóvenes: 'Nombre del producto',
                                             adultos: 'Ingrese el nombre del producto',
                                         })}
+                                        required
                                     />
                                     {errors.nombre && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.nombre}</p>}
                                 </div>
@@ -175,16 +144,17 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                         className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
                                     >
                                         {getTextByMode({
-                                            niños: '📂 Categoría',
+                                            niños: '📂 Categoría *',
                                             jóvenes: '📂 Categoría',
-                                            adultos: 'Categoría',
+                                            adultos: 'Categoría *',
                                         })}
                                     </label>
                                     <select
                                         id="categoria_id"
                                         value={data.categoria_id}
-                                        onChange={(e) => setData('categoria_id', Number(e.target.value))}
+                                        onChange={(e) => setData('categoria_id', e.target.value)}
                                         className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
+                                        required
                                     >
                                         <option value="">
                                             {getTextByMode({
@@ -244,9 +214,9 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                         className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
                                     >
                                         {getTextByMode({
-                                            niños: '💰 Precio de Compra',
+                                            niños: '💰 Precio de Compra *',
                                             jóvenes: '💰 Precio de Compra',
-                                            adultos: 'Precio de Compra',
+                                            adultos: 'Precio de Compra *',
                                         })}
                                     </label>
                                     <div className="relative">
@@ -257,11 +227,12 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                             id="precio_compra"
                                             type="number"
                                             value={data.precio_compra}
-                                            onChange={(e) => setData('precio_compra', Number(e.target.value))}
+                                            onChange={(e) => setData('precio_compra', e.target.value)}
                                             className={`w-full rounded-md border border-gray-300 pl-7 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                             placeholder="0.00"
                                             step="0.01"
                                             min="0"
+                                            required
                                         />
                                     </div>
                                     {errors.precio_compra && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.precio_compra}</p>}
@@ -273,9 +244,9 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                         className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
                                     >
                                         {getTextByMode({
-                                            niños: '💲 Precio de Venta',
+                                            niños: '💲 Precio de Venta *',
                                             jóvenes: '💲 Precio de Venta',
-                                            adultos: 'Precio de Venta',
+                                            adultos: 'Precio de Venta *',
                                         })}
                                     </label>
                                     <div className="relative">
@@ -286,11 +257,12 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                             id="precio_venta"
                                             type="number"
                                             value={data.precio_venta}
-                                            onChange={(e) => setData('precio_venta', Number(e.target.value))}
+                                            onChange={(e) => setData('precio_venta', e.target.value)}
                                             className={`w-full rounded-md border border-gray-300 pl-7 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                             placeholder="0.00"
                                             step="0.01"
                                             min="0"
+                                            required
                                         />
                                     </div>
                                     {errors.precio_venta && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.precio_venta}</p>}
@@ -335,7 +307,7 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                                         <div className="flex justify-center rounded-lg border border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700">
                                             <img
                                                 src={data.imagen}
-                                                alt={data.nombre}
+                                                alt={data.nombre || "Producto"}
                                                 className="h-32 w-auto object-contain"
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Error';
@@ -352,9 +324,9 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                     <FormButtons
                         isProcessing={processing}
                         submitLabel={getTextByMode({
-                            niños: '💾 ¡Guardar Cambios!',
-                            jóvenes: '💾 Guardar Cambios',
-                            adultos: 'Guardar Cambios',
+                            niños: '💾 ¡Crear Producto!',
+                            jóvenes: '💾 Crear Producto',
+                            adultos: 'Crear Producto',
                         })}
                         cancelHref="/productos"
                         cancelLabel={getTextByMode({
@@ -364,7 +336,7 @@ export default function ProductoEdit({ producto, categorias }: ProductoEditProps
                         })}
                     />
                 </form>
-            </div>
+            </FormPage>
         </DashboardLayout>
     );
-}
+} 

@@ -1,6 +1,7 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, Link } from '@inertiajs/react';
+import { ShowHeader, InfoCard } from '@/components/Show';
 
 interface User {
     id: number;
@@ -115,6 +116,140 @@ export default function UserShow({ user }: UserShowProps) {
         return name.charAt(0).toUpperCase();
     };
 
+    // Configuración de campos para InfoCard
+    const personalFields = [
+        {
+            label: getTextByMode({
+                niños: '😊 Nombre Completo',
+                jóvenes: '👤 Nombre',
+                adultos: 'Nombre Completo',
+            }),
+            value: (
+                <div className="flex items-center space-x-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500 text-lg font-bold text-white">
+                        {getInitials(user.nombre)}
+                    </div>
+                    <span className="font-medium">{user.nombre}</span>
+                </div>
+            ),
+            span: 2 as const
+        },
+        {
+            label: getTextByMode({
+                niños: '📧 Email',
+                jóvenes: '📧 Email',
+                adultos: 'Correo Electrónico',
+            }),
+            value: (
+                <div>
+                    <div>{user.email}</div>
+                    <div className="text-sm">
+                        {user.email_verified_at ? (
+                            <span className="text-green-600 dark:text-green-400">
+                                ✅ {getTextByMode({
+                                    niños: 'Verificado',
+                                    jóvenes: 'Verificado',
+                                    adultos: 'Verificado'
+                                })}
+                            </span>
+                        ) : (
+                            <span className="text-yellow-600 dark:text-yellow-400">
+                                ⚠️ {getTextByMode({
+                                    niños: 'Sin verificar',
+                                    jóvenes: 'Sin verificar',
+                                    adultos: 'Sin verificar'
+                                })}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            )
+        },
+        {
+            label: getTextByMode({
+                niños: '📱 Teléfono',
+                jóvenes: '📱 Celular',
+                adultos: 'Celular',
+            }),
+            value: user.celular || getTextByMode({
+                niños: '❌ Sin número',
+                jóvenes: 'No registrado',
+                adultos: 'No registrado'
+            })
+        },
+        {
+            label: getTextByMode({
+                niños: '🚻 Género',
+                jóvenes: '🚻 Género',
+                adultos: 'Género',
+            }),
+            value: user.genero || getTextByMode({
+                niños: '❓ No especificado',
+                jóvenes: 'No especificado',
+                adultos: 'No especificado'
+            })
+        },
+        {
+            label: getTextByMode({
+                niños: '🎭 Rol Principal',
+                jóvenes: '🎭 Rol',
+                adultos: 'Rol Principal',
+            }),
+            value: getRoleBadge(user.role_principal)
+        }
+    ];
+
+    const statusFields = [
+        {
+            label: getTextByMode({
+                niños: '🌟 Estado',
+                jóvenes: '🌟 Estado',
+                adultos: 'Estado Actual',
+            }),
+            value: getStatusBadge(user.estado),
+            span: 2 as const
+        }
+    ];
+
+    const dateFields = [
+        {
+            label: getTextByMode({
+                niños: '📅 Fecha de Registro',
+                jóvenes: '📅 Registrado',
+                adultos: 'Fecha de Registro',
+            }),
+            value: formatDate(user.created_at)
+        },
+        {
+            label: getTextByMode({
+                niños: '🔄 Última Actualización',
+                jóvenes: '🔄 Actualizado',
+                adultos: 'Última Actualización',
+            }),
+            value: formatDate(user.updated_at)
+        }
+    ];
+
+    const rolesFields = user.roles && user.roles.length > 0 ? [
+        {
+            label: getTextByMode({
+                niños: '🎭 Todos los Roles',
+                jóvenes: '🎭 Roles Asignados',
+                adultos: 'Roles del Sistema',
+            }),
+            value: (
+                <div className="flex flex-wrap gap-2">
+                    {user.roles.map(role => (
+                        <span key={role.id} className="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                            {role.name}
+                        </span>
+                    ))}
+                </div>
+            ),
+            span: 2 as const
+        }
+    ] : [];
+
     return (
         <DashboardLayout
             title={getTextByMode({
@@ -126,237 +261,74 @@ export default function UserShow({ user }: UserShowProps) {
             <Head title={`Usuario: ${user.nombre}`} />
 
             <div className={`space-y-6 ${getModeClasses()}`}>
-                {/* Header con botones de acción */}
-                <div className="flex items-start justify-between">
-                    <div>
-                        <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: `👀 Información de ${user.nombre}`,
-                                jóvenes: `Detalles de ${user.nombre}`,
-                                adultos: `Información del Usuario`,
-                            })}
-                        </h1>
-                        <p className={`mt-2 text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: 'Aquí puedes ver toda la información de tu usuario genial',
-                                jóvenes: 'Información completa del usuario',
-                                adultos: 'Información detallada del usuario en el sistema',
-                            })}
-                        </p>
-                    </div>
+                <ShowHeader
+                    title={getTextByMode({
+                        niños: `👀 Información de ${user.nombre}`,
+                        jóvenes: `Detalles de ${user.nombre}`,
+                        adultos: `Información del Usuario`,
+                    })}
+                    description={getTextByMode({
+                        niños: 'Aquí puedes ver toda la información de tu usuario genial',
+                        jóvenes: 'Información completa del usuario',
+                        adultos: 'Información detallada del usuario en el sistema',
+                    })}
+                    editHref={`/users/${user.id}/edit`}
+                    backHref="/users"
+                    editText={getTextByMode({
+                        niños: '✏️ Editar',
+                        jóvenes: 'Editar',
+                        adultos: 'Editar',
+                    })}
+                    backText={getTextByMode({
+                        niños: '⬅️ Volver',
+                        jóvenes: 'Volver',
+                        adultos: 'Volver',
+                    })}
+                />
 
-                    <div className="flex space-x-3">
-                        <Link
-                            href={`/users/${user.id}/edit`}
-                            className={`flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 ${getModeClasses()}`}
-                        >
-                            <span>✏️</span>
-                            <span>
-                                {getTextByMode({
-                                    niños: 'Editar',
-                                    jóvenes: 'Editar',
-                                    adultos: 'Editar',
-                                })}
-                            </span>
-                        </Link>
-                        <Link
-                            href="/users"
-                            className={`flex items-center space-x-2 rounded-lg bg-gray-500 px-4 py-2 font-medium text-white transition-colors hover:bg-gray-600 ${getModeClasses()}`}
-                        >
-                            <span>⬅️</span>
-                            <span>
-                                {getTextByMode({
-                                    niños: 'Volver',
-                                    jóvenes: 'Volver',
-                                    adultos: 'Volver',
-                                })}
-                            </span>
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Información del usuario */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    {/* Información principal */}
-                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                        <h2 className={`mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '👤 Información Principal',
-                                jóvenes: '👤 Información Principal',
-                                adultos: 'Información Principal',
+                    <InfoCard
+                        title={getTextByMode({
+                            niños: '👤 Información Personal',
+                            jóvenes: '👤 Información Personal',
+                            adultos: 'Información Personal',
+                        })}
+                        fields={personalFields}
+                        columns={2}
+                    />
+
+                    <div className="space-y-6">
+                        <InfoCard
+                            title={getTextByMode({
+                                niños: '🌟 Estado del Usuario',
+                                jóvenes: '🌟 Estado',
+                                adultos: 'Estado del Usuario',
                             })}
-                        </h2>
+                            fields={statusFields}
+                            columns={1}
+                        />
 
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-4">
-                                <div className="h-16 w-16 flex-shrink-0">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500 text-2xl font-bold text-white">
-                                        {getInitials(user.nombre)}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className={`text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>{user.nombre}</h3>
-                                    <div className="mt-1 flex items-center space-x-2">
-                                        {getRoleBadge(user.role_principal)}
-                                        {getStatusBadge(user.estado)}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '📧 Email',
-                                            jóvenes: '📧 Email',
-                                            adultos: 'Correo Electrónico',
-                                        })}
-                                    </label>
-                                    <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>{user.email}</p>
-                                    {user.email_verified_at ? (
-                                        <span className="text-xs text-green-600">
-                                            ✅{' '}
-                                            {getTextByMode({
-                                                niños: 'Verificado',
-                                                jóvenes: 'Verificado',
-                                                adultos: 'Email verificado',
-                                            })}
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs text-yellow-600">
-                                            ⏳{' '}
-                                            {getTextByMode({
-                                                niños: 'Sin verificar',
-                                                jóvenes: 'Sin verificar',
-                                                adultos: 'Email sin verificar',
-                                            })}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '📱 Teléfono',
-                                            jóvenes: '📱 Teléfono',
-                                            adultos: 'Número de Teléfono',
-                                        })}
-                                    </label>
-                                    <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {user.celular ||
-                                            getTextByMode({
-                                                niños: '❌ Sin teléfono',
-                                                jóvenes: 'No registrado',
-                                                adultos: 'No registrado',
-                                            })}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '🧑‍🤝‍🧑 Género',
-                                            jóvenes: '🧑‍🤝‍🧑 Género',
-                                            adultos: 'Género',
-                                        })}
-                                    </label>
-                                    <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                        {user.genero === 'masculino'
-                                            ? getTextByMode({
-                                                  niños: '👨 Masculino',
-                                                  jóvenes: '👨 Masculino',
-                                                  adultos: 'Masculino',
-                                              })
-                                            : user.genero === 'femenino'
-                                              ? getTextByMode({
-                                                    niños: '👩 Femenino',
-                                                    jóvenes: '👩 Femenino',
-                                                    adultos: 'Femenino',
-                                                })
-                                              : user.genero === 'otro'
-                                                ? getTextByMode({
-                                                      niños: '🧑 Otro',
-                                                      jóvenes: '🧑 Otro',
-                                                      adultos: 'Otro',
-                                                  })
-                                                : getTextByMode({
-                                                      niños: '❓ No especificado',
-                                                      jóvenes: 'No especificado',
-                                                      adultos: 'No especificado',
-                                                  })}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                        {getTextByMode({
-                                            niños: '🎭 Roles',
-                                            jóvenes: '🎭 Roles',
-                                            adultos: 'Roles Asignados',
-                                        })}
-                                    </label>
-                                    <div className="space-y-1">
-                                        {user.roles_nombres && user.roles_nombres.length > 0 ? (
-                                            user.roles_nombres.map((role, index) => <div key={index}>{getRoleBadge(role)}</div>)
-                                        ) : (
-                                            <span className="text-sm text-gray-500">
-                                                {getTextByMode({
-                                                    niños: '❌ Sin roles',
-                                                    jóvenes: 'Sin roles asignados',
-                                                    adultos: 'Sin roles asignados',
-                                                })}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Información del sistema */}
-                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                        <h2 className={`mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '⚙️ Información del Sistema',
-                                jóvenes: '⚙️ Info del Sistema',
-                                adultos: 'Información del Sistema',
+                        <InfoCard
+                            title={getTextByMode({
+                                niños: '📅 Fechas Importantes',
+                                jóvenes: '📅 Fechas',
+                                adultos: 'Información de Fechas',
                             })}
-                        </h2>
+                            fields={dateFields}
+                            columns={1}
+                        />
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '📅 Fecha de Registro',
-                                        jóvenes: '📅 Registrado el',
-                                        adultos: 'Fecha de Registro',
-                                    })}
-                                </label>
-                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>{formatDate(user.created_at)}</p>
-                            </div>
-
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🔄 Última Actualización',
-                                        jóvenes: '🔄 Actualizado el',
-                                        adultos: 'Última Modificación',
-                                    })}
-                                </label>
-                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>{formatDate(user.updated_at)}</p>
-                            </div>
-
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🆔 ID del Usuario',
-                                        jóvenes: '🆔 ID',
-                                        adultos: 'ID del Usuario',
-                                    })}
-                                </label>
-                                <p className={`font-mono text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>#{user.id}</p>
-                            </div>
-                        </div>
+                        {rolesFields.length > 0 && (
+                            <InfoCard
+                                title={getTextByMode({
+                                    niños: '🎭 Roles y Permisos',
+                                    jóvenes: '🎭 Roles',
+                                    adultos: 'Roles y Permisos',
+                                })}
+                                fields={rolesFields}
+                                columns={1}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
