@@ -66,7 +66,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('clientes.toggle-status');
     
     // Gestión de proveedores - CRUD completo
-    Route::resource('proveedores', ProveedorController::class);
+    Route::resource('proveedores', ProveedorController::class)->parameters([
+        'proveedores' => 'proveedor'
+    ]);
     Route::patch('/proveedores/{proveedor}/toggle-status', [ProveedorController::class, 'toggleStatus'])
         ->name('proveedores.toggle-status');
 

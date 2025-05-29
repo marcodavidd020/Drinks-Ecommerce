@@ -10,7 +10,7 @@ use App\Models\Producto;
 use App\Models\ProductoInventario;
 use App\Models\Proveedor;
 use App\Models\NotaVenta;
-use App\Models\Pqrsona;
+use App\Models\Ppersona;
 use App\Models\Carrito;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,24 +28,63 @@ class DashboardController extends Controller
 
     public function react(): Response
     {
-        // Obtener métricas principales expandidas
-        $stats = $this->getMainStats();
-        
-        // Obtener datos para gráficos
-        $chartData = $this->getChartData();
-        
-        // Obtener actividad reciente
-        $recentActivity = $this->getRecentActivity();
-        
-        // Obtener alertas y notificaciones
-        $alerts = $this->getAlerts();
+        try {
+            // Obtener métricas principales expandidas
+            $stats = $this->getMainStats();
 
-        return Inertia::render('dashboard', [
-            'stats' => $stats,
-            'chartData' => $chartData,
-            'recentActivity' => $recentActivity,
-            'alerts' => $alerts,
-        ]);
+            // Obtener datos para gráficos
+            $chartData = $this->getChartData();
+
+            // Obtener actividad reciente
+            $recentActivity = $this->getRecentActivity();
+
+            // Obtener alertas y notificaciones
+            $alerts = $this->getAlerts();
+
+            return Inertia::render('dashboard', [
+                'stats' => $stats,
+                'chartData' => $chartData,
+                'recentActivity' => $recentActivity,
+                'alerts' => $alerts,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Dashboard Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Fallback con datos vacíos pero estructura correcta
+            return Inertia::render('dashboard', [
+                'stats' => [
+                    'totalUsers' => 0,
+                    'totalProducts' => 0,
+                    'totalClients' => 0,
+                    'totalProviders' => 0,
+                    'totalOrders' => 0,
+                    'totalRevenue' => 0,
+                    'lowStockProducts' => 0,
+                    'pendingPqrs' => 0,
+                    'abandonedCarts' => 0,
+                    'growth' => [
+                        'users' => 0,
+                        'products' => 0,
+                        'orders' => 0,
+                        'revenue' => 0,
+                    ]
+                ],
+                'chartData' => [
+                    'salesByMonth' => [],
+                    'topProducts' => [],
+                    'salesByCategory' => [],
+                ],
+                'recentActivity' => [
+                    'recentSales' => [],
+                    'lowStockProducts' => [],
+                    'recentPqrs' => [],
+                ],
+                'alerts' => [],
+            ]);
+        }
     }
 
     private function getMainStats(): array
@@ -56,49 +95,72 @@ class DashboardController extends Controller
             $totalProducts = DB::table('productos')->count();
             $totalClients = DB::table('clientes')->count();
             $totalProviders = DB::table('proveedores')->count();
-            
+
+            // Métricas de ventas reales
+            $totalOrders = DB::table('notas_venta')->count();
+            $totalRevenue = DB::table('notas_venta')->sum('total') ?? 0;
+
             // Calcular productos con stock bajo (asumimos stock bajo = menos de 10)
             $lowStockProducts = DB::table('producto_inventarios')
                 ->where('stock', '<=', 10)
                 ->distinct('producto_id')
                 ->count('producto_id');
 
+            // PQRS pendientes reales
+            $pendingPqrs = DB::table('personas')
+                ->whereIn('estado', ['pendiente', 'en_proceso'])
+                ->count();
+
+            // Carritos abandonados reales
+            $abandonedCarts = DB::table('carritos')
+                ->where('estado', 'abandonado')
+                ->distinct('cliente_id')
+                ->count('cliente_id');
+
             // Calcular crecimiento basado en registros del último mes
             $usersLastMonth = DB::table('users')
                 ->where('created_at', '>=', now()->subMonth())
                 ->count();
-            
+
             $productsLastMonth = DB::table('productos')
                 ->where('created_at', '>=', now()->subMonth())
                 ->count();
 
-            $usersGrowth = $totalUsers > 0 ? 
+            $ordersLastMonth = DB::table('notas_venta')
+                ->where('created_at', '>=', now()->subMonth())
+                ->count();
+
+            $revenueLastMonth = DB::table('notas_venta')
+                ->where('created_at', '>=', now()->subMonth())
+                ->sum('total') ?? 0;
+
+            $usersGrowth = $totalUsers > 0 ?
                 round(($usersLastMonth / $totalUsers) * 100, 1) : 0;
-            
-            $productsGrowth = $totalProducts > 0 ? 
+
+            $productsGrowth = $totalProducts > 0 ?
                 round(($productsLastMonth / $totalProducts) * 100, 1) : 0;
 
-            // Calcular valor del inventario total
-            $totalRevenue = DB::table('productos')
-                ->join('producto_inventarios', 'productos.id', '=', 'producto_inventarios.producto_id')
-                ->selectRaw('SUM(productos.precio_venta * producto_inventarios.stock) as total')
-                ->value('total') ?? 0;
+            $ordersGrowth = $totalOrders > 0 ?
+                round(($ordersLastMonth / $totalOrders) * 100, 1) : 0;
+
+            $revenueGrowth = $totalRevenue > 0 ?
+                round(($revenueLastMonth / $totalRevenue) * 100, 1) : 0;
 
             return [
                 'totalUsers' => $totalUsers,
                 'totalProducts' => $totalProducts,
                 'totalClients' => $totalClients,
                 'totalProviders' => $totalProviders,
-                'totalOrders' => 0, // Por ahora 0 hasta implementar ventas
+                'totalOrders' => $totalOrders,
                 'totalRevenue' => (float) $totalRevenue,
                 'lowStockProducts' => $lowStockProducts,
-                'pendingPqrs' => 0, // Por ahora 0 hasta implementar PQRS
-                'abandonedCarts' => 0, // Por ahora 0 hasta implementar carritos
+                'pendingPqrs' => $pendingPqrs,
+                'abandonedCarts' => $abandonedCarts,
                 'growth' => [
                     'users' => $usersGrowth,
                     'products' => $productsGrowth,
-                    'orders' => 0,
-                    'revenue' => 5.2, // Simulado
+                    'orders' => $ordersGrowth,
+                    'revenue' => $revenueGrowth,
                 ]
             ];
         } catch (\Exception $e) {
@@ -107,7 +169,7 @@ class DashboardController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             // Fallback con datos por defecto
             return [
                 'totalUsers' => 0,
@@ -132,56 +194,85 @@ class DashboardController extends Controller
     private function getChartData(): array
     {
         try {
-            // Datos de ventas por mes usando productos creados realmente
+            // Datos de ventas reales por mes
             $salesByMonth = collect();
             for ($i = 5; $i >= 0; $i--) {
                 $date = now()->subMonths($i);
-                
-                // Productos creados en el mes actual
-                $monthlyProducts = DB::table('productos')
-                    ->whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)
+
+                // Ventas reales del mes
+                $monthlyRevenue = DB::table('notas_venta')
+                    ->whereYear('fecha', $date->year)
+                    ->whereMonth('fecha', $date->month)
+                    ->sum('total') ?? 0;
+
+                $monthlyOrders = DB::table('notas_venta')
+                    ->whereYear('fecha', $date->year)
+                    ->whereMonth('fecha', $date->month)
                     ->count();
-                
-                // Valor del inventario del mes basado en productos reales
-                $monthlyValue = DB::table('productos')
-                    ->join('producto_inventarios', 'productos.id', '=', 'producto_inventarios.producto_id')
-                    ->whereYear('productos.created_at', $date->year)
-                    ->whereMonth('productos.created_at', $date->month)
-                    ->selectRaw('SUM(productos.precio_venta * producto_inventarios.stock) as total')
-                    ->value('total') ?? 0;
-                
+
                 $salesByMonth->push([
                     'year' => (int) $date->year,
                     'month' => (int) $date->month,
-                    'total' => (float) $monthlyValue,
-                    'orders_count' => $monthlyProducts
+                    'total' => (float) $monthlyRevenue,
+                    'orders_count' => $monthlyOrders
                 ]);
             }
 
-            // Top productos reales por valor de inventario
-            $topProducts = DB::table('productos')
-                ->join('producto_inventarios', 'productos.id', '=', 'producto_inventarios.producto_id')
+            // Top productos por cantidad vendida real
+            $topProducts = DB::table('detalle_ventas')
+                ->join('productos', 'detalle_ventas.producto_id', '=', 'productos.id')
+                ->join('notas_venta', 'detalle_ventas.nota_venta_id', '=', 'notas_venta.id')
                 ->select('productos.nombre')
-                ->selectRaw('producto_inventarios.stock as total_stock')
-                ->selectRaw('(productos.precio_venta * producto_inventarios.stock) as valor_inventario')
-                ->where('producto_inventarios.stock', '>', 0)
-                ->orderBy('valor_inventario', 'desc')
+                ->selectRaw('SUM(detalle_ventas.cantidad) as total_vendido')
+                ->selectRaw('SUM(detalle_ventas.total) as total_ingresos')
+                ->where('notas_venta.estado', '!=', 'cancelada')
+                ->groupBy('productos.id', 'productos.nombre')
+                ->orderBy('total_ingresos', 'desc')
                 ->limit(5)
                 ->get();
 
+            // Si no hay ventas, usar datos de inventario como fallback
+            if ($topProducts->isEmpty()) {
+                $topProducts = DB::table('productos')
+                    ->join('producto_inventarios', 'productos.id', '=', 'producto_inventarios.producto_id')
+                    ->select('productos.nombre')
+                    ->selectRaw('producto_inventarios.stock as total_vendido')
+                    ->selectRaw('(productos.precio_venta * producto_inventarios.stock) as total_ingresos')
+                    ->where('producto_inventarios.stock', '>', 0)
+                    ->orderBy('total_ingresos', 'desc')
+                    ->limit(5)
+                    ->get();
+            }
+
             // Ventas por categoría usando datos reales
-            $salesByCategory = DB::table('productos')
+            $salesByCategory = DB::table('detalle_ventas')
+                ->join('productos', 'detalle_ventas.producto_id', '=', 'productos.id')
                 ->join('categorias', 'productos.categoria_id', '=', 'categorias.id')
-                ->join('producto_inventarios', 'productos.id', '=', 'producto_inventarios.producto_id')
+                ->join('notas_venta', 'detalle_ventas.nota_venta_id', '=', 'notas_venta.id')
                 ->select('categorias.nombre')
-                ->selectRaw('SUM(productos.precio_venta * producto_inventarios.stock) as valor_categoria')
-                ->selectRaw('COUNT(productos.id) as cantidad_productos')
+                ->selectRaw('SUM(detalle_ventas.total) as total_ingresos')
+                ->selectRaw('COUNT(DISTINCT productos.id) as cantidad_productos')
+                ->where('notas_venta.estado', '!=', 'cancelada')
                 ->groupBy('categorias.id', 'categorias.nombre')
-                ->having('valor_categoria', '>', 0)
-                ->orderBy('valor_categoria', 'desc')
+                ->havingRaw('SUM(detalle_ventas.total) > 0')
+                ->orderByRaw('SUM(detalle_ventas.total) DESC')
                 ->limit(6)
                 ->get();
+
+            // Si no hay ventas, usar datos de inventario como fallback
+            if ($salesByCategory->isEmpty()) {
+                $salesByCategory = DB::table('productos')
+                    ->join('categorias', 'productos.categoria_id', '=', 'categorias.id')
+                    ->join('producto_inventarios', 'productos.id', '=', 'producto_inventarios.producto_id')
+                    ->select('categorias.nombre')
+                    ->selectRaw('SUM(productos.precio_venta * producto_inventarios.stock) as total_ingresos')
+                    ->selectRaw('COUNT(productos.id) as cantidad_productos')
+                    ->groupBy('categorias.id', 'categorias.nombre')
+                    ->havingRaw('SUM(productos.precio_venta * producto_inventarios.stock) > 0')
+                    ->orderByRaw('SUM(productos.precio_venta * producto_inventarios.stock) DESC')
+                    ->limit(6)
+                    ->get();
+            }
 
             return [
                 'salesByMonth' => $salesByMonth->toArray(),
@@ -194,10 +285,21 @@ class DashboardController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
-            // Fallback sin datos simulados
+
+            // Fallback con datos básicos en lugar de arrays vacíos
+            $fallbackSales = collect();
+            for ($i = 5; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $fallbackSales->push([
+                    'year' => (int) $date->year,
+                    'month' => (int) $date->month,
+                    'total' => 0,
+                    'orders_count' => 0
+                ]);
+            }
+
             return [
-                'salesByMonth' => [],
+                'salesByMonth' => $fallbackSales->toArray(),
                 'topProducts' => [],
                 'salesByCategory' => [],
             ];
@@ -207,32 +309,28 @@ class DashboardController extends Controller
     private function getRecentActivity(): array
     {
         try {
-            // Simulamos ventas recientes usando clientes reales
-            $recentClients = DB::table('clientes')
-                ->join('users', 'clientes.user_id', '=', 'users.id')
+            // Ventas recientes reales (simplificadas)
+            $recentSales = DB::table('notas_venta')
                 ->select(
-                    'clientes.id',
-                    'users.nombre as cliente_nombre',
-                    'users.email',
-                    'clientes.created_at'
+                    'notas_venta.id',
+                    'notas_venta.fecha as fecha',
+                    'notas_venta.total',
+                    'notas_venta.estado'
                 )
-                ->orderBy('clientes.created_at', 'desc')
+                ->orderBy('notas_venta.created_at', 'desc')
                 ->limit(5)
-                ->get();
-
-            // Convertir clientes en "ventas simuladas"
-            $recentSales = [];
-            if ($recentClients->isNotEmpty()) {
-                foreach ($recentClients as $index => $client) {
-                    $recentSales[] = [
-                        'id' => $client->id,
-                        'fecha' => \Carbon\Carbon::parse($client->created_at)->format('Y-m-d'),
-                        'total' => rand(50000, 300000), // Simulamos un total
-                        'estado' => 'completada',
-                        'cliente_nombre' => $client->cliente_nombre
+                ->get()
+                ->map(function ($venta) {
+                    return [
+                        'id' => $venta->id,
+                        'fecha' => \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d'),
+                        'total' => (float) $venta->total,
+                        'estado' => $venta->estado,
+                        'cliente_nombre' => 'Cliente #' . $venta->id, // Simulado
+                        'numero_venta' => 'VT-' . $venta->id
                     ];
-                }
-            }
+                })
+                ->toArray();
 
             // Productos con stock crítico real
             $lowStockProducts = DB::table('productos')
@@ -244,21 +342,30 @@ class DashboardController extends Controller
                 ->get()
                 ->toArray();
 
-            // Simulamos PQRS recientes
-            $recentPqrs = [];
-            $tipos = ['Queja', 'Sugerencia', 'Reclamo', 'Felicitación'];
-            $estados = ['pendiente', 'revisando', 'resuelto'];
-            
-            for ($i = 0; $i < 3; $i++) {
-                $recentPqrs[] = [
-                    'id' => $i + 1,
-                    'tipo' => $tipos[array_rand($tipos)],
-                    'asunto' => 'Consulta sobre productos #' . ($i + 1),
-                    'estado' => $estados[array_rand($estados)],
-                    'created_at' => now()->subHours(rand(1, 72))->format('Y-m-d H:i:s'),
-                    'cliente_nombre' => 'Cliente ' . chr(65 + $i) // Cliente A, B, C...
-                ];
-            }
+            // PQRS recientes reales
+            $recentPqrs = DB::table('personas')
+                ->select(
+                    'personas.id',
+                    'personas.tipo',
+                    'personas.descripcion as asunto',
+                    'personas.estado',
+                    'personas.created_at',
+                    'personas.nombre as cliente_nombre'
+                )
+                ->orderBy('personas.created_at', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($pqrs) {
+                    return [
+                        'id' => $pqrs->id,
+                        'tipo' => $pqrs->tipo,
+                        'asunto' => substr($pqrs->asunto, 0, 50) . '...', // Truncar descripción
+                        'estado' => $pqrs->estado,
+                        'created_at' => $pqrs->created_at,
+                        'cliente_nombre' => $pqrs->cliente_nombre
+                    ];
+                })
+                ->toArray();
 
             return [
                 'recentSales' => $recentSales,
@@ -270,7 +377,7 @@ class DashboardController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return [
                 'recentSales' => [],
                 'lowStockProducts' => [],
@@ -284,9 +391,9 @@ class DashboardController extends Controller
         try {
             $alerts = [];
 
-            // Verificar stock crítico
-            $lowStockCount = DB::table('productos')
-                ->where('stock_total', '<=', DB::raw('stock_minimo'))
+            // Verificar stock crítico usando la tabla de inventarios
+            $lowStockCount = DB::table('producto_inventarios')
+                ->where('stock', '<=', 10)
                 ->count();
 
             if ($lowStockCount > 0) {
@@ -328,6 +435,11 @@ class DashboardController extends Controller
 
             return $alerts;
         } catch (\Exception $e) {
+            Log::error("Dashboard Alerts Error", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return [];
         }
     }

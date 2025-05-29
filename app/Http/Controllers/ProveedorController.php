@@ -72,8 +72,10 @@ class ProveedorController extends Controller
      */
     public function show(Proveedor $proveedor): Response
     {
+        $proveedor->load('proveedorable');
+        
         return Inertia::render('Proveedores/Show', [
-            'proveedor' => $proveedor,
+            'proveedor' => $proveedor->datos_completos,
         ]);
     }
 
@@ -82,8 +84,10 @@ class ProveedorController extends Controller
      */
     public function edit(Proveedor $proveedor): Response
     {
+        $proveedor->load('proveedorable');
+        
         return Inertia::render('Proveedores/Edit', [
-            'proveedor' => $proveedor,
+            'proveedor' => $proveedor->datos_completos,
         ]);
     }
 

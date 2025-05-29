@@ -12,6 +12,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -27,22 +28,35 @@ class UserController extends Controller
         $estado = $request->get('estado', '');
         $perPage = $request->get('per_page', 10);
 
-        $users = User::query()
+        $users = User::with('roles')
             ->when($search, function ($query, $search) {
                 return $query->where('nombre', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");
             })
             ->when($role, function ($query, $role) {
-                return $query->where('role', $role);
+                return $query->whereHas('roles', function ($q) use ($role) {
+                    $q->where('name', $role);
+                });
             })
             ->when($estado, function ($query, $estado) {
                 return $query->where('estado', $estado);
             })
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
+
+        // Transformar datos para incluir el rol principal
+        $users->getCollection()->transform(function ($user) {
+            $user->role_principal = $user->roles->first()?->name ?? 'Sin rol';
+            $user->roles_nombres = $user->roles->pluck('name')->toArray();
+            return $user;
+        });
+
+        // Obtener todos los roles para el filtro
+        $allRoles = Role::all();
         
         return Inertia::render('Users/Index', [
             'users' => $users,
+            'allRoles' => $allRoles,
             'filters' => [
                 'search' => $search,
                 'role' => $role,
@@ -57,7 +71,11 @@ class UserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Users/Create');
+        $roles = Role::all();
+        
+        return Inertia::render('Users/Create', [
+            'roles' => $roles
+        ]);
     }
 
     /**
@@ -70,7 +88,8 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'celular' => ['nullable', 'string', 'max:20'],
-            'role' => ['required', 'string', 'in:admin,manager,employee,user'],
+            'genero' => ['nullable', 'string', 'in:masculino,femenino,otro'],
+            'role' => ['required', 'string', 'exists:roles,name'],
             'estado' => ['required', 'string', 'in:activo,inactivo'],
         ]);
 
@@ -79,10 +98,13 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'celular' => $validated['celular'],
-            'role' => $validated['role'],
+            'genero' => $validated['genero'] ?? null,
             'estado' => $validated['estado'],
             'email_verified_at' => now(), // Auto-verificar para usuarios creados por admin
         ]);
+
+        // Asignar rol usando Spatie
+        $user->assignRole($validated['role']);
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario creado exitosamente.');
@@ -105,8 +127,13 @@ class UserController extends Controller
      */
     public function edit(User $user): Response
     {
+        $user->load('roles');
+        $roles = Role::all();
+        
         return Inertia::render('Users/Edit', [
-            'user' => $user
+            'user' => $user,
+            'roles' => $roles,
+            'currentRole' => $user->roles->first()?->name
         ]);
     }
 
@@ -120,7 +147,8 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'celular' => ['nullable', 'string', 'max:20'],
-            'role' => ['required', 'string', 'in:admin,manager,employee,user'],
+            'genero' => ['nullable', 'string', 'in:masculino,femenino,otro'],
+            'role' => ['required', 'string', 'exists:roles,name'],
             'estado' => ['required', 'string', 'in:activo,inactivo'],
         ]);
 
@@ -128,7 +156,7 @@ class UserController extends Controller
             'nombre' => $validated['nombre'],
             'email' => $validated['email'],
             'celular' => $validated['celular'],
-            'role' => $validated['role'],
+            'genero' => $validated['genero'] ?? null,
             'estado' => $validated['estado'],
         ];
 
@@ -138,6 +166,9 @@ class UserController extends Controller
         }
 
         $user->update($updateData);
+
+        // Actualizar rol usando Spatie - eliminar roles anteriores y asignar el nuevo
+        $user->syncRoles([$validated['role']]);
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario actualizado exitosamente.');

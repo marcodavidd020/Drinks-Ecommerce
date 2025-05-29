@@ -8,15 +8,24 @@ interface User {
     nombre: string;
     email: string;
     celular?: string;
-    role: string;
+    genero?: string;
+    role?: string;
     estado: 'activo' | 'inactivo';
+    roles?: Array<{ id: number; name: string; }>;
+}
+
+interface Role {
+    id: number;
+    name: string;
 }
 
 interface EditUserProps {
     user: User;
+    roles: Role[];
+    currentRole?: string;
 }
 
-export default function EditUser({ user }: EditUserProps) {
+export default function EditUser({ user, roles, currentRole }: EditUserProps) {
     const { settings } = useAppMode();
     const { data, setData, put, processing, errors } = useForm({
         nombre: user.nombre,
@@ -24,7 +33,8 @@ export default function EditUser({ user }: EditUserProps) {
         password: '',
         password_confirmation: '',
         celular: user.celular || '',
-        role: user.role,
+        genero: user.genero || '',
+        role: currentRole || user.roles?.[0]?.name || '',
         estado: user.estado,
     });
 
@@ -210,6 +220,30 @@ export default function EditUser({ user }: EditUserProps) {
                             )}
                         </div>
 
+                        {/* Género */}
+                        <div>
+                            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
+                                {getTextByMode({
+                                    niños: '🧑‍🤝‍🧑 Género',
+                                    jóvenes: '🧑‍🤝‍🧑 Género',
+                                    adultos: 'Género'
+                                })}
+                            </label>
+                            <select
+                                value={data.genero}
+                                onChange={(e) => setData('genero', e.target.value)}
+                                className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
+                            >
+                                <option value="">{getTextByMode({ niños: 'Seleccionar...', jóvenes: 'Seleccionar...', adultos: 'No especificado' })}</option>
+                                <option value="masculino">{getTextByMode({ niños: '👨 Masculino', jóvenes: '👨 Masculino', adultos: 'Masculino' })}</option>
+                                <option value="femenino">{getTextByMode({ niños: '👩 Femenino', jóvenes: '👩 Femenino', adultos: 'Femenino' })}</option>
+                                <option value="otro">{getTextByMode({ niños: '🧑 Otro', jóvenes: '🧑 Otro', adultos: 'Otro' })}</option>
+                            </select>
+                            {errors.genero && (
+                                <p className="text-red-600 text-sm mt-1">{errors.genero}</p>
+                            )}
+                        </div>
+
                         {/* Rol */}
                         <div>
                             <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ${getModeClasses()}`}>
@@ -225,10 +259,25 @@ export default function EditUser({ user }: EditUserProps) {
                                 className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                 required
                             >
-                                <option value="user">{getTextByMode({ niños: '👤 Usuario Normal', jóvenes: '👤 Usuario', adultos: 'Usuario' })}</option>
-                                <option value="employee">{getTextByMode({ niños: '👷 Empleado', jóvenes: '👷 Empleado', adultos: 'Empleado' })}</option>
-                                <option value="manager">{getTextByMode({ niños: '⚡ Manager', jóvenes: '⚡ Manager', adultos: 'Gerente' })}</option>
-                                <option value="admin">{getTextByMode({ niños: '👑 Admin', jóvenes: '👑 Admin', adultos: 'Administrador' })}</option>
+                                <option value="">{getTextByMode({ niños: 'Selecciona un rol...', jóvenes: 'Seleccionar rol...', adultos: 'Seleccionar rol' })}</option>
+                                {roles.map((role) => (
+                                    <option key={role.id} value={role.name}>
+                                        {getTextByMode({
+                                            niños: role.name === 'cliente' ? '👤 Cliente' : 
+                                                   role.name === 'empleado' ? '👷 Empleado' :
+                                                   role.name === 'admin' ? '👑 Admin' :
+                                                   role.name === 'super-admin' ? '🦸 Super Admin' : role.name,
+                                            jóvenes: role.name === 'cliente' ? '👤 Cliente' : 
+                                                     role.name === 'empleado' ? '👷 Empleado' :
+                                                     role.name === 'admin' ? '👑 Admin' :
+                                                     role.name === 'super-admin' ? '🦸 Super Admin' : role.name,
+                                            adultos: role.name === 'cliente' ? 'Cliente' : 
+                                                     role.name === 'empleado' ? 'Empleado' :
+                                                     role.name === 'admin' ? 'Administrador' :
+                                                     role.name === 'super-admin' ? 'Super Administrador' : role.name
+                                        })}
+                                    </option>
+                                ))}
                             </select>
                             {errors.role && (
                                 <p className="text-red-600 text-sm mt-1">{errors.role}</p>
@@ -250,8 +299,8 @@ export default function EditUser({ user }: EditUserProps) {
                                 className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                 required
                             >
-                                <option value="activo">{getTextByMode({ niños: '✅ Activo', jóvenes: '✅ Activo', adultos: 'Activo' })}</option>
-                                <option value="inactivo">{getTextByMode({ niños: '❌ Inactivo', jóvenes: '❌ Inactivo', adultos: 'Inactivo' })}</option>
+                                <option value="activo">{getTextByMode({ niños: '⚡ Activo', jóvenes: '⚡ Activo', adultos: 'Activo' })}</option>
+                                <option value="inactivo">{getTextByMode({ niños: '⚡ Inactivo', jóvenes: '⚡ Inactivo', adultos: 'Inactivo' })}</option>
                             </select>
                             {errors.estado && (
                                 <p className="text-red-600 text-sm mt-1">{errors.estado}</p>
@@ -295,4 +344,4 @@ export default function EditUser({ user }: EditUserProps) {
             </div>
         </DashboardLayout>
     );
-} 
+}

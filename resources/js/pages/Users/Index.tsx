@@ -9,11 +9,20 @@ interface User {
     nombre: string;
     email: string;
     celular?: string;
+    genero?: string;
     role?: string;
     estado: 'activo' | 'inactivo';
     email_verified_at?: string;
     created_at: string;
     updated_at: string;
+    // Campos añadidos por el backend para Spatie roles
+    role_principal?: string;
+    roles_nombres?: string[];
+}
+
+interface Role {
+    id: number;
+    name: string;
 }
 
 interface UsersIndexProps {
@@ -22,6 +31,7 @@ interface UsersIndexProps {
         links?: any[];
         meta?: any;
     };
+    allRoles: Role[];
     filters: {
         search: string;
         role: string;
@@ -30,7 +40,7 @@ interface UsersIndexProps {
     };
 }
 
-export default function UsersIndex({ users, filters }: UsersIndexProps) {
+export default function UsersIndex({ users, allRoles, filters }: UsersIndexProps) {
     const { settings } = useAppMode();
     const [search, setSearch] = useState(filters.search);
     const [role, setRole] = useState(filters.role);
@@ -134,15 +144,21 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
         setConfirmDialog({ isOpen: false });
     };
 
-    const getRoleBadge = (role?: string) => {
+    const getRoleBadge = (user: User) => {
+        const roleName = user.role_principal || 'Sin rol';
+        
         const roleMap = {
-            admin: { label: 'Administrador', color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' },
-            manager: { label: 'Gerente', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' },
-            employee: { label: 'Empleado', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' },
-            user: { label: 'Usuario', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400' },
+            'cliente': { label: 'Cliente', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' },
+            'empleado': { label: 'Empleado', color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' },
+            'admin': { label: 'Administrador', color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' },
+            'super-admin': { label: 'Super Admin', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' },
+            'Sin rol': { label: 'Sin rol', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400' },
         };
 
-        const roleInfo = roleMap[role as keyof typeof roleMap] || { label: role || 'Sin rol', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400' };
+        const roleInfo = roleMap[roleName as keyof typeof roleMap] || { 
+            label: roleName, 
+            color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400' 
+        };
 
         return (
             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleInfo.color}`}>
@@ -226,10 +242,15 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option value="">Todos los roles</option>
-                                <option value="admin">Administrador</option>
-                                <option value="manager">Gerente</option>
-                                <option value="employee">Empleado</option>
-                                <option value="user">Usuario</option>
+                                {allRoles.map((roleOption) => (
+                                    <option key={roleOption.id} value={roleOption.name}>
+                                        {roleOption.name === 'cliente' ? 'Cliente' :
+                                         roleOption.name === 'empleado' ? 'Empleado' :
+                                         roleOption.name === 'admin' ? 'Administrador' :
+                                         roleOption.name === 'super-admin' ? 'Super Administrador' :
+                                         roleOption.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div>
@@ -380,7 +401,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
                                                 {user.email}
                                             </td>
                                             <td className={`px-6 py-4 whitespace-nowrap ${getModeClasses()}`}>
-                                                {getRoleBadge(user.role)}
+                                                {getRoleBadge(user)}
                                             </td>
                                             <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                                                 {user.celular || getTextByMode({

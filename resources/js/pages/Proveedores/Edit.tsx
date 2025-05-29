@@ -10,6 +10,13 @@ interface Proveedor {
     email?: string;
     direccion?: string;
     tipo?: string;
+    // Campos adicionales para empresas
+    razon_social?: string;
+    nit?: string;
+    representante_legal?: string;
+    // Campos adicionales para personas
+    apellido?: string;
+    nombre_completo?: string;
 }
 
 interface ProveedorEditProps {

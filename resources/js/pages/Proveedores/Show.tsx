@@ -11,6 +11,13 @@ interface Proveedor {
     tipo?: string;
     created_at: string;
     updated_at: string;
+    // Campos adicionales para empresas
+    razon_social?: string;
+    nit?: string;
+    representante_legal?: string;
+    // Campos adicionales para personas
+    apellido?: string;
+    nombre_completo?: string;
 }
 
 interface ProveedorShowProps {
@@ -232,6 +239,72 @@ export default function ProveedorShow({ proveedor }: ProveedorShowProps) {
                                         })}
                                     </p>
                                 </div>
+
+                                {/* Información específica para empresas */}
+                                {proveedor.tipo === 'empresa' && (
+                                    <>
+                                        {proveedor.razon_social && (
+                                            <div>
+                                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                                    {getTextByMode({
+                                                        niños: '🏢 Razón Social',
+                                                        jóvenes: '🏢 Razón Social',
+                                                        adultos: 'Razón Social'
+                                                    })}
+                                                </label>
+                                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                                    {proveedor.razon_social}
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        {proveedor.nit && (
+                                            <div>
+                                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                                    {getTextByMode({
+                                                        niños: '🆔 NIT',
+                                                        jóvenes: '🆔 NIT',
+                                                        adultos: 'NIT'
+                                                    })}
+                                                </label>
+                                                <p className={`text-gray-900 dark:text-gray-100 font-mono ${getModeClasses()}`}>
+                                                    {proveedor.nit}
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        {proveedor.representante_legal && (
+                                            <div className="sm:col-span-2">
+                                                <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                                    {getTextByMode({
+                                                        niños: '👤 Representante Legal',
+                                                        jóvenes: '👤 Representante',
+                                                        adultos: 'Representante Legal'
+                                                    })}
+                                                </label>
+                                                <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                                    {proveedor.representante_legal}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Información específica para personas */}
+                                {proveedor.tipo === 'persona' && proveedor.apellido && (
+                                    <div>
+                                        <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                            {getTextByMode({
+                                                niños: '👤 Apellido',
+                                                jóvenes: '👤 Apellido',
+                                                adultos: 'Apellido'
+                                            })}
+                                        </label>
+                                        <p className={`text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                            {proveedor.apellido}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
