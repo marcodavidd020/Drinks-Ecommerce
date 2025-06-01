@@ -29,6 +29,12 @@ interface ProductosIndexProps {
         data: Producto[];
         links: any[];
         meta?: any;
+        total: number;
+        from: number;
+        to: number;
+        per_page: number;
+        current_page: number;
+        last_page: number;
     };
     categorias: Categoria[];
     filters: {
@@ -37,6 +43,7 @@ interface ProductosIndexProps {
         sort_by: string;
         sort_order: string;
         per_page: number;
+        page?: number;
     };
 }
 
@@ -47,6 +54,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
     const [sortBy, setSortBy] = useState(filters.sort_by || 'created_at');
     const [sortOrder, setSortOrder] = useState(filters.sort_order || 'desc');
     const [perPage, setPerPage] = useState(filters.per_page || 10);
+    const [page, setPage] = useState(filters.page || productos.current_page || 1);
     const [confirmDialog, setConfirmDialog] = useState<{
         isOpen: boolean;
         producto?: Producto;
@@ -83,6 +91,15 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
         return () => clearTimeout(timer);
     }, [search]);
 
+    // Actualizar el estado de la página cuando cambia en las props
+    useEffect(() => {
+        if (filters.page) {
+            setPage(filters.page);
+        } else if (productos.current_page) {
+            setPage(productos.current_page);
+        }
+    }, [filters.page, productos.current_page]);
+
     const handleSearch = () => {
         router.get(
             '/productos',
@@ -92,6 +109,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
                 sort_by: sortBy,
                 sort_order: sortOrder,
                 per_page: perPage,
+                page: 1, // Resetear a primera página cuando se busca
             },
             {
                 preserveState: true,
@@ -101,21 +119,33 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
     };
 
     const handleFilterChange = (newFilters: any) => {
-        // Determinar los valores a usar para cada parámetro
+        // Guardar valores actuales para cada filtro
         const params = {
             search,
             categoria,
             sort_by: sortBy,
             sort_order: sortOrder,
             per_page: perPage,
-            ...newFilters, // Sobrescribe solo los parámetros proporcionados
+            page,
+            ...newFilters,
         };
 
-        // Actualizar los estados locales si cambiaron
+        // Si estamos cambiando filtros pero no la página explícitamente, volver a página 1
+        if (newFilters && !newFilters.page && 
+            (newFilters.search !== undefined || 
+             newFilters.categoria !== undefined || 
+             newFilters.sort_by !== undefined || 
+             newFilters.sort_order !== undefined || 
+             newFilters.per_page !== undefined)) {
+            params.page = 1;
+        }
+
+        // Actualizar estados locales si cambiaron
         if (newFilters.sort_by !== undefined) setSortBy(newFilters.sort_by);
         if (newFilters.sort_order !== undefined) setSortOrder(newFilters.sort_order);
         if (newFilters.per_page !== undefined) setPerPage(newFilters.per_page);
         if (newFilters.categoria !== undefined) setCategoria(newFilters.categoria);
+        if (newFilters.page !== undefined) setPage(newFilters.page);
 
         // Debug log para ver qué valores se envían
         console.log('Filtros aplicados:', params);
@@ -125,6 +155,11 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
             preserveState: true,
             replace: true,
         });
+    };
+
+    const handlePageChange = (newPage: number) => {
+        setPage(newPage);
+        handleFilterChange({ page: newPage });
     };
 
     const handleDeleteClick = (producto: Producto) => {
@@ -460,79 +495,163 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
     return (
         <DashboardLayout
             title={getTextByMode({
-                niños: '🎁 ¡Mis Productos Geniales!',
-                jóvenes: '📦 Productos',
+                niños: '📦 Productos',
+                jóvenes: 'Productos',
                 adultos: 'Gestión de Productos',
             })}
         >
-            <Head title="Productos" />
+            <Head title="Gestión de Productos" />
 
             <div className={`space-y-6 ${getModeClasses()}`}>
                 <PageHeader
-                    title=""
+                    title={getTextByMode({
+                        niños: '📦 ¡Mis Productos!',
+                        jóvenes: 'Mis Productos',
+                        adultos: 'Gestión de Productos',
+                    })}
                     description={getTextByMode({
-                        niños: '¡Aquí están todos tus productos súper geniales!',
-                        jóvenes: 'Administra tu catálogo de productos',
-                        adultos: 'Administre el inventario y catálogo de productos',
+                        niños: '¡Aquí puedes ver todos tus productos!',
+                        jóvenes: 'Administra tu inventario de productos',
+                        adultos: 'Administración y control de productos',
                     })}
                     buttonText={getTextByMode({
-                        niños: '➕ ¡Agregar Producto!',
+                        niños: '✨ ¡Crear Producto!',
                         jóvenes: '➕ Nuevo Producto',
-                        adultos: '➕ Agregar Producto',
+                        adultos: 'Nuevo Producto',
                     })}
                     buttonHref="/productos/create"
-                    buttonColor="purple"
                 />
 
                 <SearchFilters filters={searchFilters} />
 
-                <DataTable data={productos.data} columns={columns} actions={actions} emptyState={emptyState} getItemKey={(producto) => producto.id} />
+                <DataTable
+                    data={productos.data}
+                    columns={columns}
+                    actions={actions}
+                    emptyState={emptyState}
+                    getItemKey={(producto) => producto.id}
+                />
 
-                {productos.data.length > 0 && productos.links && productos.meta && (
-                    <Pagination
-                        links={productos.links}
-                        meta={productos.meta}
-                        searchParams={{ search, categoria, sort_by: sortBy, sort_order: sortOrder, per_page: perPage }}
-                        entityName={getTextByMode({
-                            niños: 'productos',
-                            jóvenes: 'productos',
-                            adultos: 'productos',
-                        })}
-                    />
-                )}
+                {/* Paginación */}
+                <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
+                    <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                            Mostrando <span className="font-medium">{productos.from || 0}</span> a{' '}
+                            <span className="font-medium">{productos.to || 0}</span> de{' '}
+                            <span className="font-medium">{productos.total}</span> productos
+                        </div>
+                        
+                        <div className="flex items-center space-x-1">
+                            <button
+                                onClick={() => handlePageChange(1)}
+                                disabled={productos.current_page <= 1}
+                                className={`rounded-md border border-gray-300 px-3 py-2 text-sm font-medium ${
+                                    productos.current_page <= 1
+                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-600'
+                                        : 'text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                &laquo;
+                            </button>
+                            
+                            <button
+                                onClick={() => handlePageChange(productos.current_page - 1)}
+                                disabled={productos.current_page <= 1}
+                                className={`rounded-md border border-gray-300 px-3 py-2 text-sm font-medium ${
+                                    productos.current_page <= 1
+                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-600'
+                                        : 'text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                &lsaquo;
+                            </button>
+                            
+                            {Array.from({ length: Math.min(5, productos.last_page) }, (_, i) => {
+                                // Si hay más de 5 páginas, mostrar las páginas cercanas a la actual
+                                let pageNum;
+                                if (productos.last_page <= 5) {
+                                    pageNum = i + 1;
+                                } else if (productos.current_page <= 3) {
+                                    pageNum = i + 1;
+                                } else if (productos.current_page >= productos.last_page - 2) {
+                                    pageNum = productos.last_page - 4 + i;
+                                } else {
+                                    pageNum = productos.current_page - 2 + i;
+                                }
+                                
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => handlePageChange(pageNum)}
+                                        className={`rounded-md border px-3 py-2 text-sm font-medium ${
+                                            pageNum === productos.current_page
+                                                ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                                        }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+                            
+                            <button
+                                onClick={() => handlePageChange(productos.current_page + 1)}
+                                disabled={productos.current_page >= productos.last_page}
+                                className={`rounded-md border border-gray-300 px-3 py-2 text-sm font-medium ${
+                                    productos.current_page >= productos.last_page
+                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-600'
+                                        : 'text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                &rsaquo;
+                            </button>
+                            
+                            <button
+                                onClick={() => handlePageChange(productos.last_page)}
+                                disabled={productos.current_page >= productos.last_page}
+                                className={`rounded-md border border-gray-300 px-3 py-2 text-sm font-medium ${
+                                    productos.current_page >= productos.last_page
+                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-600'
+                                        : 'text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                &raquo;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <ConfirmDialog
+                    isOpen={confirmDialog.isOpen}
+                    title={getTextByMode({
+                        niños: '¿Seguro que quieres eliminar este producto?',
+                        jóvenes: '¿Eliminar este producto?',
+                        adultos: 'Confirmar eliminación',
+                    })}
+                    message={
+                        confirmDialog.producto
+                            ? getTextByMode({
+                                  niños: `¿Estás seguro de que quieres eliminar "${confirmDialog.producto.nombre}"? ¡No podrás recuperarlo después!`,
+                                  jóvenes: `¿Eliminar "${confirmDialog.producto.nombre}"? Esta acción no se puede deshacer.`,
+                                  adultos: `¿Está seguro de que desea eliminar el producto "${confirmDialog.producto.nombre}"? Esta acción no se puede deshacer.`,
+                              })
+                            : ''
+                    }
+                    confirmText={getTextByMode({
+                        niños: '🗑️ Sí, eliminar',
+                        jóvenes: 'Eliminar',
+                        adultos: 'Eliminar',
+                    })}
+                    cancelText={getTextByMode({
+                        niños: 'No, cancelar',
+                        jóvenes: 'Cancelar',
+                        adultos: 'Cancelar',
+                    })}
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={handleDeleteCancel}
+                    type="danger"
+                />
             </div>
-
-            {/* Confirm Dialog */}
-            <ConfirmDialog
-                isOpen={confirmDialog.isOpen}
-                title={getTextByMode({
-                    niños: '¿Eliminar producto?',
-                    jóvenes: '¿Eliminar producto?',
-                    adultos: 'Confirmar eliminación',
-                })}
-                message={
-                    confirmDialog.producto
-                        ? getTextByMode({
-                              niños: `¿Estás seguro de que quieres eliminar "${confirmDialog.producto.nombre}"? ¡No podrás recuperarlo después!`,
-                              jóvenes: `¿Eliminar "${confirmDialog.producto.nombre}"? Esta acción no se puede deshacer.`,
-                              adultos: `¿Está seguro de que desea eliminar el producto "${confirmDialog.producto.nombre}"? Esta acción no se puede deshacer.`,
-                          })
-                        : ''
-                }
-                confirmText={getTextByMode({
-                    niños: '🗑️ Sí, eliminar',
-                    jóvenes: 'Eliminar',
-                    adultos: 'Eliminar',
-                })}
-                cancelText={getTextByMode({
-                    niños: 'No, cancelar',
-                    jóvenes: 'Cancelar',
-                    adultos: 'Cancelar',
-                })}
-                onConfirm={handleDeleteConfirm}
-                onCancel={handleDeleteCancel}
-                type="danger"
-            />
         </DashboardLayout>
     );
 }

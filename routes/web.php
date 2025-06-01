@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\NotaVentaController;
 use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -98,6 +99,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('inventarios.update-stock');
     Route::post('/inventarios/transferencia', [InventarioController::class, 'transferencia'])
         ->name('inventarios.transferencia');
+
+    // Gestión de ventas
+    Route::get('/ventas', [NotaVentaController::class, 'index'])->name('ventas.index');
+    Route::get('/ventas/{venta}', [NotaVentaController::class, 'show'])->name('ventas.show');
+    Route::post('/ventas/{venta}/estado', [NotaVentaController::class, 'updateEstado'])->name('ventas.update-estado');
 
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {

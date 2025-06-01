@@ -42,7 +42,8 @@ class ProductoController extends Controller
             $sortOrder = 'desc';
         }
 
-        $perPage = $request->get('per_page', 12);
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
 
         // Construir la consulta
         $query = Producto::query()
@@ -66,7 +67,7 @@ class ProductoController extends Controller
         $query->orderBy($sortBy, $sortOrder);
 
         // Ejecutar la consulta con paginación
-        $productos = $query->paginate($perPage);
+        $productos = $query->paginate($perPage, ['*'], 'page', $page)->withQueryString();
 
         // Procesar los resultados
         $productos->getCollection()->transform(function ($producto) {
@@ -90,7 +91,8 @@ class ProductoController extends Controller
                 'categoria' => $categoria,
                 'sort_by' => $sortBy,
                 'sort_order' => $sortOrder,
-                'per_page' => $perPage,
+                'per_page' => (int) $perPage,
+                'page' => (int) $page,
             ],
         ]);
     }
