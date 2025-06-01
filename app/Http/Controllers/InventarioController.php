@@ -114,7 +114,7 @@ class InventarioController extends Controller
      */
     public function create()
     {
-        $productos = Producto::where('estado', 'activo')->orderBy('nombre')->get();
+        $productos = Producto::orderBy('nombre')->get();
         $almacenes = Almacen::orderBy('nombre')->get();
         
         return Inertia::render('Inventarios/Create', [
@@ -207,7 +207,8 @@ class InventarioController extends Controller
         // Cargar las relaciones
         $inventario->load(['producto', 'almacen']);
         
-        $productos = Producto::where('estado', 'activo')->orderBy('nombre')->get();
+        // Modificar la consulta para no filtrar por estado
+        $productos = Producto::orderBy('nombre')->get();
         $almacenes = Almacen::orderBy('nombre')->get();
         
         return Inertia::render('Inventarios/Edit', [

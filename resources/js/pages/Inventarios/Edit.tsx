@@ -1,9 +1,8 @@
-import { FormSection } from '@/components/Form';
-import { Button } from '@/components/ui/button';
+import { FormButtons, FormPage, FormSection } from '@/components/Form';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { FormEventHandler } from 'react';
 
 interface Producto {
     id: number;
@@ -30,7 +29,6 @@ interface InventariosEditProps {
 
 export default function InventariosEdit({ inventario }: InventariosEditProps) {
     const { settings } = useAppMode();
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data, setData, put, processing, errors } = useForm({
         stock: inventario.stock.toString(),
@@ -40,17 +38,20 @@ export default function InventariosEdit({ inventario }: InventariosEditProps) {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const getModeClasses = () => {
+        switch (settings.ageMode) {
+            case 'niños':
+                return 'font-comic text-adaptive-kids';
+            case 'jóvenes':
+                return 'font-modern text-adaptive-teen';
+            default:
+                return 'font-classic text-adaptive-adult';
+        }
+    };
+
+    const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        put(`/inventarios/${inventario.id}`, {
-            onSuccess: () => {
-                setIsSubmitting(false);
-            },
-            onError: () => {
-                setIsSubmitting(false);
-            },
-        });
+        put(`/inventarios/${inventario.id}`);
     };
 
     return (
@@ -63,98 +64,109 @@ export default function InventariosEdit({ inventario }: InventariosEditProps) {
         >
             <Head title="Actualizar Stock de Producto" />
 
-            <div className="space-y-6">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {getTextByMode({
-                        niños: '📦 ¡Actualizar Stock!',
-                        jóvenes: 'Actualizar Stock',
-                        adultos: 'Actualizar Stock de Producto',
-                    })}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    {getTextByMode({
-                        niños: '¡Cambia la cantidad de productos en el almacén!',
-                        jóvenes: 'Modifica el stock de un producto',
-                        adultos: 'Actualice la cantidad disponible del producto en el inventario',
-                    })}
-                </p>
-
-                <FormSection>
-                    <div className="mb-6 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            {getTextByMode({
-                                niños: '📋 Información del Producto',
-                                jóvenes: 'Información del Producto',
-                                adultos: 'Información del Producto',
-                            })}
-                        </h3>
-                        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
-                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    {getTextByMode({
-                                        niños: '📦 Producto',
-                                        jóvenes: 'Producto',
-                                        adultos: 'Producto',
-                                    })}
-                                </p>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {inventario.producto.nombre} ({inventario.producto.cod_producto})
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    {getTextByMode({
-                                        niños: '🏬 Almacén',
-                                        jóvenes: 'Almacén',
-                                        adultos: 'Almacén',
-                                    })}
-                                </p>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {inventario.almacen.nombre} ({inventario.almacen.ubicacion})
-                                </p>
+            <FormPage
+                title={getTextByMode({
+                    niños: `📦 ¡Actualizar Stock de "${inventario.producto.nombre}"!`,
+                    jóvenes: `Actualizar Stock: ${inventario.producto.nombre}`,
+                    adultos: `Actualizar Stock: ${inventario.producto.nombre}`,
+                })}
+                description={getTextByMode({
+                    niños: '¡Cambia la cantidad de productos en el almacén!',
+                    jóvenes: 'Modifica el stock de un producto',
+                    adultos: 'Actualice la cantidad disponible del producto en el inventario',
+                })}
+                backHref="/inventarios"
+                backText={getTextByMode({
+                    niños: '¡Volver a inventario!',
+                    jóvenes: 'Volver a inventario',
+                    adultos: 'Volver a inventario',
+                })}
+            >
+                <form onSubmit={submit} className="space-y-6">
+                    <FormSection
+                        title={getTextByMode({
+                            niños: '📋 Información del Producto',
+                            jóvenes: 'Información del Producto',
+                            adultos: 'Información del Producto',
+                        })}
+                    >
+                        <div className="mb-6 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <p className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        {getTextByMode({
+                                            niños: '📦 Producto',
+                                            jóvenes: 'Producto',
+                                            adultos: 'Producto',
+                                        })}
+                                    </p>
+                                    <p className={`mt-1 text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                        {inventario.producto.nombre} ({inventario.producto.cod_producto})
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        {getTextByMode({
+                                            niños: '🏬 Almacén',
+                                            jóvenes: 'Almacén',
+                                            adultos: 'Almacén',
+                                        })}
+                                    </p>
+                                    <p className={`mt-1 text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                        {inventario.almacen.nombre} ({inventario.almacen.ubicacion})
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label
+                                    htmlFor="stock"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
-                                        niños: '📊 Cantidad Actual',
-                                        jóvenes: 'Stock Actual',
-                                        adultos: 'Stock Actual',
+                                        niños: '📊 Cantidad en Stock *',
+                                        jóvenes: '📊 Stock *',
+                                        adultos: 'Cantidad en Stock *',
                                     })}
                                 </label>
                                 <input
+                                    id="stock"
                                     type="number"
-                                    name="stock"
                                     value={data.stock}
                                     onChange={(e) => setData('stock', e.target.value)}
                                     min="0"
                                     step="1"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
+                                    placeholder={getTextByMode({
+                                        niños: 'Ej: 10, 20, 30...',
+                                        jóvenes: 'Cantidad en stock',
+                                        adultos: 'Ingrese la cantidad disponible',
+                                    })}
                                     required
-                                    placeholder="Cantidad en stock"
                                 />
-                                {errors.stock && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.stock}</p>
-                                )}
+                                {errors.stock && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.stock}</p>}
                             </div>
                         </div>
+                    </FormSection>
 
-                        <div className="flex justify-end space-x-3">
-                            <Button type="submit" disabled={processing || isSubmitting}>
-                                {getTextByMode({
-                                    niños: '💾 ¡Actualizar!',
-                                    jóvenes: 'Actualizar',
-                                    adultos: 'Actualizar Stock',
-                                })}
-                            </Button>
-                        </div>
-                    </form>
-                </FormSection>
-            </div>
+                    <FormButtons
+                        isProcessing={processing}
+                        submitLabel={getTextByMode({
+                            niños: '💾 ¡Guardar Cambios!',
+                            jóvenes: '💾 Actualizar Stock',
+                            adultos: 'Guardar Cambios',
+                        })}
+                        cancelHref="/inventarios"
+                        cancelLabel={getTextByMode({
+                            niños: '❌ Cancelar',
+                            jóvenes: 'Cancelar',
+                            adultos: 'Cancelar',
+                        })}
+                    />
+                </form>
+            </FormPage>
         </DashboardLayout>
     );
 } 
