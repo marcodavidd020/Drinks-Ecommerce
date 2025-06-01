@@ -8,6 +8,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\AlmacenController;
+use App\Http\Controllers\InventarioController;
 use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -88,6 +89,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('almacenes', AlmacenController::class)->parameters([
         'almacenes' => 'almacen'
     ]);
+
+    // Gestión de inventarios
+    Route::resource('inventarios', InventarioController::class)->parameters([
+        'inventarios' => 'inventario'
+    ]);
+    Route::patch('/inventarios/{inventario}/update-stock', [InventarioController::class, 'updateStock'])
+        ->name('inventarios.update-stock');
+    Route::post('/inventarios/transferencia', [InventarioController::class, 'transferencia'])
+        ->name('inventarios.transferencia');
 
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {
