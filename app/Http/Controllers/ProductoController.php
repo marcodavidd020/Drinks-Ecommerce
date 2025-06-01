@@ -24,47 +24,47 @@ class ProductoController extends Controller
     {
         $search = $request->get('search', '');
         $categoria = $request->get('categoria', '');
-        
+
         // Configurar opciones de ordenamiento
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = strtolower($request->get('sort_order', 'desc'));
-        
+
         // Validar campos de ordenamiento permitidos
         $validSortFields = ['nombre', 'created_at', 'updated_at', 'precio_venta', 'precio_compra', 'cod_producto'];
-        
+
         // Verificar y corregir el campo de ordenamiento
         if (!in_array($sortBy, $validSortFields)) {
             $sortBy = 'created_at';
         }
-        
+
         // Verificar y corregir el orden
         if (!in_array($sortOrder, ['asc', 'desc'])) {
             $sortOrder = 'desc';
         }
-        
+
         $perPage = $request->get('per_page', 12);
 
         // Construir la consulta
         $query = Producto::query()
-            ->with(['categoria', 'promociones', 'inventarios']);
-            
+            ->with(['categoria', 'inventarios']);
+
         // Aplicar filtros de búsqueda
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
-                  ->orWhere('cod_producto', 'like', "%{$search}%")
-                  ->orWhere('descripcion', 'like', "%{$search}%");
+                    ->orWhere('cod_producto', 'like', "%{$search}%")
+                    ->orWhere('descripcion', 'like', "%{$search}%");
             });
         }
-        
+
         // Filtrar por categoría
         if ($categoria) {
             $query->where('categoria_id', $categoria);
         }
-        
+
         // Aplicar ordenamiento
         $query->orderBy($sortBy, $sortOrder);
-        
+
         // Ejecutar la consulta con paginación
         $productos = $query->paginate($perPage);
 
@@ -80,7 +80,7 @@ class ProductoController extends Controller
 
         // Obtener categorías para el filtro
         $categorias = Categoria::orderBy('nombre')->get();
-        
+
         // Renderizar la vista
         return Inertia::render('Productos/Index', [
             'productos' => $productos,
@@ -101,11 +101,9 @@ class ProductoController extends Controller
     public function create(): Response
     {
         $categorias = Categoria::orderBy('nombre')->get();
-        $promociones = Promocion::where('estado', 'activa')->orderBy('nombre')->get();
-        
+
         return Inertia::render('Productos/Create', [
             'categorias' => $categorias,
-            'promociones' => $promociones,
         ]);
     }
 
@@ -143,11 +141,11 @@ class ProductoController extends Controller
      */
     public function show(Producto $producto): Response
     {
-        $producto->load(['categoria', 'promociones', 'inventarios.almacen']);
-        
+        $producto->load(['categoria', 'inventarios.almacen']);
+
         // Calcular stock total
         $producto->stock_total = $producto->inventarios->sum('stock');
-        
+
         return Inertia::render('Productos/Show', [
             'producto' => $producto
         ]);
@@ -158,9 +156,9 @@ class ProductoController extends Controller
      */
     public function edit(Producto $producto): Response
     {
-        $producto->load(['categoria', 'promociones']);
+        $producto->load(['categoria']);
         $categorias = Categoria::orderBy('nombre')->get();
-        
+
         return Inertia::render('Productos/Edit', [
             'producto' => $producto,
             'categorias' => $categorias,
@@ -201,9 +199,6 @@ class ProductoController extends Controller
      */
     public function destroy(Producto $producto): RedirectResponse
     {
-        // Desconectar promociones si existen
-        $producto->promociones()->detach();
-
         $producto->delete();
 
         return redirect()->route('productos.index')
@@ -222,7 +217,7 @@ class ProductoController extends Controller
         ]);
 
         $stockAnterior = $producto->stock_total;
-        
+
         switch ($validated['tipo_movimiento']) {
             case 'entrada':
                 $nuevoStock = $stockAnterior + $validated['stock_total'];
@@ -249,4 +244,4 @@ class ProductoController extends Controller
         return redirect()->route('productos.show', $producto)
             ->with('success', "Stock actualizado exitosamente. Stock anterior: {$stockAnterior}, Stock actual: {$nuevoStock}");
     }
-} 
+}

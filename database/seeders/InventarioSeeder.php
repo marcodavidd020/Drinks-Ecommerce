@@ -29,7 +29,10 @@ class InventarioSeeder extends Seeder
         ];
 
         foreach ($direcciones as $direccionData) {
-            Direccion::create($direccionData);
+            // Verificar si ya existe
+            if (!Direccion::where('nombre', $direccionData['nombre'])->exists()) {
+                Direccion::create($direccionData);
+            }
         }
 
         // Crear proveedores de bebidas
@@ -41,7 +44,10 @@ class InventarioSeeder extends Seeder
         ];
 
         foreach ($proveedores as $proveedorData) {
-            Proveedor::create($proveedorData);
+            // Verificar si ya existe
+            if (!Proveedor::where('nombre', $proveedorData['nombre'])->exists()) {
+                Proveedor::create($proveedorData);
+            }
         }
 
         // Crear categorías de bebidas
@@ -56,7 +62,10 @@ class InventarioSeeder extends Seeder
         ];
 
         foreach ($categorias as $categoriaData) {
-            Categoria::create($categoriaData);
+            // Verificar si ya existe
+            if (!Categoria::where('nombre', $categoriaData['nombre'])->exists()) {
+                Categoria::create($categoriaData);
+            }
         }
 
         // Crear almacenes especializados en bebidas
@@ -67,10 +76,13 @@ class InventarioSeeder extends Seeder
         ];
 
         foreach ($almacenes as $almacenData) {
-            Almacen::create($almacenData);
+            // Verificar si ya existe
+            if (!Almacen::where('nombre', $almacenData['nombre'])->exists()) {
+                Almacen::create($almacenData);
+            }
         }
 
-        // Crear productos de bebidas
+        // Crear productos de bebidas - solo si no existen ya
         $productos = [
             // Refrescos
             ['cod_producto' => 'REF001', 'nombre' => 'Coca-Cola 350ml', 'precio_compra' => 1.20, 'precio_venta' => 2.50, 'descripcion' => 'Refresco de cola clásico 350ml', 'categoria_id' => 1],
@@ -103,7 +115,10 @@ class InventarioSeeder extends Seeder
         ];
 
         foreach ($productos as $productoData) {
-            Producto::create($productoData);
+            // Verificar si el producto ya existe por su código
+            if (!Producto::where('cod_producto', $productoData['cod_producto'])->exists()) {
+                Producto::create($productoData);
+            }
         }
 
         // Crear inventario para cada producto en cada almacén
@@ -112,11 +127,16 @@ class InventarioSeeder extends Seeder
 
         foreach ($productos as $producto) {
             foreach ($almacenes as $almacen) {
-                ProductoInventario::create([
-                    'producto_id' => $producto->id,
-                    'almacen_id' => $almacen->id,
-                    'stock' => fake()->numberBetween(10, 100),
-                ]);
+                // Verificar si ya existe este inventario
+                if (!ProductoInventario::where('producto_id', $producto->id)
+                      ->where('almacen_id', $almacen->id)
+                      ->exists()) {
+                    ProductoInventario::create([
+                        'producto_id' => $producto->id,
+                        'almacen_id' => $almacen->id,
+                        'stock' => fake()->numberBetween(10, 100),
+                    ]);
+                }
             }
         }
 
@@ -130,7 +150,10 @@ class InventarioSeeder extends Seeder
         ];
 
         foreach ($tiposPago as $tipoPagoData) {
-            TipoPago::create($tipoPagoData);
+            // Verificar si ya existe
+            if (!TipoPago::where('tipo_pago', $tipoPagoData['tipo_pago'])->exists()) {
+                TipoPago::create($tipoPagoData);
+            }
         }
 
         // Crear promociones de bebidas
@@ -162,7 +185,10 @@ class InventarioSeeder extends Seeder
         ];
 
         foreach ($promociones as $promocionData) {
-            Promocion::create($promocionData);
+            // Verificar si ya existe
+            if (!Promocion::where('nombre', $promocionData['nombre'])->exists()) {
+                Promocion::create($promocionData);
+            }
         }
     }
 }

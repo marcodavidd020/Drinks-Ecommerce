@@ -7,6 +7,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\AlmacenController;
 use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -82,6 +83,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Gestión de categorías - CRUD completo
     Route::resource('categorias', CategoriaController::class);
+
+    // Gestión de almacenes - CRUD completo
+    Route::resource('almacenes', AlmacenController::class)->parameters([
+        'almacenes' => 'almacen'
+    ]);
 
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {

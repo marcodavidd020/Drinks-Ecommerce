@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\RoleEnum;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -19,6 +21,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleAndPermissionSeeder::class,
         ]);
+
+        // Crear usuario super admin
+        $this->createSuperAdmin();
 
         // 2. Seeders de entidades base
         $this->call([
@@ -70,5 +75,34 @@ class DatabaseSeeder extends Seeder
         $this->command->info('   • Carritos con detalles de productos (30 días)');
         $this->command->info('   • Ajustes de inventario con detalles');
         $this->command->info('   • Datos específicos para home y tienda');
+    }
+
+    /**
+     * Crear usuario super administrador
+     */
+    private function createSuperAdmin(): void
+    {
+        // Verificar si el usuario ya existe
+        if (User::where('email', 'super@admin.com')->exists()) {
+            return;
+        }
+
+        // Crear el usuario super admin
+        $superAdmin = User::create([
+            'nombre' => 'Super Administrador',
+            'email' => 'super@admin.com',
+            'celular' => '+1234567899',
+            'genero' => 'otro',
+            'password' => bcrypt('password'),
+            'estado' => 'activo',
+            'email_verified_at' => now(),
+        ]);
+
+        // Asignar rol de super-admin
+        $superAdmin->assignRole('super-admin');
+
+        $this->command->info('✅ Usuario Super Administrador creado exitosamente');
+        $this->command->info('   Email: super@admin.com');
+        $this->command->info('   Password: password');
     }
 }

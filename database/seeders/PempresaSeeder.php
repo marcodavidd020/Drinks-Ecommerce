@@ -59,10 +59,17 @@ class PempresaSeeder extends Seeder
         ];
 
         foreach ($empresas as $empresa) {
-            Pempresa::create($empresa);
+            // Verificar si la empresa ya existe por NIT
+            if (!Pempresa::where('nit', $empresa['nit'])->exists()) {
+                Pempresa::create($empresa);
+            }
         }
 
-        // Crear empresas adicionales usando factory
-        Pempresa::factory(5)->create();
+        // Crear empresas adicionales si no hay suficientes
+        $count = Pempresa::count();
+        if ($count < 10) {
+            // Crear solo las empresas necesarias para llegar a 10
+            Pempresa::factory(10 - $count)->create();
+        }
     }
 }

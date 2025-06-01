@@ -19,91 +19,65 @@ class RoleAndPermissionSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Crear permisos básicos para usuarios
-        Permission::create(['name' => 'crear-usuarios']);
-        Permission::create(['name' => 'editar-usuarios']);
-        Permission::create(['name' => 'eliminar-usuarios']);
-        Permission::create(['name' => 'ver-usuarios']);
+        // Definir todos los permisos
+        $permissionsList = [
+            // Usuarios
+            'crear-usuarios', 'editar-usuarios', 'eliminar-usuarios', 'ver-usuarios',
+            
+            // Clientes
+            'crear-clientes', 'editar-clientes', 'eliminar-clientes', 'ver-clientes',
+            
+            // Administrativos
+            'crear-administrativos', 'editar-administrativos', 'eliminar-administrativos', 'ver-administrativos',
+            
+            // Roles y permisos
+            'gestionar-roles', 'gestionar-permisos',
+            
+            // Productos e inventario
+            'crear-productos', 'editar-productos', 'eliminar-productos', 'ver-productos', 'gestionar-inventario',
+            
+            // Categorías
+            'crear-categorias', 'editar-categorias', 'eliminar-categorias', 'ver-categorias',
+            
+            // Proveedores
+            'crear-proveedores', 'editar-proveedores', 'eliminar-proveedores', 'ver-proveedores',
+            
+            // Ventas
+            'crear-ventas', 'editar-ventas', 'eliminar-ventas', 'ver-ventas',
+            
+            // Compras
+            'crear-compras', 'editar-compras', 'eliminar-compras', 'ver-compras',
+            
+            // Carrito de compras
+            'gestionar-carrito', 'realizar-compras',
+            
+            // PQRS
+            'crear-pqrs', 'responder-pqrs', 'ver-pqrs',
+            
+            // Promociones
+            'crear-promociones', 'editar-promociones', 'eliminar-promociones', 'ver-promociones',
+            
+            // Ajustes de inventario
+            'crear-ajustes-inventario', 'aprobar-ajustes-inventario', 'ver-ajustes-inventario',
+            
+            // Generales del sistema
+            'acceso-dashboard', 'ver-reportes', 'acceso-ecommerce',
+        ];
 
-        // Crear permisos para clientes
-        Permission::create(['name' => 'crear-clientes']);
-        Permission::create(['name' => 'editar-clientes']);
-        Permission::create(['name' => 'eliminar-clientes']);
-        Permission::create(['name' => 'ver-clientes']);
+        // Crear permisos solo si no existen
+        foreach ($permissionsList as $permissionName) {
+            if (!Permission::where('name', $permissionName)->exists()) {
+                Permission::create(['name' => $permissionName]);
+            }
+        }
 
-        // Crear permisos para administrativos
-        Permission::create(['name' => 'crear-administrativos']);
-        Permission::create(['name' => 'editar-administrativos']);
-        Permission::create(['name' => 'eliminar-administrativos']);
-        Permission::create(['name' => 'ver-administrativos']);
-
-        // Crear permisos para roles y permisos
-        Permission::create(['name' => 'gestionar-roles']);
-        Permission::create(['name' => 'gestionar-permisos']);
-
-        // Crear permisos para productos e inventario
-        Permission::create(['name' => 'crear-productos']);
-        Permission::create(['name' => 'editar-productos']);
-        Permission::create(['name' => 'eliminar-productos']);
-        Permission::create(['name' => 'ver-productos']);
-        Permission::create(['name' => 'gestionar-inventario']);
-
-        // Crear permisos para categorías
-        Permission::create(['name' => 'crear-categorias']);
-        Permission::create(['name' => 'editar-categorias']);
-        Permission::create(['name' => 'eliminar-categorias']);
-        Permission::create(['name' => 'ver-categorias']);
-
-        // Crear permisos para proveedores
-        Permission::create(['name' => 'crear-proveedores']);
-        Permission::create(['name' => 'editar-proveedores']);
-        Permission::create(['name' => 'eliminar-proveedores']);
-        Permission::create(['name' => 'ver-proveedores']);
-
-        // Crear permisos para ventas
-        Permission::create(['name' => 'crear-ventas']);
-        Permission::create(['name' => 'editar-ventas']);
-        Permission::create(['name' => 'eliminar-ventas']);
-        Permission::create(['name' => 'ver-ventas']);
-
-        // Crear permisos para compras
-        Permission::create(['name' => 'crear-compras']);
-        Permission::create(['name' => 'editar-compras']);
-        Permission::create(['name' => 'eliminar-compras']);
-        Permission::create(['name' => 'ver-compras']);
-
-        // Crear permisos para carrito de compras
-        Permission::create(['name' => 'gestionar-carrito']);
-        Permission::create(['name' => 'realizar-compras']);
-
-        // Crear permisos para PQRS
-        Permission::create(['name' => 'crear-pqrs']);
-        Permission::create(['name' => 'responder-pqrs']);
-        Permission::create(['name' => 'ver-pqrs']);
-
-        // Crear permisos para promociones
-        Permission::create(['name' => 'crear-promociones']);
-        Permission::create(['name' => 'editar-promociones']);
-        Permission::create(['name' => 'eliminar-promociones']);
-        Permission::create(['name' => 'ver-promociones']);
-
-        // Crear permisos para ajustes de inventario
-        Permission::create(['name' => 'crear-ajustes-inventario']);
-        Permission::create(['name' => 'aprobar-ajustes-inventario']);
-        Permission::create(['name' => 'ver-ajustes-inventario']);
-
-        // Crear permisos generales del sistema
-        Permission::create(['name' => 'acceso-dashboard']);
-        Permission::create(['name' => 'ver-reportes']);
-        Permission::create(['name' => 'acceso-ecommerce']);
-
-        // Crear roles
-        $superAdminRole = Role::create(['name' => 'super-admin']);
-        $adminRole = Role::create(['name' => 'admin']);
-        $clienteRole = Role::create(['name' => 'cliente']);
-        $empleadoRole = Role::create(['name' => 'empleado']);
-        $vendedorRole = Role::create(['name' => 'vendedor']);
-        $almacenistaRole = Role::create(['name' => 'almacenista']);
+        // Crear roles solo si no existen
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $clienteRole = Role::firstOrCreate(['name' => 'cliente']);
+        $empleadoRole = Role::firstOrCreate(['name' => 'empleado']);
+        $vendedorRole = Role::firstOrCreate(['name' => 'vendedor']);
+        $almacenistaRole = Role::firstOrCreate(['name' => 'almacenista']);
 
         // Asignar todos los permisos al super-admin
         $superAdminRole->givePermissionTo(Permission::all());
