@@ -427,25 +427,31 @@ export default function VentasIndex({ ventas, estadisticas, filters }: VentasInd
     return (
         <DashboardLayout
             title={getTextByMode({
-                niños: '📝 Registro de Ventas',
+                niños: '📝 Ventas',
                 jóvenes: 'Ventas',
                 adultos: 'Gestión de Ventas',
             })}
         >
-            <Head title="Gestión de Ventas" />
+            <Head title="Ventas" />
 
             <div className={`space-y-6 ${getModeClasses()}`}>
                 <PageHeader
                     title={getTextByMode({
-                        niños: '📝 ¡Mis Ventas!',
-                        jóvenes: '📝 Historial de Ventas',
-                        adultos: 'Historial de Ventas',
+                        niños: '📝 ¡Ventas!',
+                        jóvenes: 'Ventas',
+                        adultos: 'Gestión de Ventas',
                     })}
                     description={getTextByMode({
-                        niños: '¡Aquí puedes ver todas tus ventas!',
-                        jóvenes: 'Registro histórico de todas las ventas',
-                        adultos: 'Consulta y seguimiento de todas las operaciones de venta',
+                        niños: '¡Aquí puedes ver todas las ventas!',
+                        jóvenes: 'Administración de ventas',
+                        adultos: 'Administración de notas de venta',
                     })}
+                    buttonText={getTextByMode({
+                        niños: '✨ ¡Nueva Venta!',
+                        jóvenes: '➕ Nueva Venta',
+                        adultos: 'Nueva Venta',
+                    })}
+                    buttonHref="/ventas/create"
                 />
 
                 {/* Dashboard de estadísticas */}

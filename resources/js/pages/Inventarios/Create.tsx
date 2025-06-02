@@ -1,5 +1,4 @@
-import { FormSection } from '@/components/Form';
-import { Button } from '@/components/ui/button';
+import { FormButtons, FormPage, FormSection } from '@/components/Form';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
@@ -35,6 +34,17 @@ export default function InventariosCreate({ productos, almacenes }: InventariosC
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
+    };
+
+    const getModeClasses = () => {
+        switch (settings.ageMode) {
+            case 'niños':
+                return 'font-comic text-adaptive-kids';
+            case 'jóvenes':
+                return 'font-modern text-adaptive-teen';
+            default:
+                return 'font-classic text-adaptive-adult';
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -77,27 +87,38 @@ export default function InventariosCreate({ productos, almacenes }: InventariosC
         >
             <Head title="Agregar Producto al Inventario" />
 
-            <div className="space-y-6">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {getTextByMode({
-                        niños: '📦 ¡Agregar un Producto al Inventario!',
-                        jóvenes: 'Agregar Producto al Inventario',
-                        adultos: 'Registrar Producto en Inventario',
-                    })}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    {getTextByMode({
-                        niños: '¡Aquí puedes añadir un producto a un almacén!',
-                        jóvenes: 'Agrega un producto al inventario de un almacén',
-                        adultos: 'Complete el formulario para registrar un producto en el inventario',
-                    })}
-                </p>
-
-                <FormSection>
-                    <form onSubmit={handleSubmit} className="space-y-6">
+            <FormPage
+                title={getTextByMode({
+                    niños: '📦 ¡Agregar un Producto al Inventario!',
+                    jóvenes: 'Agregar Producto al Inventario',
+                    adultos: 'Registrar Producto en Inventario',
+                })}
+                description={getTextByMode({
+                    niños: '¡Aquí puedes añadir un producto a un almacén!',
+                    jóvenes: 'Agrega un producto al inventario de un almacén',
+                    adultos: 'Complete el formulario para registrar un producto en el inventario',
+                })}
+                backHref="/inventarios"
+                backText={getTextByMode({
+                    niños: '¡Volver al Inventario!',
+                    jóvenes: 'Volver al Inventario',
+                    adultos: 'Volver al Inventario',
+                })}
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <FormSection
+                        title={getTextByMode({
+                            niños: '📦 Datos del Producto',
+                            jóvenes: 'Información del Producto',
+                            adultos: 'Información del Producto',
+                        })}
+                    >
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label
+                                    htmlFor="producto_id"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '📦 Producto',
                                         jóvenes: 'Producto',
@@ -105,23 +126,27 @@ export default function InventariosCreate({ productos, almacenes }: InventariosC
                                     })}
                                 </label>
                                 <select
+                                    id="producto_id"
                                     name="producto_id"
                                     value={data.producto_id}
                                     onChange={(e) => setData('producto_id', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                     required
                                 >
-                                    {productoOptions.map(option => (
-                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    {productoOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
                                     ))}
                                 </select>
-                                {errors.producto_id && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.producto_id}</p>
-                                )}
+                                {errors.producto_id && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.producto_id}</p>}
                             </div>
 
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label
+                                    htmlFor="almacen_id"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '🏬 Almacén',
                                         jóvenes: 'Almacén',
@@ -129,23 +154,27 @@ export default function InventariosCreate({ productos, almacenes }: InventariosC
                                     })}
                                 </label>
                                 <select
+                                    id="almacen_id"
                                     name="almacen_id"
                                     value={data.almacen_id}
                                     onChange={(e) => setData('almacen_id', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                     required
                                 >
-                                    {almacenOptions.map(option => (
-                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    {almacenOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
                                     ))}
                                 </select>
-                                {errors.almacen_id && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.almacen_id}</p>
-                                )}
+                                {errors.almacen_id && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.almacen_id}</p>}
                             </div>
 
                             <div className="col-span-2 sm:col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label
+                                    htmlFor="stock"
+                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
+                                >
                                     {getTextByMode({
                                         niños: '📊 Cantidad',
                                         jóvenes: 'Stock',
@@ -154,45 +183,37 @@ export default function InventariosCreate({ productos, almacenes }: InventariosC
                                 </label>
                                 <input
                                     type="number"
+                                    id="stock"
                                     name="stock"
                                     value={data.stock}
                                     onChange={(e) => setData('stock', e.target.value)}
                                     min="0"
                                     step="1"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
                                     required
                                     placeholder="Cantidad en stock"
                                 />
-                                {errors.stock && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.stock}</p>
-                                )}
+                                {errors.stock && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.stock}</p>}
                             </div>
                         </div>
+                    </FormSection>
 
-                        <div className="flex justify-end space-x-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => reset('producto_id', 'almacen_id', 'stock')}
-                                disabled={processing || isSubmitting}
-                            >
-                                {getTextByMode({
-                                    niños: '🧹 Limpiar',
-                                    jóvenes: 'Limpiar',
-                                    adultos: 'Limpiar',
-                                })}
-                            </Button>
-                            <Button type="submit" disabled={processing || isSubmitting}>
-                                {getTextByMode({
-                                    niños: '💾 ¡Guardar!',
-                                    jóvenes: 'Guardar',
-                                    adultos: 'Guardar',
-                                })}
-                            </Button>
-                        </div>
-                    </form>
-                </FormSection>
-            </div>
+                    <FormButtons
+                        isProcessing={processing || isSubmitting}
+                        submitLabel={getTextByMode({
+                            niños: '💾 ¡Guardar!',
+                            jóvenes: 'Guardar',
+                            adultos: 'Guardar',
+                        })}
+                        cancelHref="/inventarios"
+                        cancelLabel={getTextByMode({
+                            niños: '❌ Cancelar',
+                            jóvenes: 'Cancelar',
+                            adultos: 'Cancelar',
+                        })}
+                    />
+                </form>
+            </FormPage>
         </DashboardLayout>
     );
-} 
+}

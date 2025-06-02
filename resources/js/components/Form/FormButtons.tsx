@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
 import { useAppMode } from '@/contexts/AppModeContext';
+import { Link } from '@inertiajs/react';
 
 interface FormButtonsProps {
     cancelHref: string;
@@ -12,7 +12,7 @@ interface FormButtonsProps {
     processingText?: string;
 }
 
-export default function FormButtons({ 
+export default function FormButtons({
     cancelHref,
     isProcessing,
     processing,
@@ -20,11 +20,11 @@ export default function FormButtons({
     cancelLabel,
     submitText,
     submitLabel,
-    processingText 
+    processingText,
 }: FormButtonsProps) {
     const { settings } = useAppMode();
     // Use processing si isProcessing no está definido
-    const isProcessingState = isProcessing !== undefined ? isProcessing : (processing || false);
+    const isProcessingState = isProcessing !== undefined ? isProcessing : processing || false;
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
@@ -41,23 +41,31 @@ export default function FormButtons({
         }
     };
 
-    const defaultCancelText = cancelLabel || cancelText || getTextByMode({
-        niños: '❌ Cancelar',
-        jóvenes: 'Cancelar',
-        adultos: 'Cancelar',
-    });
+    const defaultCancelText =
+        cancelLabel ||
+        cancelText ||
+        getTextByMode({
+            niños: '❌ Cancelar',
+            jóvenes: 'Cancelar',
+            adultos: 'Cancelar',
+        });
 
-    const defaultSubmitText = submitLabel || submitText || getTextByMode({
-        niños: '💾 Guardar',
-        jóvenes: 'Guardar',
-        adultos: 'Guardar',
-    });
+    const defaultSubmitText =
+        submitLabel ||
+        submitText ||
+        getTextByMode({
+            niños: '💾 Guardar',
+            jóvenes: 'Guardar',
+            adultos: 'Guardar',
+        });
 
-    const defaultProcessingText = processingText || getTextByMode({
-        niños: '⏳ Guardando...',
-        jóvenes: 'Guardando...',
-        adultos: 'Guardando...',
-    });
+    const defaultProcessingText =
+        processingText ||
+        getTextByMode({
+            niños: '⏳ Guardando...',
+            jóvenes: 'Guardando...',
+            adultos: 'Guardando...',
+        });
 
     return (
         <div className="flex justify-end space-x-4 border-t border-gray-200 pt-6 dark:border-gray-700">
@@ -76,4 +84,4 @@ export default function FormButtons({
             </button>
         </div>
     );
-} 
+}

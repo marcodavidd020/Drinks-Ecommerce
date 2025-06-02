@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Models\NotaVenta;
 use App\Models\DetalleVenta;
+use App\Models\Producto;
+use App\Models\ProductoInventario;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -89,6 +91,96 @@ class NotaVentaController extends Controller
     }
 
     /**
+     * Mostrar formulario para crear una nueva nota de venta
+     */
+    public function create()
+    {
+        // Obtener productos con stock disponible
+        $productos = Producto::with(['categoria'])
+            ->whereHas('inventarios', function ($query) {
+                $query->where('stock', '>', 0);
+            })
+            ->get()
+            ->map(function ($producto) {
+                // Calcular stock total disponible entre todos los almacenes
+                $stockTotal = $producto->inventarios->sum('stock');
+                
+                return [
+                    'id' => $producto->id,
+                    'nombre' => $producto->nombre,
+                    'cod_producto' => $producto->cod_producto,
+                    'precio_venta' => $producto->precio_venta,
+                    'stock_disponible' => $stockTotal,
+                    'categoria' => $producto->categoria ? [
+                        'id' => $producto->categoria->id,
+                        'nombre' => $producto->categoria->nombre,
+                    ] : null,
+                ];
+            });
+
+        return Inertia::render('Ventas/Create', [
+            'productos' => $productos,
+            'fecha_actual' => now()->format('Y-m-d'),
+        ]);
+    }
+
+    /**
+     * Almacenar una nueva nota de venta
+     */
+    public function store(Request $request)
+    {
+        // Validar datos de entrada
+        $validated = $request->validate([
+            'fecha' => 'required|date',
+            'observaciones' => 'nullable|string|max:500',
+            'detalles' => 'required|array|min:1',
+            'detalles.*.producto_id' => 'required|exists:productos,id',
+            'detalles.*.cantidad' => 'required|integer|min:1',
+            'detalles.*.precio_unitario' => 'required|numeric|min:0',
+            'detalles.*.total' => 'required|numeric|min:0',
+        ]);
+
+        // Iniciar transacción para garantizar integridad
+        return DB::transaction(function () use ($validated, $request) {
+            // Calcular total de la venta
+            $total = collect($validated['detalles'])->sum('total');
+            
+            // Crear la nota de venta
+            $notaVenta = NotaVenta::create([
+                'fecha' => $validated['fecha'],
+                'total' => $total,
+                'estado' => 'pendiente',
+                'observaciones' => $validated['observaciones'] ?? null,
+            ]);
+            
+            // Crear los detalles de la venta
+            foreach ($validated['detalles'] as $detalle) {
+                DetalleVenta::create([
+                    'nota_venta_id' => $notaVenta->id,
+                    'producto_id' => $detalle['producto_id'],
+                    'cantidad' => $detalle['cantidad'],
+                    'precio_unitario' => $detalle['precio_unitario'],
+                    'total' => $detalle['total'],
+                ]);
+                
+                // Si la venta se completa automáticamente, reducir el stock
+                if ($request->input('completar_automaticamente', false)) {
+                    $this->reducirStock($detalle['producto_id'], $detalle['cantidad']);
+                }
+            }
+            
+            // Si se solicita completar automáticamente
+            if ($request->input('completar_automaticamente', false)) {
+                $notaVenta->update(['estado' => 'completada']);
+            }
+            
+            // Redirigir a la página de detalle de la venta
+            return redirect()->route('ventas.show', $notaVenta->id)
+                ->with('success', 'Nota de venta creada correctamente.');
+        });
+    }
+
+    /**
      * Mostrar los detalles de una nota de venta específica.
      */
     public function show(NotaVenta $venta)
@@ -156,5 +248,35 @@ class NotaVentaController extends Controller
         
         return redirect()->route('ventas.show', $venta->id)
             ->with('success', 'Estado de la venta actualizado correctamente.');
+    }
+
+    /**
+     * Método privado para reducir stock al completar venta
+     */
+    private function reducirStock($productoId, $cantidad)
+    {
+        // Obtener los inventarios del producto ordenados por mayor stock primero
+        $inventarios = ProductoInventario::where('producto_id', $productoId)
+            ->where('stock', '>', 0)
+            ->orderBy('stock', 'desc')
+            ->get();
+        
+        $cantidadPendiente = $cantidad;
+        
+        foreach ($inventarios as $inventario) {
+            if ($cantidadPendiente <= 0) {
+                break;
+            }
+            
+            // Determinar cuánto podemos tomar de este inventario
+            $cantidadARestar = min($cantidadPendiente, $inventario->stock);
+            
+            // Actualizar el inventario
+            $inventario->update([
+                'stock' => $inventario->stock - $cantidadARestar
+            ]);
+            
+            $cantidadPendiente -= $cantidadARestar;
+        }
     }
 } 

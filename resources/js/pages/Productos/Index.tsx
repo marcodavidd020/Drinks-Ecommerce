@@ -501,7 +501,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
             })}
         >
             <Head title="Gestión de Productos" />
-
+            
             <div className={`space-y-6 ${getModeClasses()}`}>
                 <PageHeader
                     title={getTextByMode({
@@ -623,7 +623,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
 
                 <ConfirmDialog
                     isOpen={confirmDialog.isOpen}
-                    title={getTextByMode({
+                                                    title={getTextByMode({
                         niños: '¿Seguro que quieres eliminar este producto?',
                         jóvenes: '¿Eliminar este producto?',
                         adultos: 'Confirmar eliminación',
@@ -654,4 +654,4 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
             </div>
         </DashboardLayout>
     );
-}
+} 

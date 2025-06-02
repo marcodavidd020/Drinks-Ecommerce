@@ -102,9 +102,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Gestión de ventas
     Route::get('/ventas', [NotaVentaController::class, 'index'])->name('ventas.index');
+    Route::get('/ventas/create', [NotaVentaController::class, 'create'])->name('ventas.create');
+    Route::post('/ventas', [NotaVentaController::class, 'store'])->name('ventas.store');
     Route::get('/ventas/{venta}', [NotaVentaController::class, 'show'])->name('ventas.show');
     Route::post('/ventas/{venta}/estado', [NotaVentaController::class, 'updateEstado'])->name('ventas.update-estado');
-
+    
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {
         return Inertia::render('Admin/Roles');
