@@ -1,488 +1,575 @@
-/* Importar fuentes de Google Fonts primero */
+/* Importar todas las fuentes y estilos externos primero */
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+/* Importar estilos de modos personalizados */
+@import './modes.css';
 
 @import 'tailwindcss';
 
-@plugin 'tailwindcss-animate';
-
-@source '../views';
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../../resources/views/**/*.blade.php';
-@source '../../resources/js/**/*.{js,jsx,ts,tsx}';
-
-@custom-variant dark (&:is(.dark *));
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
-
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
-
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
-
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
-
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-
-    --color-sidebar: var(--sidebar-background);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
-}
-
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
+    :root {
+        --font-sans:
+            'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+        --radius: 0.5rem;
+        --radius-lg: var(--radius);
+        --radius-md: calc(var(--radius) - 2px);
+        --radius-sm: calc(var(--radius) - 4px);
+
+        --background: hsl(0 0% 100%);
+        --foreground: hsl(0 0% 3.9%);
+
+        --card: hsl(0 0% 100%);
+        --card-foreground: hsl(0 0% 3.9%);
+
+        --popover: hsl(0 0% 100%);
+        --popover-foreground: hsl(0 0% 3.9%);
+
+        --primary: hsl(0 0% 9%);
+        --primary-foreground: hsl(0 0% 98%);
+
+        --secondary: hsl(0 0% 92.1%);
+        --secondary-foreground: hsl(0 0% 9%);
+
+        --muted: hsl(0 0% 96.1%);
+        --muted-foreground: hsl(0 0% 45.1%);
+
+        --accent: hsl(0 0% 96.1%);
+        --accent-foreground: hsl(0 0% 9%);
+
+        --destructive: hsl(0 84.2% 60.2%);
+        --destructive-foreground: hsl(0 0% 98%);
+
+        --border: hsl(0 0% 92.8%);
+        --input: hsl(0 0% 89.8%);
+        --ring: hsl(0 0% 3.9%);
+
+        --chart-1: hsl(12 76% 61%);
+        --chart-2: hsl(173 58% 39%);
+        --chart-3: hsl(197 37% 24%);
+        --chart-4: hsl(43 74% 66%);
+        --chart-5: hsl(27 87% 67%);
+
+        --sidebar-background: hsl(0 0% 98%);
+        --sidebar-foreground: hsl(240 5.3% 26.1%);
+        --sidebar-primary: hsl(0 0% 10%);
+        --sidebar-primary-foreground: hsl(0 0% 98%);
+        --sidebar-accent: hsl(0 0% 94%);
+        --sidebar-accent-foreground: hsl(0 0% 30%);
+        --sidebar-border: hsl(0 0% 91%);
+        --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+        --app-age-mode: 'adultos';
+        --app-theme-mode: 'día';
+        --app-font-size: 'normal';
+        --app-contrast: 'normal';
+    }
+
+    .dark {
+        --background: hsl(0 0% 3.9%);
+        --foreground: hsl(0 0% 98%);
+        --card: hsl(0 0% 3.9%);
+        --card-foreground: hsl(0 0% 98%);
+        --popover: hsl(0 0% 3.9%);
+        --popover-foreground: hsl(0 0% 98%);
+        --primary: hsl(0 0% 98%);
+        --primary-foreground: hsl(0 0% 9%);
+        --secondary: hsl(0 0% 14.9%);
+        --secondary-foreground: hsl(0 0% 98%);
+        --muted: hsl(0 0% 16.08%);
+        --muted-foreground: hsl(0 0% 63.9%);
+        --accent: hsl(0 0% 14.9%);
+        --accent-foreground: hsl(0 0% 98%);
+        --destructive: hsl(0 84% 60%);
+        --destructive-foreground: hsl(0 0% 98%);
+        --border: hsl(0 0% 14.9%);
+        --input: hsl(0 0% 14.9%);
+        --ring: hsl(0 0% 83.1%);
+        --chart-1: hsl(220 70% 50%);
+        --chart-2: hsl(160 60% 45%);
+        --chart-3: hsl(30 80% 55%);
+        --chart-4: hsl(280 65% 60%);
+        --chart-5: hsl(340 75% 55%);
+        --sidebar-background: hsl(0 0% 7%);
+        --sidebar-foreground: hsl(0 0% 95.9%);
+        --sidebar-primary: hsl(360, 100%, 100%);
+        --sidebar-primary-foreground: hsl(0 0% 100%);
+        --sidebar-accent: hsl(0 0% 15.9%);
+        --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+        --sidebar-border: hsl(0 0% 15.9%);
+        --sidebar-ring: hsl(217.2 91.2% 59.8%);
+    }
+
+    /*
+    The default border color has changed to `currentColor` in Tailwind CSS v4,
+    so we've added these compatibility styles to make sure everything still
+    looks the same as it did with Tailwind CSS v3.
+
+    If we ever want to remove these styles, we need to add an explicit border
+    color utility to any element that depends on these defaults.
+    */
     *,
     ::after,
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
-    }
-}
-
-:root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 92.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
-    --chart-1: hsl(12 76% 61%);
-    --chart-2: hsl(173 58% 39%);
-    --chart-3: hsl(197 37% 24%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(27 87% 67%);
-    --radius: 0.5rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --app-age-mode: 'adultos';
-    --app-theme-mode: 'día';
-    --app-font-size: 'normal';
-    --app-contrast: 'normal';
-}
-
-.dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-}
-
-@layer base {
-    * {
-        @apply border-border;
+        border-color: var(--border);
     }
 
     body {
-        @apply bg-background text-foreground;
+        background-color: var(--background);
+        color: var(--foreground);
     }
 }
 
-/* Importar estilos de modos personalizados */
-@import './modes.css';
-
-/* Fuentes por modo de edad */
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
-
 /* === MODOS DE EDAD === */
 .mode-niños {
-  --font-primary: 'Comic Neue', cursive;
-  --color-primary: #ec4899; /* pink-500 */
-  --color-secondary: #8b5cf6; /* violet-500 */
-  --color-accent: #fbbf24; /* amber-400 */
+    --font-primary: 'Comic Neue', cursive;
+    --color-primary: #ec4899; /* pink-500 */
+    --color-secondary: #8b5cf6; /* violet-500 */
+    --color-accent: #fbbf24; /* amber-400 */
 }
 
 .mode-jóvenes {
-  --font-primary: 'Inter', sans-serif;
-  --color-primary: #6366f1; /* indigo-500 */
-  --color-secondary: #8b5cf6; /* violet-500 */
-  --color-accent: #f59e0b; /* amber-500 */
+    --font-primary: 'Inter', sans-serif;
+    --color-primary: #6366f1; /* indigo-500 */
+    --color-secondary: #8b5cf6; /* violet-500 */
+    --color-accent: #f59e0b; /* amber-500 */
 }
 
 .mode-adultos {
-  --font-primary: 'Playfair Display', serif;
-  --color-primary: #1f2937; /* gray-800 */
-  --color-secondary: #374151; /* gray-700 */
-  --color-accent: #3b82f6; /* blue-500 */
+    --font-primary: 'Playfair Display', serif;
+    --color-primary: #1f2937; /* gray-800 */
+    --color-secondary: #374151; /* gray-700 */
+    --color-accent: #3b82f6; /* blue-500 */
 }
 
 /* === TEMAS DÍA/NOCHE === */
 .theme-día {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-  --border-color: #e5e7eb;
-  --shadow-color: rgba(0, 0, 0, 0.1);
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border-color: #e5e7eb;
+    --shadow-color: rgba(0, 0, 0, 0.1);
 }
 
 .theme-noche {
-  --bg-primary: #111827;
-  --bg-secondary: #1f2937;
-  --bg-tertiary: #374151;
-  --text-primary: #f9fafb;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
-  --border-color: #4b5563;
-  --shadow-color: rgba(0, 0, 0, 0.3);
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-tertiary: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --border-color: #4b5563;
+    --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
 /* === TAMAÑOS DE FUENTE === */
 .font-pequeño {
-  --base-font-size: 0.875rem; /* 14px */
-  --text-scale: 0.875;
+    --base-font-size: 0.875rem; /* 14px */
+    --text-scale: 0.875;
 }
 
 .font-normal {
-  --base-font-size: 1rem; /* 16px */
-  --text-scale: 1;
+    --base-font-size: 1rem; /* 16px */
+    --text-scale: 1;
 }
 
 .font-grande {
-  --base-font-size: 1.125rem; /* 18px */
-  --text-scale: 1.125;
+    --base-font-size: 1.125rem; /* 18px */
+    --text-scale: 1.125;
 }
 
 .font-extra-grande {
-  --base-font-size: 1.25rem; /* 20px */
-  --text-scale: 1.25;
+    --base-font-size: 1.25rem; /* 20px */
+    --text-scale: 1.25;
 }
 
 /* === CONTRASTES === */
 .contrast-normal {
-  --contrast-multiplier: 1;
+    --contrast-multiplier: 1;
 }
 
 .contrast-alto {
-  --contrast-multiplier: 1.2;
-  filter: contrast(1.2);
+    --contrast-multiplier: 1.2;
+    filter: contrast(1.2);
 }
 
 .contrast-extra-alto {
-  --contrast-multiplier: 1.5;
-  filter: contrast(1.5);
+    --contrast-multiplier: 1.5;
+    filter: contrast(1.5);
 }
 
 /* === CLASES ADAPTATIVAS === */
 
 /* Texto adaptativo por modo */
 .text-adaptive {
-  color: var(--text-primary);
-  font-family: var(--font-primary);
-  font-size: var(--base-font-size);
+    color: var(--text-primary);
+    font-family: var(--font-primary);
+    font-size: var(--base-font-size);
 }
 
 .text-adaptive-secondary {
-  color: var(--text-secondary);
-  font-family: var(--font-primary);
+    color: var(--text-secondary);
+    font-family: var(--font-primary);
 }
 
 .text-adaptive-muted {
-  color: var(--text-muted);
-  font-family: var(--font-primary);
+    color: var(--text-muted);
+    font-family: var(--font-primary);
 }
 
 /* Textos específicos por edad */
 .text-adaptive-kids {
-  font-family: 'Comic Neue', cursive;
-  color: var(--text-primary);
+    font-family: 'Comic Neue', cursive;
+    color: var(--text-primary);
 }
 
 .text-adaptive-teen {
-  font-family: 'Inter', sans-serif;
-  color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
 }
 
 .text-adaptive-adult {
-  font-family: 'Playfair Display', serif;
-  color: var(--text-primary);
+    font-family: 'Playfair Display', serif;
+    color: var(--text-primary);
 }
 
 /* Fondos adaptativos */
 .bg-adaptive {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .bg-adaptive-secondary {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .bg-adaptive-tertiary {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 /* Bordes adaptativos */
 .border-adaptive {
-  border-color: var(--border-color);
+    border-color: var(--border-color);
 }
 
 /* Cards adaptativos */
 .card-adaptive {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 1px 3px var(--shadow-color);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 /* Botones adaptativos */
 .btn-adaptive {
-  background-color: var(--color-primary);
-  color: var(--bg-primary);
-  border: 1px solid var(--color-primary);
-  font-family: var(--font-primary);
-  transition: all 0.2s ease-in-out;
+    background-color: var(--color-primary);
+    color: var(--bg-primary);
+    border: 1px solid var(--color-primary);
+    font-family: var(--font-primary);
+    transition: all 0.2s ease-in-out;
 }
 
 .btn-adaptive:hover {
-  background-color: var(--color-secondary);
-  border-color: var(--color-secondary);
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
 }
 
 .btn-adaptive-secondary {
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  font-family: var(--font-primary);
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    font-family: var(--font-primary);
 }
 
 .btn-adaptive-secondary:hover {
-  background-color: var(--color-primary);
-  color: var(--bg-primary);
+    background-color: var(--color-primary);
+    color: var(--bg-primary);
 }
 
 /* Enlaces adaptativos */
 .link-adaptive {
-  color: var(--color-primary);
-  font-family: var(--font-primary);
-  text-decoration: none;
+    color: var(--color-primary);
+    font-family: var(--font-primary);
+    text-decoration: none;
 }
 
 .link-adaptive:hover {
-  color: var(--color-secondary);
-  text-decoration: underline;
+    color: var(--color-secondary);
+    text-decoration: underline;
 }
 
 /* === FUENTES POR MODO === */
 .font-comic {
-  font-family: 'Comic Neue', cursive !important;
+    font-family: 'Comic Neue', cursive !important;
 }
 
 .font-modern {
-  font-family: 'Inter', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
 .font-classic {
-  font-family: 'Playfair Display', serif !important;
+    font-family: 'Playfair Display', serif !important;
 }
 
 /* === UTILIDADES ESPECÍFICAS === */
 
 /* Aplicar tema automáticamente al body */
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-primary);
-  font-size: var(--base-font-size);
-  transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-primary);
+    font-size: var(--base-font-size);
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
 }
 
 /* Hacer que los elementos dark: respondan al tema */
 .theme-noche .dark\:bg-gray-800 {
-  background-color: var(--bg-secondary) !important;
+    background-color: var(--bg-secondary) !important;
 }
 
 .theme-noche .dark\:bg-gray-900 {
-  background-color: var(--bg-tertiary) !important;
+    background-color: var(--bg-tertiary) !important;
 }
 
 .theme-noche .dark\:text-gray-100 {
-  color: var(--text-primary) !important;
+    color: var(--text-primary) !important;
 }
 
 .theme-noche .dark\:text-gray-300 {
-  color: var(--text-secondary) !important;
+    color: var(--text-secondary) !important;
 }
 
 .theme-noche .dark\:text-gray-400 {
-  color: var(--text-muted) !important;
+    color: var(--text-muted) !important;
 }
 
 .theme-noche .dark\:border-gray-700 {
-  border-color: var(--border-color) !important;
+    border-color: var(--border-color) !important;
 }
 
 /* Forzar tema día */
 .theme-día .dark\:bg-gray-800 {
-  background-color: #f8fafc !important;
+    background-color: #f8fafc !important;
 }
 
 .theme-día .dark\:bg-gray-900 {
-  background-color: #f1f5f9 !important;
+    background-color: #f1f5f9 !important;
 }
 
 .theme-día .dark\:text-gray-100 {
-  color: #1f2937 !important;
+    color: #1f2937 !important;
 }
 
 .theme-día .dark\:text-gray-300 {
-  color: #4b5563 !important;
+    color: #4b5563 !important;
 }
 
 .theme-día .dark\:text-gray-400 {
-  color: #6b7280 !important;
+    color: #6b7280 !important;
 }
 
 .theme-día .dark\:border-gray-700 {
-  border-color: #e5e7eb !important;
+    border-color: #e5e7eb !important;
+}
+
+/* Correcciones adicionales para el modo claro */
+.theme-día .bg-gray-50.dark\:bg-gray-900 {
+    background-color: #f9fafb !important;
+}
+
+.theme-día .bg-white.dark\:bg-gray-800 {
+    background-color: #ffffff !important;
+}
+
+.theme-día .dark\:bg-gray-700 {
+    background-color: #f3f4f6 !important;
+}
+
+.theme-día .dark\:text-gray-200 {
+    color: #374151 !important;
+}
+
+.theme-día button.dark\:bg-gray-700 {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+}
+
+.theme-día button.dark\:border-gray-600 {
+    border-color: #d1d5db !important;
+}
+
+.theme-día button.dark\:hover\:bg-gray-600:hover {
+    background-color: #e5e7eb !important;
+}
+
+.theme-día select.dark\:bg-gray-700 {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+}
+
+.theme-día .dark\:bg-blue-900\/30 {
+    background-color: rgba(219, 234, 254, 0.8) !important;
+}
+
+.theme-día .dark\:text-blue-400 {
+    color: #2563eb !important;
+}
+
+.theme-día .dark\:bg-blue-900 {
+    background-color: #dbeafe !important;
+}
+
+.theme-día .dark\:text-blue-200 {
+    color: #1d4ed8 !important;
+}
+
+.theme-día .dark\:bg-gray-700\/50 {
+    background-color: #f9fafb !important;
+}
+
+/* Correcciones para tablas en modo claro */
+.theme-día table thead.dark\:bg-gray-900 {
+    background-color: #f8fafc !important;
+}
+
+.theme-día table tbody.dark\:bg-gray-800 {
+    background-color: #ffffff !important;
+}
+
+.theme-día table tbody.dark\:divide-gray-700 {
+    border-color: #e5e7eb !important;
+}
+
+.theme-día table tr.dark\:hover\:bg-gray-700:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.theme-día input.dark\:bg-gray-700,
+.theme-día textarea.dark\:bg-gray-700 {
+    background-color: #f9fafb !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día .dark\:bg-yellow-900\/20 {
+    background-color: #fef3c7 !important;
+}
+
+.theme-día .dark\:text-yellow-200 {
+    color: #92400e !important;
+}
+
+.theme-día .dark\:text-yellow-300 {
+    color: #b45309 !important;
 }
 
 /* === RESPONSIVE Y ACCESIBILIDAD === */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* Focus visible para accesibilidad */
 .focus\:ring-adaptive:focus {
-  ring-color: var(--color-primary);
-  ring-width: 2px;
+    outline-color: var(--color-primary);
+    outline-width: 2px;
+    outline-style: solid;
+    outline-offset: 2px;
 }
 
 /* Personalización de scrollbars en modo oscuro */
 .theme-noche ::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 .theme-noche ::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
+    background: var(--bg-tertiary);
 }
 
 .theme-noche ::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 4px;
+    background: var(--text-muted);
+    border-radius: 4px;
 }
 
 .theme-noche ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+    background: var(--text-secondary);
 }
 
 /* === TRANSICIONES SUAVES === */
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-duration: 0.2s;
-  transition-timing-function: ease-in-out;
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in-out;
 }
 
 /* === MODO DEBUG (solo en desarrollo) === */
 .debug-mode-indicator {
-  position: fixed;
-  bottom: 1rem;
-  left: 1rem;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-family: monospace;
-  z-index: 9999;
-  pointer-events: none;
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-family: monospace;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* Correcciones para componentes de UI */
+.theme-día .dark\:bg-green-900\/20 {
+    background-color: #dcfce7 !important;
+}
+
+.theme-día .dark\:text-green-100 {
+    color: #166534 !important;
+}
+
+.theme-día .dark\:text-green-300 {
+    color: #15803d !important;
+}
+
+.theme-día .dark\:bg-purple-900\/20 {
+    background-color: #f3e8ff !important;
+}
+
+.theme-día .dark\:text-purple-100 {
+    color: #7e22ce !important;
+}
+
+.theme-día .dark\:text-purple-300 {
+    color: #a855f7 !important;
+}
+
+.theme-día .dark\:bg-red-900\/20 {
+    background-color: #fee2e2 !important;
+}
+
+.theme-día .dark\:text-red-100 {
+    color: #b91c1c !important;
+}
+
+.theme-día .dark\:text-red-300,
+.theme-día .dark\:text-red-400 {
+    color: #dc2626 !important;
+}
+
+/* Correcciones para formularios */
+.theme-día label.dark\:text-gray-300 {
+    color: #374151 !important;
 }
