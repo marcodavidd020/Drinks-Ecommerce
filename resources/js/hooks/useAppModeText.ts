@@ -21,6 +21,7 @@ export function useAppModeText() {
     return {
         getTextByMode,
         getModeClasses,
+        settings,
         ageMode: settings.ageMode,
     };
 } 
