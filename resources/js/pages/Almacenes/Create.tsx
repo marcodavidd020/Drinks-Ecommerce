@@ -1,11 +1,11 @@
-import { FormButtons, FormPage, FormSection } from '@/components/Form';
-import { useAppMode } from '@/contexts/AppModeContext';
+import { FormButtons, FormPage, InputField, TextareaField } from '@/components/Form';
+import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 export default function AlmacenCreate() {
-    const { settings } = useAppMode();
+    const { getTextByMode, getModeClasses } = useAppModeText();
 
     const { data, setData, post, processing, errors } = useForm({
         nombre: '',
@@ -13,84 +13,10 @@ export default function AlmacenCreate() {
         ubicacion: '',
     });
 
-    const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
-        return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
-    };
-
-    const getModeClasses = () => {
-        switch (settings.ageMode) {
-            case 'niños':
-                return 'font-comic text-adaptive-kids';
-            case 'jóvenes':
-                return 'font-modern text-adaptive-teen';
-            default:
-                return 'font-classic text-adaptive-adult';
-        }
-    };
-
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post('/almacenes');
     };
-
-    // Configuración de campos para FormSection
-    const almacenFields = [
-        {
-            type: 'text' as const,
-            name: 'nombre',
-            label: getTextByMode({
-                niños: '📝 Nombre del Almacén *',
-                jóvenes: '📝 Nombre *',
-                adultos: 'Nombre del Almacén *',
-            }),
-            value: data.nombre,
-            onChange: (value: string) => setData('nombre', value),
-            placeholder: getTextByMode({
-                niños: 'Ej: Almacén Central, Bodega Norte...',
-                jóvenes: 'Nombre del almacén',
-                adultos: 'Ingrese el nombre del almacén',
-            }),
-            required: true,
-            error: errors.nombre
-        },
-        {
-            type: 'text' as const,
-            name: 'ubicacion',
-            label: getTextByMode({
-                niños: '📍 Ubicación del Almacén *',
-                jóvenes: '📍 Ubicación *',
-                adultos: 'Ubicación del Almacén *',
-            }),
-            value: data.ubicacion,
-            onChange: (value: string) => setData('ubicacion', value),
-            placeholder: getTextByMode({
-                niños: 'Ej: Calle 123, Ciudad, Zona Este...',
-                jóvenes: 'Dirección o ubicación',
-                adultos: 'Ingrese la dirección o ubicación del almacén',
-            }),
-            required: true,
-            error: errors.ubicacion
-        },
-        {
-            type: 'textarea' as const,
-            name: 'descripcion',
-            label: getTextByMode({
-                niños: '📝 Descripción',
-                jóvenes: '📝 Descripción',
-                adultos: 'Descripción',
-            }),
-            value: data.descripcion,
-            onChange: (value: string) => setData('descripcion', value),
-            placeholder: getTextByMode({
-                niños: 'Cuenta algo sobre este almacén...',
-                jóvenes: 'Descripción del almacén',
-                adultos: 'Ingrese una descripción para el almacén',
-            }),
-            rows: 4,
-            span: 2 as const,
-            error: errors.descripcion
-        }
-    ];
 
     return (
         <DashboardLayout
@@ -121,15 +47,70 @@ export default function AlmacenCreate() {
                 })}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <FormSection
-                        title={getTextByMode({
-                            niños: '📝 Información del Almacén',
-                            jóvenes: '📝 Datos del Almacén',
-                            adultos: 'Información del Almacén',
-                        })}
-                        fields={almacenFields}
-                        columns={2}
-                    />
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '📝 Información del Almacén',
+                                jóvenes: '📝 Datos del Almacén',
+                                adultos: 'Información del Almacén',
+                            })}
+                        </h2>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <InputField
+                                label={getTextByMode({
+                                    niños: '📝 Nombre del Almacén',
+                                    jóvenes: '📝 Nombre',
+                                    adultos: 'Nombre del Almacén',
+                                })}
+                                type="text"
+                                value={data.nombre}
+                                onChange={(e) => setData('nombre', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: 'Ej: Almacén Central, Bodega Norte...',
+                                    jóvenes: 'Nombre del almacén',
+                                    adultos: 'Ingrese el nombre del almacén',
+                                })}
+                                error={errors.nombre}
+                                required
+                            />
+
+                            <InputField
+                                label={getTextByMode({
+                                    niños: '📍 Ubicación del Almacén',
+                                    jóvenes: '📍 Ubicación',
+                                    adultos: 'Ubicación del Almacén',
+                                })}
+                                type="text"
+                                value={data.ubicacion}
+                                onChange={(e) => setData('ubicacion', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: 'Ej: Calle 123, Ciudad, Zona Este...',
+                                    jóvenes: 'Dirección o ubicación',
+                                    adultos: 'Ingrese la dirección o ubicación del almacén',
+                                })}
+                                error={errors.ubicacion}
+                                required
+                            />
+
+                            <TextareaField
+                                label={getTextByMode({
+                                    niños: '📝 Descripción',
+                                    jóvenes: '📝 Descripción',
+                                    adultos: 'Descripción',
+                                })}
+                                value={data.descripcion}
+                                onChange={(e) => setData('descripcion', e.target.value)}
+                                rows={4}
+                                placeholder={getTextByMode({
+                                    niños: 'Cuenta algo sobre este almacén...',
+                                    jóvenes: 'Descripción del almacén',
+                                    adultos: 'Ingrese una descripción para el almacén',
+                                })}
+                                error={errors.descripcion}
+                                containerClassName="sm:col-span-2"
+                            />
+                        </div>
+                    </div>
 
                     <FormButtons
                         isProcessing={processing}
@@ -149,4 +130,4 @@ export default function AlmacenCreate() {
             </FormPage>
         </DashboardLayout>
     );
-} 
+}

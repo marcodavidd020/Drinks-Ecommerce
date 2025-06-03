@@ -1,5 +1,5 @@
-import { FormButtons, FormPage, FormSection } from '@/components/Form';
-import { useAppMode } from '@/contexts/AppModeContext';
+import { FormButtons, FormPage, NumberField } from '@/components/Form';
+import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
@@ -28,26 +28,11 @@ interface InventariosEditProps {
 }
 
 export default function InventariosEdit({ inventario }: InventariosEditProps) {
-    const { settings } = useAppMode();
+    const { getTextByMode, getModeClasses } = useAppModeText();
 
     const { data, setData, put, processing, errors } = useForm({
         stock: inventario.stock.toString(),
     });
-
-    const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
-        return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
-    };
-
-    const getModeClasses = () => {
-        switch (settings.ageMode) {
-            case 'niños':
-                return 'font-comic text-adaptive-kids';
-            case 'jóvenes':
-                return 'font-modern text-adaptive-teen';
-            default:
-                return 'font-classic text-adaptive-adult';
-        }
-    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -83,13 +68,15 @@ export default function InventariosEdit({ inventario }: InventariosEditProps) {
                 })}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <FormSection
-                        title={getTextByMode({
-                            niños: '📋 Información del Producto',
-                            jóvenes: 'Información del Producto',
-                            adultos: 'Información del Producto',
-                        })}
-                    >
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '📋 Información del Producto',
+                                jóvenes: 'Información del Producto',
+                                adultos: 'Información del Producto',
+                            })}
+                        </h2>
+                        
                         <div className="mb-6 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
@@ -120,36 +107,25 @@ export default function InventariosEdit({ inventario }: InventariosEditProps) {
                         </div>
 
                         <div className="space-y-4">
-                            <div>
-                                <label
-                                    htmlFor="stock"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📊 Cantidad en Stock *',
-                                        jóvenes: '📊 Stock *',
-                                        adultos: 'Cantidad en Stock *',
-                                    })}
-                                </label>
-                                <input
-                                    id="stock"
-                                    type="number"
-                                    value={data.stock}
-                                    onChange={(e) => setData('stock', e.target.value)}
-                                    min="0"
-                                    step="1"
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Ej: 10, 20, 30...',
-                                        jóvenes: 'Cantidad en stock',
-                                        adultos: 'Ingrese la cantidad disponible',
-                                    })}
-                                    required
-                                />
-                                {errors.stock && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.stock}</p>}
-                            </div>
+                            <NumberField
+                                label={getTextByMode({
+                                    niños: '📊 Cantidad en Stock',
+                                    jóvenes: '📊 Stock',
+                                    adultos: 'Cantidad en Stock',
+                                })}
+                                value={data.stock}
+                                onChange={(e) => setData('stock', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: 'Ej: 10, 20, 30...',
+                                    jóvenes: 'Cantidad en stock',
+                                    adultos: 'Ingrese la cantidad disponible',
+                                })}
+                                integerOnly
+                                error={errors.stock}
+                                required
+                            />
                         </div>
-                    </FormSection>
+                    </div>
 
                     <FormButtons
                         isProcessing={processing}

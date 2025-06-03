@@ -1,5 +1,5 @@
-import { FormButtons, FormPage, FormSection } from '@/components/Form';
-import { useAppMode } from '@/contexts/AppModeContext';
+import { FormButtons, FormPage, InputField, TextareaField } from '@/components/Form';
+import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
@@ -15,27 +15,12 @@ interface CategoriaEditProps {
 }
 
 export default function CategoriaEdit({ categoria }: CategoriaEditProps) {
-    const { settings } = useAppMode();
+    const { getTextByMode, getModeClasses } = useAppModeText();
 
     const { data, setData, put, processing, errors } = useForm({
         nombre: categoria.nombre,
         descripcion: categoria.descripcion || '',
     });
-
-    const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
-        return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
-    };
-
-    const getModeClasses = () => {
-        switch (settings.ageMode) {
-            case 'niños':
-                return 'font-comic text-adaptive-kids';
-            case 'jóvenes':
-                return 'font-modern text-adaptive-teen';
-            default:
-                return 'font-classic text-adaptive-adult';
-        }
-    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -71,68 +56,51 @@ export default function CategoriaEdit({ categoria }: CategoriaEditProps) {
                 })}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <FormSection
-                        title={getTextByMode({
-                            niños: '📝 Información de la Categoría',
-                            jóvenes: '📝 Datos de la Categoría',
-                            adultos: 'Información de la Categoría',
-                        })}
-                    >
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '📝 Información de la Categoría',
+                                jóvenes: '📝 Datos de la Categoría',
+                                adultos: 'Información de la Categoría',
+                            })}
+                        </h2>
                         <div className="space-y-4">
-                            <div>
-                                <label
-                                    htmlFor="nombre"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📝 Nombre de la Categoría *',
-                                        jóvenes: '📝 Nombre *',
-                                        adultos: 'Nombre de la Categoría *',
-                                    })}
-                                </label>
-                                <input
-                                    id="nombre"
-                                    type="text"
-                                    value={data.nombre}
-                                    onChange={(e) => setData('nombre', e.target.value)}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Ej: Juguetes, Electrónicos, Ropa...',
-                                        jóvenes: 'Nombre de la categoría',
-                                        adultos: 'Ingrese el nombre de la categoría',
-                                    })}
-                                    required
-                                />
-                                {errors.nombre && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.nombre}</p>}
-                            </div>
+                            <InputField
+                                label={getTextByMode({
+                                    niños: '📝 Nombre de la Categoría',
+                                    jóvenes: '📝 Nombre',
+                                    adultos: 'Nombre de la Categoría',
+                                })}
+                                type="text"
+                                value={data.nombre}
+                                onChange={(e) => setData('nombre', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: 'Ej: Juguetes, Electrónicos, Ropa...',
+                                    jóvenes: 'Nombre de la categoría',
+                                    adultos: 'Ingrese el nombre de la categoría',
+                                })}
+                                error={errors.nombre}
+                                required
+                            />
 
-                            <div>
-                                <label
-                                    htmlFor="descripcion"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📝 Descripción',
-                                        jóvenes: '📝 Descripción',
-                                        adultos: 'Descripción',
-                                    })}
-                                </label>
-                                <textarea
-                                    id="descripcion"
-                                    value={data.descripcion}
-                                    onChange={(e) => setData('descripcion', e.target.value)}
-                                    rows={4}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Cuenta algo sobre esta categoría...',
-                                        jóvenes: 'Descripción de la categoría',
-                                        adultos: 'Ingrese una descripción para la categoría',
-                                    })}
-                                ></textarea>
-                                {errors.descripcion && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.descripcion}</p>}
-                            </div>
+                            <TextareaField
+                                label={getTextByMode({
+                                    niños: '📝 Descripción',
+                                    jóvenes: '📝 Descripción',
+                                    adultos: 'Descripción',
+                                })}
+                                value={data.descripcion}
+                                onChange={(e) => setData('descripcion', e.target.value)}
+                                rows={4}
+                                placeholder={getTextByMode({
+                                    niños: 'Cuenta algo sobre esta categoría...',
+                                    jóvenes: 'Descripción de la categoría',
+                                    adultos: 'Ingrese una descripción para la categoría',
+                                })}
+                                error={errors.descripcion}
+                            />
                         </div>
-                    </FormSection>
+                    </div>
 
                     <FormButtons
                         isProcessing={processing}

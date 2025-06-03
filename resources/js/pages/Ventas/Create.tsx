@@ -1,6 +1,6 @@
-import { FormButtons, FormPage, FormSection } from '@/components/Form';
+import { FormButtons, FormPage, InputField, SelectField, TextareaField, NumberField } from '@/components/Form';
 import { Button } from '@/components/ui/button';
-import { useAppMode } from '@/contexts/AppModeContext';
+import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEvent, useEffect, useState } from 'react';
@@ -35,7 +35,7 @@ interface VentaCreateProps {
 }
 
 export default function VentaCreate({ productos, fecha_actual }: VentaCreateProps) {
-    const { settings } = useAppMode();
+    const { getTextByMode, getModeClasses, settings } = useAppModeText();
     const [detalles, setDetalles] = useState<DetalleVenta[]>([]);
     const [productoSeleccionado, setProductoSeleccionado] = useState<number | ''>('');
     const [cantidad, setCantidad] = useState<number>(1);
@@ -89,21 +89,6 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
 
         setData('detalles', detallesFormateados);
     }, [detalles]);
-
-    const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
-        return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
-    };
-
-    const getModeClasses = () => {
-        switch (settings.ageMode) {
-            case 'niños':
-                return 'font-comic text-adaptive-kids';
-            case 'jóvenes':
-                return 'font-modern text-adaptive-teen';
-            default:
-                return 'font-classic text-adaptive-adult';
-        }
-    };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('es-CO', {
@@ -232,60 +217,43 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <FormSection
-                            title={getTextByMode({
-                                niños: '📋 Datos de la Venta',
-                                jóvenes: 'Información de Venta',
-                                adultos: 'Información Básica',
-                            })}
-                        >
+                        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                            <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                {getTextByMode({
+                                    niños: '📋 Datos de la Venta',
+                                    jóvenes: 'Información de Venta',
+                                    adultos: 'Información Básica',
+                                })}
+                            </h2>
                             <div className="space-y-4">
-                                <div>
-                                    <label
-                                        htmlFor="fecha"
-                                        className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                    >
-                                        {getTextByMode({
-                                            niños: '📅 Fecha',
-                                            jóvenes: 'Fecha',
-                                            adultos: 'Fecha',
-                                        })}
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="fecha"
-                                        value={data.fecha}
-                                        onChange={(e) => setData('fecha', e.target.value)}
-                                        className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    />
-                                    {errors.fecha && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.fecha}</p>}
-                                </div>
+                                <InputField
+                                    label={getTextByMode({
+                                        niños: '📅 Fecha',
+                                        jóvenes: 'Fecha',
+                                        adultos: 'Fecha',
+                                    })}
+                                    type="date"
+                                    value={data.fecha}
+                                    onChange={(e) => setData('fecha', e.target.value)}
+                                    error={errors.fecha}
+                                />
 
-                                <div>
-                                    <label
-                                        htmlFor="observaciones"
-                                        className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                    >
-                                        {getTextByMode({
-                                            niños: '📝 Observaciones',
-                                            jóvenes: 'Observaciones',
-                                            adultos: 'Observaciones',
-                                        })}
-                                    </label>
-                                    <textarea
-                                        id="observaciones"
-                                        rows={3}
-                                        value={data.observaciones}
-                                        onChange={(e) => setData('observaciones', e.target.value)}
-                                        placeholder={getTextByMode({
-                                            niños: 'Escribe aquí detalles adicionales',
-                                            jóvenes: 'Detalles adicionales de la venta',
-                                            adultos: 'Información adicional sobre la venta',
-                                        })}
-                                        className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    ></textarea>
-                                    {errors.observaciones && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.observaciones}</p>}
-                                </div>
+                                <TextareaField
+                                    label={getTextByMode({
+                                        niños: '📝 Observaciones',
+                                        jóvenes: 'Observaciones',
+                                        adultos: 'Observaciones',
+                                    })}
+                                    value={data.observaciones}
+                                    onChange={(e) => setData('observaciones', e.target.value)}
+                                    rows={3}
+                                    placeholder={getTextByMode({
+                                        niños: 'Escribe aquí detalles adicionales',
+                                        jóvenes: 'Detalles adicionales de la venta',
+                                        adultos: 'Información adicional sobre la venta',
+                                    })}
+                                    error={errors.observaciones}
+                                />
 
                                 <div className="flex items-center">
                                     <input
@@ -307,110 +275,72 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
                                     </label>
                                 </div>
                             </div>
-                        </FormSection>
+                        </div>
 
-                        <FormSection
-                            title={getTextByMode({
-                                niños: '🔍 Agregar Productos',
-                                jóvenes: 'Selección de Productos',
-                                adultos: 'Añadir Productos a la Venta',
-                            })}
-                        >
+                        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                            <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                {getTextByMode({
+                                    niños: '🔍 Agregar Productos',
+                                    jóvenes: 'Selección de Productos',
+                                    adultos: 'Añadir Productos a la Venta',
+                                })}
+                            </h2>
                             <div className="space-y-4">
-                                <div>
-                                    <label
-                                        htmlFor="busqueda"
-                                        className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                    >
-                                        {getTextByMode({
-                                            niños: '🔍 Buscar Producto',
-                                            jóvenes: 'Buscar',
-                                            adultos: 'Buscar Producto',
-                                        })}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="busqueda"
-                                        value={filtroBusqueda}
-                                        onChange={(e) => setFiltroBusqueda(e.target.value)}
-                                        placeholder={getTextByMode({
-                                            niños: 'Escribe el nombre o código',
-                                            jóvenes: 'Nombre, código o categoría',
-                                            adultos: 'Buscar por nombre, código o categoría',
-                                        })}
-                                        className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    />
-                                </div>
+                                <InputField
+                                    label={getTextByMode({
+                                        niños: '🔍 Buscar Producto',
+                                        jóvenes: 'Buscar',
+                                        adultos: 'Buscar Producto',
+                                    })}
+                                    type="text"
+                                    value={filtroBusqueda}
+                                    onChange={(e) => setFiltroBusqueda(e.target.value)}
+                                    placeholder={getTextByMode({
+                                        niños: 'Escribe el nombre o código',
+                                        jóvenes: 'Nombre, código o categoría',
+                                        adultos: 'Buscar por nombre, código o categoría',
+                                    })}
+                                />
 
-                                <div>
-                                    <label
-                                        htmlFor="producto"
-                                        className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                    >
-                                        {getTextByMode({
-                                            niños: '📦 Producto',
-                                            jóvenes: 'Producto',
-                                            adultos: 'Seleccionar Producto',
-                                        })}
-                                    </label>
-                                    <select
-                                        id="producto"
-                                        value={productoSeleccionado}
-                                        onChange={(e) => setProductoSeleccionado(e.target.value as any)}
-                                        className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    >
-                                        <option value="">Seleccione un producto</option>
-                                        {productosFiltrados.map((producto) => (
-                                            <option key={producto.id} value={producto.id}>
-                                                {producto.nombre} - {producto.cod_producto} (Stock: {producto.stock_disponible})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <SelectField
+                                    label={getTextByMode({
+                                        niños: '📦 Producto',
+                                        jóvenes: 'Producto',
+                                        adultos: 'Seleccionar Producto',
+                                    })}
+                                    value={productoSeleccionado.toString()}
+                                    onChange={(e) => setProductoSeleccionado(e.target.value as any)}
+                                    placeholder="Seleccione un producto"
+                                    options={productosFiltrados.map(producto => ({
+                                        value: producto.id.toString(),
+                                        label: `${producto.nombre} - ${producto.cod_producto} (Stock: ${producto.stock_disponible})`
+                                    }))}
+                                />
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label
-                                            htmlFor="cantidad"
-                                            className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                        >
-                                            {getTextByMode({
-                                                niños: '🔢 Cantidad',
-                                                jóvenes: 'Cantidad',
-                                                adultos: 'Cantidad',
-                                            })}
-                                        </label>
-                                        <input
-                                            type="number"
-                                            id="cantidad"
-                                            min="1"
-                                            value={cantidad}
-                                            onChange={(e) => setCantidad(parseInt(e.target.value) || 0)}
-                                            className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                        />
-                                    </div>
+                                    <NumberField
+                                        label={getTextByMode({
+                                            niños: '🔢 Cantidad',
+                                            jóvenes: 'Cantidad',
+                                            adultos: 'Cantidad',
+                                        })}
+                                        value={cantidad.toString()}
+                                        onChange={(e) => setCantidad(parseInt(e.target.value) || 0)}
+                                        integerOnly
+                                        min={1}
+                                    />
 
-                                    <div>
-                                        <label
-                                            htmlFor="precio"
-                                            className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                        >
-                                            {getTextByMode({
-                                                niños: '💰 Precio',
-                                                jóvenes: 'Precio',
-                                                adultos: 'Precio Unitario',
-                                            })}
-                                        </label>
-                                        <input
-                                            type="number"
-                                            id="precio"
-                                            min="0"
-                                            step="0.01"
-                                            value={precio}
-                                            onChange={(e) => setPrecio(parseFloat(e.target.value) || 0)}
-                                            className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                        />
-                                    </div>
+                                    <NumberField
+                                        label={getTextByMode({
+                                            niños: '💰 Precio',
+                                            jóvenes: 'Precio',
+                                            adultos: 'Precio Unitario',
+                                        })}
+                                        value={precio.toString()}
+                                        onChange={(e) => setPrecio(parseFloat(e.target.value) || 0)}
+                                        min={0}
+                                        step="0.01"
+                                    />
                                 </div>
 
                                 <div>
@@ -427,16 +357,17 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
                                     </Button>
                                 </div>
                             </div>
-                        </FormSection>
+                        </div>
                     </div>
 
-                    <FormSection
-                        title={getTextByMode({
-                            niños: '📋 Lista de Productos',
-                            jóvenes: 'Productos en la Venta',
-                            adultos: 'Detalle de Productos',
-                        })}
-                    >
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '📋 Lista de Productos',
+                                jóvenes: 'Productos en la Venta',
+                                adultos: 'Detalle de Productos',
+                            })}
+                        </h2>
                         {detalles.length === 0 ? (
                             <div className="rounded-md bg-yellow-50 p-4 dark:bg-yellow-900/20">
                                 <div className="flex">
@@ -585,7 +516,7 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
                                 </table>
                             </div>
                         )}
-                    </FormSection>
+                    </div>
 
                     <FormButtons
                         isProcessing={processing || detalles.length === 0}

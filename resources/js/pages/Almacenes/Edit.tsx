@@ -1,5 +1,5 @@
-import { FormButtons, FormPage, FormSection } from '@/components/Form';
-import { useAppMode } from '@/contexts/AppModeContext';
+import { FormButtons, FormPage, InputField, TextareaField } from '@/components/Form';
+import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
@@ -16,28 +16,13 @@ interface AlmacenEditProps {
 }
 
 export default function AlmacenEdit({ almacen }: AlmacenEditProps) {
-    const { settings } = useAppMode();
+    const { getTextByMode, getModeClasses } = useAppModeText();
 
     const { data, setData, put, processing, errors } = useForm({
         nombre: almacen.nombre,
         descripcion: almacen.descripcion || '',
         ubicacion: almacen.ubicacion,
     });
-
-    const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
-        return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
-    };
-
-    const getModeClasses = () => {
-        switch (settings.ageMode) {
-            case 'niños':
-                return 'font-comic text-adaptive-kids';
-            case 'jóvenes':
-                return 'font-modern text-adaptive-teen';
-            default:
-                return 'font-classic text-adaptive-adult';
-        }
-    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -73,95 +58,70 @@ export default function AlmacenEdit({ almacen }: AlmacenEditProps) {
                 })}
             >
                 <form onSubmit={submit} className="space-y-6">
-                    <FormSection
-                        title={getTextByMode({
-                            niños: '📝 Información del Almacén',
-                            jóvenes: '📝 Datos del Almacén',
-                            adultos: 'Información del Almacén',
-                        })}
-                    >
-                        <div className="space-y-4">
-                            <div>
-                                <label
-                                    htmlFor="nombre"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📝 Nombre del Almacén *',
-                                        jóvenes: '📝 Nombre *',
-                                        adultos: 'Nombre del Almacén *',
-                                    })}
-                                </label>
-                                <input
-                                    id="nombre"
-                                    type="text"
-                                    value={data.nombre}
-                                    onChange={(e) => setData('nombre', e.target.value)}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Ej: Almacén Central, Bodega Norte...',
-                                        jóvenes: 'Nombre del almacén',
-                                        adultos: 'Ingrese el nombre del almacén',
-                                    })}
-                                    required
-                                />
-                                {errors.nombre && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.nombre}</p>}
-                            </div>
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '📝 Información del Almacén',
+                                jóvenes: '📝 Datos del Almacén',
+                                adultos: 'Información del Almacén',
+                            })}
+                        </h2>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <InputField
+                                label={getTextByMode({
+                                    niños: '📝 Nombre del Almacén',
+                                    jóvenes: '📝 Nombre',
+                                    adultos: 'Nombre del Almacén',
+                                })}
+                                type="text"
+                                value={data.nombre}
+                                onChange={(e) => setData('nombre', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: 'Ej: Almacén Central, Bodega Norte...',
+                                    jóvenes: 'Nombre del almacén',
+                                    adultos: 'Ingrese el nombre del almacén',
+                                })}
+                                error={errors.nombre}
+                                required
+                            />
 
-                            <div>
-                                <label
-                                    htmlFor="ubicacion"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📍 Ubicación del Almacén *',
-                                        jóvenes: '📍 Ubicación *',
-                                        adultos: 'Ubicación del Almacén *',
-                                    })}
-                                </label>
-                                <input
-                                    id="ubicacion"
-                                    type="text"
-                                    value={data.ubicacion}
-                                    onChange={(e) => setData('ubicacion', e.target.value)}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Ej: Calle 123, Ciudad, Zona Este...',
-                                        jóvenes: 'Dirección o ubicación',
-                                        adultos: 'Ingrese la dirección o ubicación del almacén',
-                                    })}
-                                    required
-                                />
-                                {errors.ubicacion && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ubicacion}</p>}
-                            </div>
+                            <InputField
+                                label={getTextByMode({
+                                    niños: '📍 Ubicación del Almacén',
+                                    jóvenes: '📍 Ubicación',
+                                    adultos: 'Ubicación del Almacén',
+                                })}
+                                type="text"
+                                value={data.ubicacion}
+                                onChange={(e) => setData('ubicacion', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: 'Ej: Calle 123, Ciudad, Zona Este...',
+                                    jóvenes: 'Dirección o ubicación',
+                                    adultos: 'Ingrese la dirección o ubicación del almacén',
+                                })}
+                                error={errors.ubicacion}
+                                required
+                            />
 
-                            <div>
-                                <label
-                                    htmlFor="descripcion"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📝 Descripción',
-                                        jóvenes: '📝 Descripción',
-                                        adultos: 'Descripción',
-                                    })}
-                                </label>
-                                <textarea
-                                    id="descripcion"
-                                    value={data.descripcion}
-                                    onChange={(e) => setData('descripcion', e.target.value)}
-                                    rows={4}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Cuenta algo sobre este almacén...',
-                                        jóvenes: 'Descripción del almacén',
-                                        adultos: 'Ingrese una descripción para el almacén',
-                                    })}
-                                ></textarea>
-                                {errors.descripcion && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.descripcion}</p>}
-                            </div>
+                            <TextareaField
+                                label={getTextByMode({
+                                    niños: '📝 Descripción',
+                                    jóvenes: '📝 Descripción',
+                                    adultos: 'Descripción',
+                                })}
+                                value={data.descripcion}
+                                onChange={(e) => setData('descripcion', e.target.value)}
+                                rows={4}
+                                placeholder={getTextByMode({
+                                    niños: 'Cuenta algo sobre este almacén...',
+                                    jóvenes: 'Descripción del almacén',
+                                    adultos: 'Ingrese una descripción para el almacén',
+                                })}
+                                error={errors.descripcion}
+                                containerClassName="sm:col-span-2"
+                            />
                         </div>
-                    </FormSection>
+                    </div>
 
                     <FormButtons
                         isProcessing={processing}
