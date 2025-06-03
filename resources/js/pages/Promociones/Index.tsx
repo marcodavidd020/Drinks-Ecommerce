@@ -3,7 +3,7 @@ import { DataTable, PageHeader, SearchFilters } from '@/components/DataTable';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Producto {
     id: number;
@@ -186,12 +186,15 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
             ...newFilters,
         };
 
-        if (newFilters && !newFilters.page && 
-            (newFilters.search !== undefined || 
-             newFilters.estado !== undefined || 
-             newFilters.sort_by !== undefined || 
-             newFilters.sort_order !== undefined || 
-             newFilters.per_page !== undefined)) {
+        if (
+            newFilters &&
+            !newFilters.page &&
+            (newFilters.search !== undefined ||
+                newFilters.estado !== undefined ||
+                newFilters.sort_by !== undefined ||
+                newFilters.sort_order !== undefined ||
+                newFilters.per_page !== undefined)
+        ) {
             params.page = 1;
         }
 
@@ -353,12 +356,8 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
             }),
             render: (_: any, item: Promocion) => (
                 <div className="text-sm">
-                    <div className="text-gray-900 dark:text-gray-100">
-                        📅 {formatDate(item.fecha_inicio)}
-                    </div>
-                    <div className="text-gray-500 dark:text-gray-400">
-                        🏁 {formatDate(item.fecha_fin)}
-                    </div>
+                    <div className="text-gray-900 dark:text-gray-100">📅 {formatDate(item.fecha_inicio)}</div>
+                    <div className="text-gray-500 dark:text-gray-400">🏁 {formatDate(item.fecha_fin)}</div>
                 </div>
             ),
         },
@@ -424,28 +423,30 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
     // Estado vacío
     const emptyState = {
         icon: settings.ageMode === 'niños' ? '😔' : '🏷️',
-        title: search || estado
-            ? getTextByMode({
-                  niños: '¡No encontré promociones que coincidan!',
-                  jóvenes: 'No se encontraron promociones',
-                  adultos: 'No se encontraron promociones que coincidan con los filtros',
-              })
-            : getTextByMode({
-                  niños: '¡No hay promociones todavía!',
-                  jóvenes: 'No hay promociones registradas',
-                  adultos: 'No hay promociones registradas',
-              }),
-        description: search || estado
-            ? getTextByMode({
-                  niños: 'Intenta buscar con otras palabras o cambiar los filtros',
-                  jóvenes: 'Intenta con otra búsqueda o modifica los filtros',
-                  adultos: 'Intente modificar los filtros de búsqueda',
-              })
-            : getTextByMode({
-                  niños: '¡Crea tu primera promoción con el botón de arriba!',
-                  jóvenes: 'Crea una nueva promoción para comenzar',
-                  adultos: 'Puede crear una nueva promoción utilizando el botón "Nueva Promoción"',
-              }),
+        title:
+            search || estado
+                ? getTextByMode({
+                      niños: '¡No encontré promociones que coincidan!',
+                      jóvenes: 'No se encontraron promociones',
+                      adultos: 'No se encontraron promociones que coincidan con los filtros',
+                  })
+                : getTextByMode({
+                      niños: '¡No hay promociones todavía!',
+                      jóvenes: 'No hay promociones registradas',
+                      adultos: 'No hay promociones registradas',
+                  }),
+        description:
+            search || estado
+                ? getTextByMode({
+                      niños: 'Intenta buscar con otras palabras o cambiar los filtros',
+                      jóvenes: 'Intenta con otra búsqueda o modifica los filtros',
+                      adultos: 'Intente modificar los filtros de búsqueda',
+                  })
+                : getTextByMode({
+                      niños: '¡Crea tu primera promoción con el botón de arriba!',
+                      jóvenes: 'Crea una nueva promoción para comenzar',
+                      adultos: 'Puede crear una nueva promoción utilizando el botón "Nueva Promoción"',
+                  }),
     };
 
     return (
@@ -496,7 +497,7 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                                 setEstado(e.target.value);
                                 handleFilterChange({ estado: e.target.value, page: 1 });
                             }}
-                            className={`mt-2 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 sm:text-sm ${getModeClasses()}`}
+                            className={`mt-2 block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 ${getModeClasses()}`}
                         >
                             <option value="">Todos los estados</option>
                             <option value="activa">🟢 Activas</option>
@@ -505,8 +506,8 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                             <option value="inactiva">⚫ Inactivas</option>
                         </select>
                     </div>
-                    
-                    <div className="flex items-end rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800 lg:col-span-2">
+
+                    <div className="flex items-end rounded-lg bg-white p-4 shadow-sm lg:col-span-2 dark:bg-gray-800">
                         <button
                             type="button"
                             onClick={() => {
@@ -516,19 +517,30 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                                 setSortOrder('desc');
                                 setPerPage(10);
                                 setPage(1);
-                                handleFilterChange({ 
-                                    search: '', 
-                                    estado: '', 
+                                handleFilterChange({
+                                    search: '',
+                                    estado: '',
                                     sort_by: 'created_at',
                                     sort_order: 'desc',
                                     per_page: 10,
-                                    page: 1
+                                    page: 1,
                                 });
                             }}
-                            className={`inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 ${getModeClasses()}`}
+                            className={`inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 ${getModeClasses()}`}
                         >
-                            <svg className="-ml-1 mr-2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                            <svg
+                                className="mr-2 -ml-1 h-5 w-5 text-gray-400"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                                />
                             </svg>
                             {getTextByMode({
                                 niños: '🔄 ¡Limpiar filtros!',
@@ -551,10 +563,10 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                     <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                         <div className="text-sm text-gray-700 dark:text-gray-300">
                             Mostrando <span className="font-medium">{promociones.from || 0}</span> a{' '}
-                            <span className="font-medium">{promociones.to || 0}</span> de{' '}
-                            <span className="font-medium">{promociones.total}</span> registros
+                            <span className="font-medium">{promociones.to || 0}</span> de <span className="font-medium">{promociones.total}</span>{' '}
+                            registros
                         </div>
-                        
+
                         <div className="flex items-center space-x-1">
                             <button
                                 onClick={() => handlePageChange(1)}
@@ -567,7 +579,7 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                             >
                                 &laquo;
                             </button>
-                            
+
                             <button
                                 onClick={() => handlePageChange(promociones.current_page - 1)}
                                 disabled={promociones.current_page <= 1}
@@ -579,7 +591,7 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                             >
                                 &lsaquo;
                             </button>
-                            
+
                             {Array.from({ length: Math.min(5, promociones.last_page) }, (_, i) => {
                                 let pageNum;
                                 if (promociones.last_page <= 5) {
@@ -591,7 +603,7 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                                 } else {
                                     pageNum = promociones.current_page - 2 + i;
                                 }
-                                
+
                                 return (
                                     <button
                                         key={pageNum}
@@ -606,7 +618,7 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                                     </button>
                                 );
                             })}
-                            
+
                             <button
                                 onClick={() => handlePageChange(promociones.current_page + 1)}
                                 disabled={promociones.current_page >= promociones.last_page}
@@ -618,7 +630,7 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
                             >
                                 &rsaquo;
                             </button>
-                            
+
                             <button
                                 onClick={() => handlePageChange(promociones.last_page)}
                                 disabled={promociones.current_page >= promociones.last_page}
@@ -667,4 +679,4 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
             </div>
         </DashboardLayout>
     );
-} 
+}

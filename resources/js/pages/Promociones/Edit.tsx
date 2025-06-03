@@ -33,11 +33,11 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
     const { data, setData, put, processing, errors } = useForm({
         nombre: promocion.nombre,
         descripcion: promocion.descripcion || '',
-        descuento: promocion.descuento.toString(),
+        descuento: promocion.descuento?.toString() || '',
         fecha_inicio: promocion.fecha_inicio,
         fecha_fin: promocion.fecha_fin,
         tipo: promocion.tipo,
-        producto_id: promocion.producto_id.toString(),
+        producto_id: promocion.producto_id?.toString() || '',
     });
 
     const submit: FormEventHandler = (e) => {
