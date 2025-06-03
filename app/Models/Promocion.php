@@ -28,7 +28,7 @@ class Promocion extends Model
         'nombre',
         'fecha_inicio',
         'fecha_fin',
-        'descuento',
+        'estado',
     ];
 
     /**

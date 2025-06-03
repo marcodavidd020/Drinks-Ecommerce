@@ -1,8 +1,8 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
-import { FormSection, FormButtons } from '@/components/Form';
+import { FormSection, FormButtons, FormPage } from '@/components/Form';
 
 interface User {
     id: number;
@@ -208,83 +208,66 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
         >
             <Head title="Editar Cliente" />
 
-            <div className={`space-y-6 ${getModeClasses()}`}>
-                {/* Header */}
-                <div className="mb-6">
-                    <div className="flex items-center space-x-4">
-                        <Link
-                            href="/clientes"
-                            className={`font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 ${getModeClasses()}`}
-                        >
-                            ←{' '}
-                            {getTextByMode({
-                                niños: 'Volver a la lista',
-                                jóvenes: 'Volver a la lista',
-                                adultos: 'Volver a la lista',
-                            })}
-                        </Link>
-                    </div>
-                    <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                        {getTextByMode({
-                            niños: `✏️ Editando a ${cliente.user.nombre}`,
-                            jóvenes: `Editar Cliente: ${cliente.user.nombre}`,
-                            adultos: `Editar Cliente: ${cliente.user.nombre}`,
+            <FormPage
+                title={getTextByMode({
+                    niños: `✏️ Editando a ${cliente.user.nombre}`,
+                    jóvenes: `Editar Cliente: ${cliente.user.nombre}`,
+                    adultos: `Editar Cliente: ${cliente.user.nombre}`,
+                })}
+                description={getTextByMode({
+                    niños: 'Actualiza la información de tu amigo cliente',
+                    jóvenes: 'Actualiza la información del cliente',
+                    adultos: 'Modifique la información del cliente en el sistema',
+                })}
+                backHref="/clientes"
+                backText={getTextByMode({
+                    niños: 'Volver a la lista',
+                    jóvenes: 'Volver a la lista',
+                    adultos: 'Volver a la lista',
+                })}
+            >
+                <form onSubmit={submit} className="space-y-6">
+                    <FormSection
+                        title={getTextByMode({
+                            niños: '👤 Información Personal',
+                            jóvenes: '👤 Datos Personales',
+                            adultos: 'Información Personal',
                         })}
-                    </h1>
-                    <p className={`mt-2 text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                        {getTextByMode({
-                            niños: 'Actualiza la información de tu amigo cliente',
-                            jóvenes: 'Actualiza la información del cliente',
-                            adultos: 'Modifique la información del cliente en el sistema',
+                        fields={personalFields}
+                        columns={2}
+                    />
+
+                    <FormSection
+                        title={getTextByMode({
+                            niños: '📞 Información de Contacto',
+                            jóvenes: '📞 Datos de Contacto',
+                            adultos: 'Información de Contacto',
                         })}
-                    </p>
-                </div>
+                        fields={contactFields}
+                        columns={2}
+                    />
 
-                {/* Formulario */}
-                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                    <form onSubmit={submit} className="space-y-8">
-                        <FormSection
-                            title={getTextByMode({
-                                niños: '👤 Información Personal',
-                                jóvenes: '👤 Datos Personales',
-                                adultos: 'Información Personal',
-                            })}
-                            fields={personalFields}
-                            columns={2}
-                        />
-
-                        <FormSection
-                            title={getTextByMode({
-                                niños: '📞 Información de Contacto',
-                                jóvenes: '📞 Datos de Contacto',
-                                adultos: 'Información de Contacto',
-                            })}
-                            fields={contactFields}
-                            columns={2}
-                        />
-
-                        <FormButtons
-                            cancelHref="/clientes"
-                            isProcessing={processing}
-                            cancelText={getTextByMode({
-                                niños: '❌ Cancelar',
-                                jóvenes: 'Cancelar',
-                                adultos: 'Cancelar',
-                            })}
-                            submitText={getTextByMode({
-                                niños: '💾 Guardar cambios del amigo',
-                                jóvenes: '💾 Guardar cambios',
-                                adultos: 'Guardar cambios',
-                            })}
-                            processingText={getTextByMode({
-                                niños: '⏳ Guardando a tu amigo...',
-                                jóvenes: '⏳ Guardando cambios...',
-                                adultos: '⏳ Guardando información...',
-                            })}
-                        />
-                    </form>
-                </div>
-            </div>
+                    <FormButtons
+                        cancelHref="/clientes"
+                        isProcessing={processing}
+                        cancelText={getTextByMode({
+                            niños: '❌ Cancelar',
+                            jóvenes: 'Cancelar',
+                            adultos: 'Cancelar',
+                        })}
+                        submitText={getTextByMode({
+                            niños: '💾 Guardar cambios del amigo',
+                            jóvenes: '💾 Guardar cambios',
+                            adultos: 'Guardar cambios',
+                        })}
+                        processingText={getTextByMode({
+                            niños: '⏳ Guardando a tu amigo...',
+                            jóvenes: '⏳ Guardando cambios...',
+                            adultos: '⏳ Guardando información...',
+                        })}
+                    />
+                </form>
+            </FormPage>
         </DashboardLayout>
     );
 }

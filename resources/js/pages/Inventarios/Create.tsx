@@ -77,6 +77,56 @@ export default function InventariosCreate({ productos, almacenes }: InventariosC
         })),
     ];
 
+    // Configuración de campos para FormSection
+    const inventarioFields = [
+        {
+            type: 'select' as const,
+            name: 'producto_id',
+            label: getTextByMode({
+                niños: '📦 Producto',
+                jóvenes: 'Producto',
+                adultos: 'Producto',
+            }),
+            value: data.producto_id,
+            onChange: (value: string) => setData('producto_id', value),
+            options: productoOptions,
+            span: 2 as const,
+            required: true,
+            error: errors.producto_id
+        },
+        {
+            type: 'select' as const,
+            name: 'almacen_id',
+            label: getTextByMode({
+                niños: '🏬 Almacén',
+                jóvenes: 'Almacén',
+                adultos: 'Almacén',
+            }),
+            value: data.almacen_id,
+            onChange: (value: string) => setData('almacen_id', value),
+            options: almacenOptions,
+            span: 2 as const,
+            required: true,
+            error: errors.almacen_id
+        },
+        {
+            type: 'number' as const,
+            name: 'stock',
+            label: getTextByMode({
+                niños: '📊 Cantidad',
+                jóvenes: 'Stock',
+                adultos: 'Stock Inicial',
+            }),
+            value: data.stock,
+            onChange: (value: string) => setData('stock', value),
+            placeholder: 'Cantidad en stock',
+            min: 0,
+            step: '1',
+            required: true,
+            error: errors.stock
+        }
+    ];
+
     return (
         <DashboardLayout
             title={getTextByMode({
@@ -112,98 +162,16 @@ export default function InventariosCreate({ productos, almacenes }: InventariosC
                             jóvenes: 'Información del Producto',
                             adultos: 'Información del Producto',
                         })}
-                    >
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            <div className="col-span-2">
-                                <label
-                                    htmlFor="producto_id"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📦 Producto',
-                                        jóvenes: 'Producto',
-                                        adultos: 'Producto',
-                                    })}
-                                </label>
-                                <select
-                                    id="producto_id"
-                                    name="producto_id"
-                                    value={data.producto_id}
-                                    onChange={(e) => setData('producto_id', e.target.value)}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    required
-                                >
-                                    {productoOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.producto_id && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.producto_id}</p>}
-                            </div>
-
-                            <div className="col-span-2">
-                                <label
-                                    htmlFor="almacen_id"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '🏬 Almacén',
-                                        jóvenes: 'Almacén',
-                                        adultos: 'Almacén',
-                                    })}
-                                </label>
-                                <select
-                                    id="almacen_id"
-                                    name="almacen_id"
-                                    value={data.almacen_id}
-                                    onChange={(e) => setData('almacen_id', e.target.value)}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    required
-                                >
-                                    {almacenOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.almacen_id && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.almacen_id}</p>}
-                            </div>
-
-                            <div className="col-span-2 sm:col-span-1">
-                                <label
-                                    htmlFor="stock"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📊 Cantidad',
-                                        jóvenes: 'Stock',
-                                        adultos: 'Stock Inicial',
-                                    })}
-                                </label>
-                                <input
-                                    type="number"
-                                    id="stock"
-                                    name="stock"
-                                    value={data.stock}
-                                    onChange={(e) => setData('stock', e.target.value)}
-                                    min="0"
-                                    step="1"
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    required
-                                    placeholder="Cantidad en stock"
-                                />
-                                {errors.stock && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.stock}</p>}
-                            </div>
-                        </div>
-                    </FormSection>
+                        fields={inventarioFields}
+                        columns={2}
+                    />
 
                     <FormButtons
                         isProcessing={processing || isSubmitting}
                         submitLabel={getTextByMode({
-                            niños: '💾 ¡Guardar!',
-                            jóvenes: 'Guardar',
-                            adultos: 'Guardar',
+                            niños: '💾 ¡Agregar al Inventario!',
+                            jóvenes: '💾 Agregar Producto',
+                            adultos: 'Registrar en Inventario',
                         })}
                         cancelHref="/inventarios"
                         cancelLabel={getTextByMode({

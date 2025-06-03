@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             ProveedorSeeder::class,
             ProductoSeeder::class,
             InventarioSeeder::class,
+            PromocionSeeder::class,
         ]);
 
         // 4. Seeders de clientes
@@ -68,6 +69,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('📊 Datos disponibles para pruebas:');
         $this->command->info('   • Usuarios y roles configurados');
         $this->command->info('   • Productos con inventarios');
+        $this->command->info('   • Promociones con descuentos (activas, pendientes, vencidas)');
         $this->command->info('   • Clientes y proveedores (personas y empresas)');
         $this->command->info('   • Ventas históricas con detalles (6 meses)');
         $this->command->info('   • Notas de compra con detalles (4 meses)');

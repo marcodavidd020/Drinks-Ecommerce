@@ -33,6 +33,65 @@ export default function AlmacenCreate() {
         post('/almacenes');
     };
 
+    // Configuración de campos para FormSection
+    const almacenFields = [
+        {
+            type: 'text' as const,
+            name: 'nombre',
+            label: getTextByMode({
+                niños: '📝 Nombre del Almacén *',
+                jóvenes: '📝 Nombre *',
+                adultos: 'Nombre del Almacén *',
+            }),
+            value: data.nombre,
+            onChange: (value: string) => setData('nombre', value),
+            placeholder: getTextByMode({
+                niños: 'Ej: Almacén Central, Bodega Norte...',
+                jóvenes: 'Nombre del almacén',
+                adultos: 'Ingrese el nombre del almacén',
+            }),
+            required: true,
+            error: errors.nombre
+        },
+        {
+            type: 'text' as const,
+            name: 'ubicacion',
+            label: getTextByMode({
+                niños: '📍 Ubicación del Almacén *',
+                jóvenes: '📍 Ubicación *',
+                adultos: 'Ubicación del Almacén *',
+            }),
+            value: data.ubicacion,
+            onChange: (value: string) => setData('ubicacion', value),
+            placeholder: getTextByMode({
+                niños: 'Ej: Calle 123, Ciudad, Zona Este...',
+                jóvenes: 'Dirección o ubicación',
+                adultos: 'Ingrese la dirección o ubicación del almacén',
+            }),
+            required: true,
+            error: errors.ubicacion
+        },
+        {
+            type: 'textarea' as const,
+            name: 'descripcion',
+            label: getTextByMode({
+                niños: '📝 Descripción',
+                jóvenes: '📝 Descripción',
+                adultos: 'Descripción',
+            }),
+            value: data.descripcion,
+            onChange: (value: string) => setData('descripcion', value),
+            placeholder: getTextByMode({
+                niños: 'Cuenta algo sobre este almacén...',
+                jóvenes: 'Descripción del almacén',
+                adultos: 'Ingrese una descripción para el almacén',
+            }),
+            rows: 4,
+            span: 2 as const,
+            error: errors.descripcion
+        }
+    ];
+
     return (
         <DashboardLayout
             title={getTextByMode({
@@ -68,89 +127,9 @@ export default function AlmacenCreate() {
                             jóvenes: '📝 Datos del Almacén',
                             adultos: 'Información del Almacén',
                         })}
-                    >
-                        <div className="space-y-4">
-                            <div>
-                                <label
-                                    htmlFor="nombre"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📝 Nombre del Almacén *',
-                                        jóvenes: '📝 Nombre *',
-                                        adultos: 'Nombre del Almacén *',
-                                    })}
-                                </label>
-                                <input
-                                    id="nombre"
-                                    type="text"
-                                    value={data.nombre}
-                                    onChange={(e) => setData('nombre', e.target.value)}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Ej: Almacén Central, Bodega Norte...',
-                                        jóvenes: 'Nombre del almacén',
-                                        adultos: 'Ingrese el nombre del almacén',
-                                    })}
-                                    required
-                                />
-                                {errors.nombre && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.nombre}</p>}
-                            </div>
-
-                            <div>
-                                <label
-                                    htmlFor="ubicacion"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📍 Ubicación del Almacén *',
-                                        jóvenes: '📍 Ubicación *',
-                                        adultos: 'Ubicación del Almacén *',
-                                    })}
-                                </label>
-                                <input
-                                    id="ubicacion"
-                                    type="text"
-                                    value={data.ubicacion}
-                                    onChange={(e) => setData('ubicacion', e.target.value)}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Ej: Calle 123, Ciudad, Zona Este...',
-                                        jóvenes: 'Dirección o ubicación',
-                                        adultos: 'Ingrese la dirección o ubicación del almacén',
-                                    })}
-                                    required
-                                />
-                                {errors.ubicacion && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ubicacion}</p>}
-                            </div>
-
-                            <div>
-                                <label
-                                    htmlFor="descripcion"
-                                    className={`mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}
-                                >
-                                    {getTextByMode({
-                                        niños: '📝 Descripción',
-                                        jóvenes: '📝 Descripción',
-                                        adultos: 'Descripción',
-                                    })}
-                                </label>
-                                <textarea
-                                    id="descripcion"
-                                    value={data.descripcion}
-                                    onChange={(e) => setData('descripcion', e.target.value)}
-                                    rows={4}
-                                    className={`w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`}
-                                    placeholder={getTextByMode({
-                                        niños: 'Cuenta algo sobre este almacén...',
-                                        jóvenes: 'Descripción del almacén',
-                                        adultos: 'Ingrese una descripción para el almacén',
-                                    })}
-                                ></textarea>
-                                {errors.descripcion && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.descripcion}</p>}
-                            </div>
-                        </div>
-                    </FormSection>
+                        fields={almacenFields}
+                        columns={2}
+                    />
 
                     <FormButtons
                         isProcessing={processing}

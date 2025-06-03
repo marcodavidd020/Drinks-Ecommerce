@@ -573,3 +573,423 @@ body {
 .theme-día label.dark\:text-gray-300 {
     color: #374151 !important;
 }
+
+/* Correcciones para inputs y formularios */
+.theme-día input.dark\:bg-gray-700,
+.theme-día textarea.dark\:bg-gray-700,
+.theme-día select.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día input.dark\:border-gray-600,
+.theme-día textarea.dark\:border-gray-600,
+.theme-día select.dark\:border-gray-600 {
+    border-color: #d1d5db !important;
+}
+
+.theme-día input.dark\:text-gray-200,
+.theme-día textarea.dark\:text-gray-200,
+.theme-día select.dark\:text-gray-200 {
+    color: #111827 !important;
+}
+
+/* Correcciones más específicas para inputs con bg-white */
+.theme-día input.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día textarea.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día select.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+/* Correcciones para inputs con border-gray-300 */
+.theme-día input.border-gray-300.dark\:border-gray-600 {
+    border-color: #d1d5db !important;
+}
+
+.theme-día textarea.border-gray-300.dark\:border-gray-600 {
+    border-color: #d1d5db !important;
+}
+
+.theme-día select.border-gray-300.dark\:border-gray-600 {
+    border-color: #d1d5db !important;
+}
+
+/* Asegurar que los inputs tipo date, number, text funcionen */
+.theme-día input[type="text"].dark\:bg-gray-700,
+.theme-día input[type="date"].dark\:bg-gray-700,
+.theme-día input[type="number"].dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+/* Correcciones para botones en modo claro */
+.theme-día button.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #374151 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día button.bg-white.dark\:bg-gray-700:hover {
+    background-color: #f9fafb !important;
+}
+
+.theme-día button.border-gray-300.dark\:border-gray-600 {
+    border-color: #d1d5db !important;
+}
+
+.theme-día button.text-gray-700.dark\:text-gray-200 {
+    color: #374151 !important;
+}
+
+.theme-día button.hover\:bg-gray-50.dark\:hover\:bg-gray-600:hover {
+    background-color: #f9fafb !important;
+    color: #374151 !important;
+}
+
+/* Botones primarios en modo claro */
+.theme-día .bg-blue-600.dark\:bg-blue-500 {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+.theme-día .bg-blue-600.dark\:bg-blue-500:hover {
+    background-color: #1d4ed8 !important;
+}
+
+/* Correcciones específicas para sidebar */
+.theme-día .bg-sidebar {
+    background-color: #f8fafc !important;
+}
+
+.theme-día .text-sidebar-foreground {
+    color: #374151 !important;
+}
+
+.theme-día .hover\:bg-sidebar-accent:hover {
+    background-color: #e5e7eb !important;
+}
+
+.theme-día .hover\:text-sidebar-accent-foreground:hover {
+    color: #111827 !important;
+}
+
+.theme-día .data-\[active\=true\]\:bg-sidebar-accent[data-active="true"] {
+    background-color: #dbeafe !important;
+}
+
+.theme-día .data-\[active\=true\]\:text-sidebar-accent-foreground[data-active="true"] {
+    color: #1e40af !important;
+}
+
+/* Correcciones para elementos del sidebar */
+.theme-día [data-sidebar="sidebar"] {
+    background-color: #f8fafc !important;
+    color: #374151 !important;
+}
+
+.theme-día [data-sidebar="menu-button"] {
+    color: #374151 !important;
+}
+
+.theme-día [data-sidebar="menu-button"]:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+.theme-día [data-sidebar="menu-button"][data-active="true"] {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+/* Correcciones adicionales para sidebar y botones */
+.theme-día .text-sidebar-accent-foreground {
+    color: #374151 !important;
+}
+
+.theme-día .data-\[state\=open\]\:bg-sidebar-accent[data-state="open"] {
+    background-color: #e5e7eb !important;
+}
+
+.theme-día button[data-sidebar="menu-button"] {
+    color: #374151 !important;
+}
+
+.theme-día button[data-sidebar="menu-button"]:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+.theme-día a[data-sidebar="menu-button"] {
+    color: #374151 !important;
+}
+
+.theme-día a[data-sidebar="menu-button"]:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+/* Correcciones para SidebarMenuButton específicamente */
+.theme-día [data-slot="sidebar-menu-button"] {
+    color: #374151 !important;
+}
+
+.theme-día [data-slot="sidebar-menu-button"]:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+.theme-día [data-slot="sidebar-menu-button"][data-active="true"] {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    font-weight: 500 !important;
+}
+
+/* Correcciones para iconos del sidebar */
+.theme-día [data-sidebar="menu-button"] svg {
+    color: inherit !important;
+}
+
+.theme-día [data-slot="sidebar-menu-button"] svg {
+    color: inherit !important;
+}
+
+/* Correcciones específicas para hover en sidebar con mayor especificidad */
+.theme-día .hover\:bg-sidebar-accent.hover\:text-sidebar-accent-foreground:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+/* Correcciones para estados de sidebar menu con máxima especificidad */
+.theme-día button[data-slot="sidebar-menu-button"].hover\:bg-sidebar-accent:hover,
+.theme-día a[data-slot="sidebar-menu-button"].hover\:bg-sidebar-accent:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+.theme-día button[data-slot="sidebar-menu-button"].hover\:text-sidebar-accent-foreground:hover,
+.theme-día a[data-slot="sidebar-menu-button"].hover\:text-sidebar-accent-foreground:hover {
+    color: #111827 !important;
+}
+
+/* Correcciones para sidebar con clases Tailwind específicas */
+.theme-día .peer\/menu-button.hover\:bg-sidebar-accent:hover {
+    background-color: #e5e7eb !important;
+}
+
+.theme-día .peer\/menu-button.hover\:text-sidebar-accent-foreground:hover {
+    color: #111827 !important;
+}
+
+/* Correcciones específicas para SidebarMenuButton con todas las variantes */
+.theme-día [data-slot="sidebar-menu-button"].peer\/menu-button:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+/* Correcciones para links específicos en sidebar */
+.theme-día a[data-slot="sidebar-menu-button"] {
+    color: #374151 !important;
+}
+
+.theme-día a[data-slot="sidebar-menu-button"]:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+/* Forzar estilos en sidebar con máxima especificidad */
+.theme-día [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"] {
+    color: #374151 !important;
+}
+
+.theme-día [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"]:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+/* Correcciones para DashboardSidebar específico */
+.theme-día .bg-white.dark\:bg-gray-800 {
+    background-color: #ffffff !important;
+}
+
+.theme-día .text-gray-700.dark\:text-gray-300 {
+    color: #374151 !important;
+}
+
+.theme-día .hover\:bg-gray-100.dark\:hover\:bg-gray-700:hover {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+}
+
+.theme-día .hover\:text-gray-900.dark\:hover\:text-gray-100:hover {
+    color: #111827 !important;
+}
+
+/* Correcciones para botones del sidebar dashboard */
+.theme-día .text-gray-500.hover\:bg-gray-100.dark\:hover\:bg-gray-700:hover {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+}
+
+/* Estados activos del sidebar dashboard */
+.theme-día .bg-blue-100.dark\:bg-blue-900 {
+    background-color: #dbeafe !important;
+}
+
+.theme-día .text-blue-700.dark\:text-blue-300 {
+    color: #1d4ed8 !important;
+}
+
+/* Links específicos del dashboard sidebar */
+.theme-día a.flex.items-center.px-3.py-2:not(.bg-blue-100):hover {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+}
+
+.theme-día button.p-2.rounded-md.text-gray-500:hover {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+}
+
+/* Correcciones para elementos de formulario específicos */
+.theme-día .bg-gray-50.dark\:bg-gray-600 {
+    background-color: #f9fafb !important;
+}
+
+.theme-día .border-gray-300.dark\:border-gray-600 {
+    border-color: #d1d5db !important;
+}
+
+/* Correcciones para dropdowns en buscadores */
+.theme-día .bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+}
+
+.theme-día .border-gray-200.dark\:border-gray-600 {
+    border-color: #e5e7eb !important;
+}
+
+.theme-día .hover\:bg-gray-50.dark\:hover\:bg-gray-600:hover {
+    background-color: #f9fafb !important;
+}
+
+.theme-día .border-gray-100.dark\:border-gray-600 {
+    border-color: #f3f4f6 !important;
+}
+
+/* Correcciones globales para formularios en modo claro */
+.theme-día input,
+.theme-día textarea,
+.theme-día select {
+    color: #111827 !important;
+}
+
+.theme-día input:focus,
+.theme-día textarea:focus,
+.theme-día select:focus {
+    border-color: #3b82f6 !important;
+    ring-color: #3b82f6 !important;
+}
+
+/* Correcciones específicas para inputs con clases combinadas */
+.theme-día input.rounded-md.border-gray-300.dark\:border-gray-600.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día select.rounded-md.border-gray-300.dark\:border-gray-600.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+/* Correcciones con máxima especificidad */
+.theme-día input.mt-1.block.w-full.rounded-md.border-gray-300.dark\:border-gray-600.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día select.mt-1.block.w-full.rounded-md.border-gray-300.dark\:border-gray-600.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.theme-día input.block.w-full.rounded-md.border-gray-300.dark\:border-gray-600.bg-white.dark\:bg-gray-700 {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+/* Enlaces en modo claro */
+.theme-día .text-blue-600.dark\:text-blue-400 {
+    color: #2563eb !important;
+}
+
+.theme-día .text-green-600.dark\:text-green-400 {
+    color: #059669 !important;
+}
+
+.theme-día .text-red-600.dark\:text-red-400 {
+    color: #dc2626 !important;
+}
+
+.theme-día .hover\:text-blue-900.dark\:hover\:text-blue-300:hover {
+    color: #1e3a8a !important;
+}
+
+.theme-día .hover\:text-green-900.dark\:hover\:text-green-300:hover {
+    color: #064e3b !important;
+}
+
+.theme-día .hover\:text-red-900.dark\:hover\:text-red-300:hover {
+    color: #991b1b !important;
+}
+
+/* Badges y estados en modo claro */
+.theme-día .bg-blue-100.dark\:bg-blue-900\/20 {
+    background-color: #dbeafe !important;
+}
+
+.theme-día .text-blue-800.dark\:text-blue-300 {
+    color: #1e40af !important;
+}
+
+.theme-día .bg-green-100.dark\:bg-green-900\/20 {
+    background-color: #dcfce7 !important;
+}
+
+.theme-día .text-green-800.dark\:text-green-300 {
+    color: #166534 !important;
+}
+
+.theme-día .bg-red-100.dark\:bg-red-900\/20 {
+    background-color: #fee2e2 !important;
+}
+
+.theme-día .text-red-800.dark\:text-red-300 {
+    color: #991b1b !important;
+}
+
+.theme-día .bg-yellow-100.dark\:bg-yellow-900\/20 {
+    background-color: #fef3c7 !important;
+}
+
+.theme-día .text-yellow-800.dark\:text-yellow-300 {
+    color: #92400e !important;
+}

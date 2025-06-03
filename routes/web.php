@@ -10,6 +10,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\NotaVentaController;
+use App\Http\Controllers\PromocionController;
 use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -106,6 +107,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/ventas', [NotaVentaController::class, 'store'])->name('ventas.store');
     Route::get('/ventas/{venta}', [NotaVentaController::class, 'show'])->name('ventas.show');
     Route::post('/ventas/{venta}/estado', [NotaVentaController::class, 'updateEstado'])->name('ventas.update-estado');
+
+    // Gestión de promociones - CRUD completo
+    Route::resource('promociones', PromocionController::class)->parameters([
+        'promociones' => 'promocion'
+    ]);
     
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {
