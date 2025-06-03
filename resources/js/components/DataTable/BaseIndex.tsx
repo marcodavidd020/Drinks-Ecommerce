@@ -34,6 +34,7 @@ interface ColumnConfig {
     type?: 'text' | 'number' | 'date' | 'badge' | 'custom';
     render?: (value: any, item: any) => React.ReactNode;
     sortable?: boolean;
+    className?: string;
 }
 
 interface ActionConfig<T extends BaseEntity> {
@@ -162,32 +163,25 @@ export default function BaseIndex<T extends BaseEntity>({
     };
 
     const handleFilterChange = (newFilters: any) => {
-        const params = {
-            search: search,
-            sort_by: sortBy,
-            sort_order: sortOrder,
-            per_page: perPage,
-            ...newFilters,
-        };
-
+        // Actualizar estados locales si cambiaron
         if (newFilters.sort_by !== undefined) setSortBy(newFilters.sort_by);
         if (newFilters.sort_order !== undefined) setSortOrder(newFilters.sort_order);
         if (newFilters.per_page !== undefined) setPerPage(newFilters.per_page);
 
-        router.get(
-            `/${routeName}`,
-            {
-                search: newFilters.search !== undefined ? newFilters.search : search,
-                sort_by: newFilters.sort_by !== undefined ? newFilters.sort_by : sortBy,
-                sort_order: newFilters.sort_order !== undefined ? newFilters.sort_order : sortOrder,
-                per_page: newFilters.per_page !== undefined ? newFilters.per_page : perPage,
-                ...newFilters,
-            },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
+        // Construir parámetros incluyendo todos los filtros actuales
+        const params = {
+            ...filters, // Incluir todos los filtros actuales
+            search: newFilters.search !== undefined ? newFilters.search : search,
+            sort_by: newFilters.sort_by !== undefined ? newFilters.sort_by : sortBy,
+            sort_order: newFilters.sort_order !== undefined ? newFilters.sort_order : sortOrder,
+            per_page: newFilters.per_page !== undefined ? newFilters.per_page : perPage,
+            ...newFilters, // Sobrescribir con los nuevos filtros
+        };
+
+        router.get(`/${routeName}`, params, {
+            preserveState: true,
+            replace: true,
+        });
     };
 
     const handleDeleteClick = (item: T) => {
@@ -216,22 +210,22 @@ export default function BaseIndex<T extends BaseEntity>({
         setConfirmDialog({ isOpen: false });
     };
 
-    // Configuración de filtros base
-    const baseSearchFilters: FilterConfig[] = [
+    // Convertir FilterConfig a Filter para SearchFilters
+    const searchFilters = [
         {
-            type: 'search',
-            placeholder: {
+            type: 'search' as const,
+            placeholder: getTextByMode({
                 niños: `🔍 ¿Qué ${entityName} buscas?`,
                 jóvenes: `🔍 Buscar ${entityName}...`,
                 adultos: `Buscar ${entityName}...`,
-            },
+            }),
             value: search,
             onChange: setSearch,
             colSpan: 2,
         },
         // Configuración de ordenamiento
         {
-            type: 'select',
+            type: 'select' as const,
             value: `${sortBy}_${sortOrder}`,
             onChange: (value: string) => {
                 const parts = value.split('_');
@@ -241,16 +235,10 @@ export default function BaseIndex<T extends BaseEntity>({
                 setSortBy(newSortBy);
                 setSortOrder(newSortOrder);
 
-                const params = {
-                    search,
+                handleFilterChange({
                     sort_by: newSortBy,
                     sort_order: newSortOrder,
-                    per_page: perPage,
-                };
-
-                router.get(`/${routeName}`, params, {
-                    preserveState: true,
-                    replace: true,
+                    page: 1,
                 });
             },
             options: columns
@@ -258,39 +246,123 @@ export default function BaseIndex<T extends BaseEntity>({
                 .flatMap(col => [
                     {
                         value: `${col.key}_asc`,
-                        label: {
+                        label: getTextByMode({
                             niños: `🔤 ${col.label.niños} A-Z`,
                             jóvenes: `${col.label.jóvenes} A-Z`,
                             adultos: `${col.label.adultos} A-Z`,
-                        },
+                        }),
                     },
                     {
                         value: `${col.key}_desc`,
-                        label: {
+                        label: getTextByMode({
                             niños: `🔤 ${col.label.niños} Z-A`,
                             jóvenes: `${col.label.jóvenes} Z-A`,
                             adultos: `${col.label.adultos} Z-A`,
-                        },
+                        }),
                     },
                 ]),
         },
-        ...customFilters,
+        // Convertir filtros personalizados
+        ...customFilters.map((filter, index) => ({
+            type: filter.type,
+            value: filter.value,
+            onChange: (value: string) => {
+                // Obtener el nombre del filtro basado en el índice
+                const filterNames = Object.keys(filters).filter(key => 
+                    key !== 'search' && key !== 'sort_by' && key !== 'sort_order' && key !== 'per_page'
+                );
+                const filterName = filterNames[index];
+                
+                if (filterName) {
+                    handleFilterChange({ [filterName]: value, page: 1 });
+                }
+            },
+            options: filter.options?.map(option => ({
+                value: option.value,
+                label: getTextByMode(option.label),
+            })),
+            colSpan: filter.colSpan,
+        })),
+        // Filtro per_page
+        {
+            type: 'per_page' as const,
+            value: perPage,
+            onChange: (newPerPage: number) => {
+                setPerPage(newPerPage);
+                handleFilterChange({ per_page: newPerPage, page: 1 });
+            },
+        },
     ];
 
-    // Configurar acciones de DataTable
+    // Convertir ColumnConfig a Column para DataTable
+    const tableColumns = columns.map(col => ({
+        key: col.key,
+        label: getTextByMode(col.label),
+        render: col.render,
+        className: col.className,
+    }));
+
+    // Convertir ActionConfig a Action para DataTable
     const tableActions = [
-        ...actions,
+        ...actions.map(action => ({
+            type: action.href ? (action.href.toString().includes('edit') ? 'edit' as const : 'view' as const) : ('custom' as const),
+            href: action.href ? `/${routeName}/:id` : undefined,
+            onClick: action.onClick,
+            icon: action.icon,
+            title: getTextByMode(action.label),
+            className: action.variant === 'danger' 
+                ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                : action.variant === 'secondary'
+                ? 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
+                : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300',
+            condition: action.show,
+        })),
         ...(canDelete ? [{
-            label: {
+            type: 'delete' as const,
+            onClick: handleDeleteClick,
+            icon: '🗑️',
+            title: getTextByMode({
                 niños: '🗑️ Eliminar',
                 jóvenes: 'Eliminar',
                 adultos: 'Eliminar',
-            },
-            icon: '🗑️',
-            onClick: handleDeleteClick,
-            variant: 'danger' as const,
+            }),
+            className: 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300',
         }] : []),
     ];
+
+    // Estado vacío por defecto
+    const defaultEmptyState = {
+        icon: '📁',
+        title: search 
+            ? getTextByMode({
+                niños: `😔 No encontré ${entityName}s que coincidan`,
+                jóvenes: `No se encontraron ${entityName}s`,
+                adultos: `No se encontraron ${entityName}s que coincidan con los filtros`,
+            })
+            : getTextByMode({
+                niños: `😔 No hay ${entityName}s todavía`,
+                jóvenes: `No hay ${entityName}s registrados`,
+                adultos: `No se encontraron ${entityName}s`,
+            }),
+        description: search
+            ? getTextByMode({
+                niños: 'Intenta cambiar los filtros',
+                jóvenes: 'Intenta con otros filtros de búsqueda',
+                adultos: 'Intente modificar los criterios de búsqueda',
+            })
+            : getTextByMode({
+                niños: `¡Crea tu primer ${entityName} con el botón de arriba!`,
+                jóvenes: `Comienza agregando tu primer ${entityName}`,
+                adultos: `Comience agregando el primer ${entityName}`,
+            }),
+        showAddButton: canCreate && !search,
+        addButtonText: canCreate ? getTextByMode({
+            niños: `➕ ¡Crear ${entityName}!`,
+            jóvenes: `➕ Crear ${entityName}`,
+            adultos: `Crear Nuevo ${entityName}`,
+        }) : undefined,
+        addButtonHref: canCreate ? `/${routeName}/create` : undefined,
+    };
 
     return (
         <DashboardLayout
@@ -302,30 +374,37 @@ export default function BaseIndex<T extends BaseEntity>({
                 <PageHeader
                     title={getTextByMode(title)}
                     description={getTextByMode(description)}
-                    createHref={canCreate ? `/${routeName}/create` : undefined}
-                    createLabel={canCreate ? getTextByMode({
+                    buttonHref={canCreate ? `/${routeName}/create` : '#'}
+                    buttonText={canCreate ? getTextByMode({
                         niños: `➕ ¡Crear ${entityName}!`,
                         jóvenes: `➕ Crear ${entityName}`,
                         adultos: `Crear Nuevo ${entityName}`,
-                    }) : undefined}
+                    }) : ''}
                 />
 
                 <SearchFilters
-                    filters={baseSearchFilters}
-                    onFilterChange={handleFilterChange}
+                    filters={searchFilters}
                 />
 
                 <DataTable
-                    columns={columns}
+                    columns={tableColumns}
                     data={data.data}
                     actions={tableActions}
-                    emptyState={renderEmptyState ? renderEmptyState() : undefined}
+                    emptyState={defaultEmptyState}
+                    getItemKey={(item) => item.id}
                 />
 
                 <Pagination
-                    links={data.links}
-                    meta={data.meta}
+                    links={data.links || []}
+                    meta={data.meta || {
+                        from: 0,
+                        to: 0,
+                        total: data.data?.length || 0,
+                        current_page: 1,
+                        last_page: 1,
+                    }}
                     searchParams={{
+                        ...filters,
                         search,
                         sort_by: sortBy,
                         sort_order: sortOrder,
