@@ -70,7 +70,7 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
             },
             render: (roles: Role[]) => (
                 <div className="flex flex-wrap gap-1">
-                    {roles.map((role, index) => (
+                    {(roles || []).map((role, index) => (
                         <span
                             key={index}
                             className="inline-flex rounded-full bg-indigo-100 px-2 py-1 text-xs font-semibold text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
@@ -172,7 +172,7 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                         adultos: 'Todos los roles',
                     },
                 },
-                ...roles.map(role => ({
+                ...(roles || []).map(role => ({
                     value: role.name,
                     label: {
                         niños: `🎭 ${role.name}`,

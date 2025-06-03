@@ -88,8 +88,8 @@ export default function VentasIndex({ ventas, filters }: VentasIndexProps) {
             },
             render: (cliente: Cliente) => (
                 <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{cliente.nombre}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{cliente.email}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{cliente?.nombre || 'Sin cliente'}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{cliente?.email || 'Sin email'}</div>
                 </div>
             ),
             sortable: true,
@@ -101,7 +101,7 @@ export default function VentasIndex({ ventas, filters }: VentasIndexProps) {
                 jóvenes: 'Vendedor',
                 adultos: 'Usuario',
             },
-            render: (usuario: Usuario) => usuario.nombre,
+            render: (usuario: Usuario) => usuario?.nombre || 'Sin usuario',
             sortable: true,
         },
         {
