@@ -2,7 +2,7 @@ import { FormButtons, FormPage, FormSection } from '@/components/Form';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Categoria {
     id: number;
@@ -30,6 +30,8 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
     const { settings } = useAppMode();
     const [productosSeleccionados, setProductosSeleccionados] = useState<ProductoSeleccionado[]>([]);
     const [busquedaProducto, setBusquedaProducto] = useState('');
+    const [shouldSubmit, setShouldSubmit] = useState(false);
+    const formSubmittedRef = useRef(false);
 
     const { data, setData, post, processing, errors } = useForm({
         nombre: '',
@@ -116,6 +118,19 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
         return producto.precio_venta;
     };
 
+    // Effect para enviar el formulario cuando se actualicen los productos
+    useEffect(() => {
+        if (shouldSubmit && data.productos.length > 0 && !formSubmittedRef.current) {
+            formSubmittedRef.current = true;
+            post('/promociones', {
+                onFinish: () => {
+                    formSubmittedRef.current = false;
+                    setShouldSubmit(false);
+                }
+            });
+        }
+    }, [data.productos, shouldSubmit]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -132,14 +147,15 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
         // Preparar productos para envío
         const productosParaEnvio = productosSeleccionados.map(producto => ({
             id: producto.id,
-            descuento_porcentaje: producto.descuento_porcentaje || null,
-            descuento_fijo: producto.descuento_fijo || null,
+            descuento_porcentaje: producto.descuento_porcentaje || undefined,
+            descuento_fijo: producto.descuento_fijo || undefined,
         }));
 
-        post('/promociones', {
-            ...data,
-            productos: productosParaEnvio,
-        });
+        // Actualizar productos en el estado
+        setData('productos', productosParaEnvio);
+        
+        // Marcar para enviar
+        setShouldSubmit(true);
     };
 
     // Configuración de campos para información básica
@@ -272,7 +288,7 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
                                     type="text"
                                     value={busquedaProducto}
                                     onChange={(e) => setBusquedaProducto(e.target.value)}
-                                    className={`block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-gray-200 sm:text-sm ${getModeClasses()}`}
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     placeholder={getTextByMode({
                                         niños: 'Escribe el nombre del producto...',
                                         jóvenes: 'Buscar por nombre o código...',
@@ -361,7 +377,7 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
                                                         'descuento_porcentaje',
                                                         e.target.value ? parseFloat(e.target.value) : undefined
                                                     )}
-                                                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-gray-200 sm:text-sm ${getModeClasses()}`}
+                                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                                     placeholder="10"
                                                 />
                                             </div>
@@ -384,7 +400,7 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
                                                         'descuento_fijo',
                                                         e.target.value ? parseFloat(e.target.value) : undefined
                                                     )}
-                                                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-gray-200 sm:text-sm ${getModeClasses()}`}
+                                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                                     placeholder="5000"
                                                 />
                                             </div>

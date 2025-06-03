@@ -1,8 +1,8 @@
+import { FormButtons, FormPage, FormSection } from '@/components/Form';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
-import { FormPage, FormSection, FormButtons } from '@/components/Form';
+import { useEffect, useRef, useState } from 'react';
 
 interface Categoria {
     id: number;
@@ -47,6 +47,8 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
     const { settings } = useAppMode();
     const [productosSeleccionados, setProductosSeleccionados] = useState<ProductoSeleccionado[]>([]);
     const [busquedaProducto, setBusquedaProducto] = useState('');
+    const [shouldSubmit, setShouldSubmit] = useState(false);
+    const formSubmittedRef = useRef(false);
 
     const { data, setData, put, processing, errors } = useForm({
         nombre: promocion.nombre,
@@ -62,7 +64,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
 
     // Cargar productos existentes al montar el componente
     useEffect(() => {
-        const productosIniciales: ProductoSeleccionado[] = promocion.productos.map(producto => ({
+        const productosIniciales: ProductoSeleccionado[] = promocion.productos.map((producto) => ({
             ...producto,
             descuento_porcentaje: producto.pivot.descuento_porcentaje,
             descuento_fijo: producto.pivot.descuento_fijo,
@@ -94,17 +96,16 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
     };
 
     // Filtrar productos que no están ya seleccionados
-    const productosDisponibles = productos.filter(producto =>
-        !productosSeleccionados.find(p => p.id === producto.id)
-    );
+    const productosDisponibles = productos.filter((producto) => !productosSeleccionados.find((p) => p.id === producto.id));
 
-    const productosFiltrados = productosDisponibles.filter(producto =>
-        producto.nombre.toLowerCase().includes(busquedaProducto.toLowerCase()) ||
-        producto.cod_producto.toLowerCase().includes(busquedaProducto.toLowerCase())
+    const productosFiltrados = productosDisponibles.filter(
+        (producto) =>
+            producto.nombre.toLowerCase().includes(busquedaProducto.toLowerCase()) ||
+            producto.cod_producto.toLowerCase().includes(busquedaProducto.toLowerCase()),
     );
 
     const agregarProducto = (producto: Producto) => {
-        if (!productosSeleccionados.find(p => p.id === producto.id)) {
+        if (!productosSeleccionados.find((p) => p.id === producto.id)) {
             const nuevoProducto: ProductoSeleccionado = {
                 ...producto,
                 descuento_porcentaje: 10,
@@ -116,27 +117,29 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
     };
 
     const removerProducto = (productoId: number) => {
-        setProductosSeleccionados(productosSeleccionados.filter(p => p.id !== productoId));
+        setProductosSeleccionados(productosSeleccionados.filter((p) => p.id !== productoId));
     };
 
     const actualizarDescuento = (productoId: number, campo: 'descuento_porcentaje' | 'descuento_fijo', valor: number | undefined) => {
-        setProductosSeleccionados(productosSeleccionados.map(producto => {
-            if (producto.id === productoId) {
-                const actualizado = { ...producto, [campo]: valor };
-                
-                // Si se está estableciendo un descuento, limpiar el otro
-                if (valor !== undefined && valor > 0) {
-                    if (campo === 'descuento_porcentaje') {
-                        actualizado.descuento_fijo = undefined;
-                    } else {
-                        actualizado.descuento_porcentaje = undefined;
+        setProductosSeleccionados(
+            productosSeleccionados.map((producto) => {
+                if (producto.id === productoId) {
+                    const actualizado = { ...producto, [campo]: valor };
+
+                    // Si se está estableciendo un descuento, limpiar el otro
+                    if (valor !== undefined && valor > 0) {
+                        if (campo === 'descuento_porcentaje') {
+                            actualizado.descuento_fijo = undefined;
+                        } else {
+                            actualizado.descuento_porcentaje = undefined;
+                        }
                     }
+
+                    return actualizado;
                 }
-                
-                return actualizado;
-            }
-            return producto;
-        }));
+                return producto;
+            }),
+        );
     };
 
     const calcularPrecioConDescuento = (producto: ProductoSeleccionado) => {
@@ -148,30 +151,46 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
         return producto.precio_venta;
     };
 
+    // Effect para enviar el formulario cuando se actualicen los productos
+    useEffect(() => {
+        if (shouldSubmit && data.productos.length > 0 && !formSubmittedRef.current) {
+            formSubmittedRef.current = true;
+            put(`/promociones/${promocion.id}`, {
+                onFinish: () => {
+                    formSubmittedRef.current = false;
+                    setShouldSubmit(false);
+                },
+            });
+        }
+    }, [data.productos, shouldSubmit, promocion.id, put]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         // Validar que haya productos seleccionados
         if (productosSeleccionados.length === 0) {
-            alert(getTextByMode({
-                niños: '¡Debes agregar al menos un producto a la promoción!',
-                jóvenes: 'Debes seleccionar al menos un producto',
-                adultos: 'Debe seleccionar al menos un producto para la promoción',
-            }));
+            alert(
+                getTextByMode({
+                    niños: '¡Debes agregar al menos un producto a la promoción!',
+                    jóvenes: 'Debes seleccionar al menos un producto',
+                    adultos: 'Debe seleccionar al menos un producto para la promoción',
+                }),
+            );
             return;
         }
 
         // Preparar productos para envío
-        const productosParaEnvio = productosSeleccionados.map(producto => ({
+        const productosParaEnvio = productosSeleccionados.map((producto) => ({
             id: producto.id,
-            descuento_porcentaje: producto.descuento_porcentaje || null,
-            descuento_fijo: producto.descuento_fijo || null,
+            descuento_porcentaje: producto.descuento_porcentaje || undefined,
+            descuento_fijo: producto.descuento_fijo || undefined,
         }));
 
-        put(`/promociones/${promocion.id}`, {
-            ...data,
-            productos: productosParaEnvio,
-        });
+        // Actualizar productos en el estado
+        setData('productos', productosParaEnvio);
+
+        // Marcar para enviar
+        setShouldSubmit(true);
     };
 
     return (
@@ -201,23 +220,6 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                     jóvenes: 'Volver',
                     adultos: 'Volver',
                 })}
-                actions={[
-                    {
-                        href: `/promociones/${promocion.id}`,
-                        text: getTextByMode({
-                            niños: '👀 Ver',
-                            jóvenes: 'Ver',
-                            adultos: 'Ver Detalles',
-                        }),
-                        variant: 'secondary' as const,
-                        icon: (
-                            <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        )
-                    }
-                ]}
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <FormSection
@@ -244,7 +246,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                 }),
                                 span: 2 as const,
                                 required: true,
-                                error: errors.nombre
+                                error: errors.nombre,
                             },
                             {
                                 type: 'date' as const,
@@ -257,7 +259,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                 value: data.fecha_inicio,
                                 onChange: (value: string) => setData('fecha_inicio', value),
                                 required: true,
-                                error: errors.fecha_inicio
+                                error: errors.fecha_inicio,
                             },
                             {
                                 type: 'date' as const,
@@ -270,7 +272,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                 value: data.fecha_fin,
                                 onChange: (value: string) => setData('fecha_fin', value),
                                 required: true,
-                                error: errors.fecha_fin
+                                error: errors.fecha_fin,
                             },
                             {
                                 type: 'select' as const,
@@ -284,18 +286,18 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                 onChange: (value: string) => setData('estado', value as 'activa' | 'inactiva'),
                                 options: [
                                     { value: 'activa', label: '🟢 Activa' },
-                                    { value: 'inactiva', label: '⚫ Inactiva' }
+                                    { value: 'inactiva', label: '⚫ Inactiva' },
                                 ],
                                 required: true,
-                                error: errors.estado
-                            }
+                                error: errors.estado,
+                            },
                         ]}
                         columns={2}
                     />
 
                     {/* Selección de productos */}
-                    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
-                        <h2 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                             {getTextByMode({
                                 niños: '🛍️ Productos en Promoción',
                                 jóvenes: 'Gestionar Productos',
@@ -305,7 +307,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
 
                         {/* Buscador de productos */}
                         <div className="mb-4">
-                            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${getModeClasses()}`}>
+                            <label className={`mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300 ${getModeClasses()}`}>
                                 {getTextByMode({
                                     niños: '🔍 Agregar más productos',
                                     jóvenes: 'Agregar productos',
@@ -317,7 +319,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                     type="text"
                                     value={busquedaProducto}
                                     onChange={(e) => setBusquedaProducto(e.target.value)}
-                                    className={`block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-gray-200 sm:text-sm ${getModeClasses()}`}
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     placeholder={getTextByMode({
                                         niños: 'Escribe el nombre del producto...',
                                         jóvenes: 'Buscar por nombre o código...',
@@ -325,17 +327,15 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                     })}
                                 />
                                 {busquedaProducto && productosFiltrados.length > 0 && (
-                                    <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 max-h-60 overflow-auto">
+                                    <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700">
                                         {productosFiltrados.slice(0, 10).map((producto) => (
                                             <button
                                                 key={producto.id}
                                                 type="button"
                                                 onClick={() => agregarProducto(producto)}
-                                                className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                                                className="w-full border-b border-gray-100 px-4 py-2 text-left last:border-b-0 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-600"
                                             >
-                                                <div className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {producto.nombre}
-                                                </div>
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">{producto.nombre}</div>
                                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                                     {producto.cod_producto} | {formatCurrency(producto.precio_venta)}
                                                     {producto.categoria && ` | ${producto.categoria.nombre}`}
@@ -359,12 +359,10 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                 </h3>
 
                                 {productosSeleccionados.map((producto) => (
-                                    <div key={producto.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                                    <div key={producto.id} className="rounded-lg border border-gray-200 p-4 dark:border-gray-600">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {producto.nombre}
-                                                </h4>
+                                                <h4 className="font-medium text-gray-900 dark:text-gray-100">{producto.nombre}</h4>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                     {producto.cod_producto} | Precio: {formatCurrency(producto.precio_venta)}
                                                     {producto.categoria && ` | ${producto.categoria.nombre}`}
@@ -376,7 +374,12 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                                 className="ml-4 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                             >
                                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                    />
                                                 </svg>
                                             </button>
                                         </div>
@@ -396,12 +399,14 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                                     max="100"
                                                     step="0.01"
                                                     value={producto.descuento_porcentaje || ''}
-                                                    onChange={(e) => actualizarDescuento(
-                                                        producto.id,
-                                                        'descuento_porcentaje',
-                                                        e.target.value ? parseFloat(e.target.value) : undefined
-                                                    )}
-                                                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-gray-200 sm:text-sm ${getModeClasses()}`}
+                                                    onChange={(e) =>
+                                                        actualizarDescuento(
+                                                            producto.id,
+                                                            'descuento_porcentaje',
+                                                            e.target.value ? parseFloat(e.target.value) : undefined,
+                                                        )
+                                                    }
+                                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                                     placeholder="10"
                                                 />
                                             </div>
@@ -419,12 +424,14 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                                     min="0"
                                                     step="100"
                                                     value={producto.descuento_fijo || ''}
-                                                    onChange={(e) => actualizarDescuento(
-                                                        producto.id,
-                                                        'descuento_fijo',
-                                                        e.target.value ? parseFloat(e.target.value) : undefined
-                                                    )}
-                                                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-gray-200 sm:text-sm ${getModeClasses()}`}
+                                                    onChange={(e) =>
+                                                        actualizarDescuento(
+                                                            producto.id,
+                                                            'descuento_fijo',
+                                                            e.target.value ? parseFloat(e.target.value) : undefined,
+                                                        )
+                                                    }
+                                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                                     placeholder="5000"
                                                 />
                                             </div>
@@ -437,7 +444,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                                         adultos: 'Precio Final',
                                                     })}
                                                 </label>
-                                                <div className="mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md">
+                                                <div className="mt-1 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-600">
                                                     <span className="text-lg font-semibold text-green-600 dark:text-green-400">
                                                         {formatCurrency(calcularPrecioConDescuento(producto))}
                                                     </span>
@@ -450,10 +457,8 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                         )}
 
                         {productosSeleccionados.length === 0 && (
-                            <div className="text-center py-8">
-                                <div className="text-4xl mb-2">
-                                    {settings.ageMode === 'niños' ? '😔' : '🛍️'}
-                                </div>
+                            <div className="py-8 text-center">
+                                <div className="mb-2 text-4xl">{settings.ageMode === 'niños' ? '😔' : '🛍️'}</div>
                                 <p className="text-gray-500 dark:text-gray-400">
                                     {getTextByMode({
                                         niños: '¡No hay productos en esta promoción! Usa el buscador de arriba.',
@@ -464,9 +469,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                             </div>
                         )}
 
-                        {errors.productos && (
-                            <p className="mt-2 text-sm text-red-600">{errors.productos}</p>
-                        )}
+                        {errors.productos && <p className="mt-2 text-sm text-red-600">{errors.productos}</p>}
                     </div>
 
                     <FormButtons
@@ -492,4 +495,4 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
             </FormPage>
         </DashboardLayout>
     );
-} 
+}
