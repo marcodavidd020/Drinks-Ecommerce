@@ -72,14 +72,20 @@ export default function VentasIndex({ ventas, filters }: VentasIndexProps) {
                 jóvenes: 'N° Venta',
                 adultos: 'Número de Venta',
             },
-            render: (numero: string, venta: Venta) => (
-                <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">#{numero || 'Sin número'}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {venta.items_count || 0} items
+            render: (numero: string, venta: Venta) => {
+                console.log('Venta data:', venta); // Debug log
+                const numeroVenta = venta?.numero_venta || numero || venta?.id || 'Sin número';
+                const itemsCount = venta?.items_count ?? 0;
+                
+                return (
+                    <div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">#{numeroVenta}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {itemsCount} items
+                        </div>
                     </div>
-                </div>
-            ),
+                );
+            },
             sortable: true,
         },
         {

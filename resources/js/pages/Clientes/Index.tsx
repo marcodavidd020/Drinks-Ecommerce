@@ -31,6 +31,10 @@ interface ClientesIndexProps {
 }
 
 export default function ClientesIndex({ clientes, filters }: ClientesIndexProps) {
+    // Debug log para ver los datos que recibe el componente
+    console.log('Clientes data:', clientes);
+    console.log('Filters:', filters);
+
     const columns = [
         {
             key: 'nombre',
@@ -39,12 +43,18 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 jóvenes: 'Nombre',
                 adultos: 'Nombre',
             },
-            render: (nombre: string, cliente: Cliente) => (
-                <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{nombre}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{cliente.email}</div>
-                </div>
-            ),
+            render: (nombre: string, cliente: Cliente) => {
+                console.log('Cliente item:', cliente); // Debug log para cada cliente
+                const clienteNombre = cliente?.nombre || nombre || 'Sin nombre';
+                const clienteEmail = cliente?.email || 'Sin email';
+                
+                return (
+                    <div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{clienteNombre}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{clienteEmail}</div>
+                    </div>
+                );
+            },
             sortable: true,
         },
         {
@@ -54,7 +64,10 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 jóvenes: 'Celular',
                 adultos: 'Celular',
             },
-            render: (celular: string) => celular || 'No registrado',
+            render: (celular: string, cliente: Cliente) => {
+                const clienteCelular = cliente?.celular || celular || 'No registrado';
+                return clienteCelular;
+            },
             sortable: true,
         },
         {
@@ -64,14 +77,15 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 jóvenes: 'Género',
                 adultos: 'Género',
             },
-            render: (genero: string) => {
-                if (!genero) return 'No especificado';
+            render: (genero: string, cliente: Cliente) => {
+                const clienteGenero = cliente?.genero || genero;
+                if (!clienteGenero) return 'No especificado';
                 const generoMap = {
                     masculino: '👨 Masculino',
                     femenino: '👩 Femenino',
                     otro: '🏳️‍⚧️ Otro',
                 };
-                return generoMap[genero as keyof typeof generoMap] || genero;
+                return generoMap[clienteGenero as keyof typeof generoMap] || clienteGenero;
             },
             sortable: true,
         },
@@ -82,11 +96,14 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 jóvenes: 'N° Ventas',
                 adultos: 'Número de Ventas',
             },
-            render: (count: number) => (
-                <span className="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    {count} ventas
-                </span>
-            ),
+            render: (count: number, cliente: Cliente) => {
+                const ventasCount = cliente?.ventas_count ?? count ?? 0;
+                return (
+                    <span className="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {ventasCount} ventas
+                    </span>
+                );
+            },
             sortable: true,
         },
         {
@@ -96,17 +113,20 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 jóvenes: 'Estado',
                 adultos: 'Estado',
             },
-            render: (estado: string) => (
-                <span
-                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                        estado === 'activo'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    }`}
-                >
-                    {estado === 'activo' ? '🟢 Activo' : '🔴 Inactivo'}
-                </span>
-            ),
+            render: (estado: string, cliente: Cliente) => {
+                const clienteEstado = cliente?.estado || estado || 'inactivo';
+                return (
+                    <span
+                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                            clienteEstado === 'activo'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}
+                    >
+                        {clienteEstado === 'activo' ? '🟢 Activo' : '🔴 Inactivo'}
+                    </span>
+                );
+            },
             sortable: true,
         },
         {

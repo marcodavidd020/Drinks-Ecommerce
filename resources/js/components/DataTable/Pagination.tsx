@@ -25,32 +25,34 @@ interface PaginationProps {
 export default function Pagination({ links, meta, searchParams, entityName }: PaginationProps) {
     const { getTextByMode, getModeClasses } = useAppModeText();
 
-    // Si no hay metadatos válidos, no renderizar el componente
-    if (!meta || !meta.total || meta.total === 0) {
-        return null;
-    }
+    // Debug: console log para ver qué datos recibimos
+    console.log('Pagination - meta:', meta);
+    console.log('Pagination - links:', links);
 
-    // Información de paginación formateada
-    const from = meta?.from || (meta?.total && meta.total > 0 ? 1 : 0);
-    const to = meta?.to || meta?.total || 0;
-    const total = meta?.total || 0;
-    const currentPage = meta?.current_page || 1;
-    const lastPage = meta?.last_page || 1;
-
-    // Si hay una sola página, no mostrar paginación
-    if (lastPage <= 1) {
+    // Si no hay metadatos válidos, renderizar componente básico
+    if (!meta) {
         return (
             <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
                 <div className={`text-center text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                     {getTextByMode({
-                        niños: `🔍 Mostrando ${from} a ${to} de ${total} ${entityName}s`,
-                        jóvenes: `Mostrando ${from} a ${to} de ${total} ${entityName}s`,
-                        adultos: `Mostrando ${from} a ${to} de ${total} ${entityName}s`,
+                        niños: '📄 Sin información de paginación',
+                        jóvenes: 'Sin información de paginación',
+                        adultos: 'Sin información de paginación',
                     })}
                 </div>
             </div>
         );
     }
+
+    // Información de paginación formateada
+    const total = meta?.total || 0;
+    const from = meta?.from || (total > 0 ? 1 : 0);
+    const to = meta?.to || total;
+    const currentPage = meta?.current_page || 1;
+    const lastPage = meta?.last_page || 1;
+
+    // Siempre mostrar información de paginación si hay datos
+    const showPaginationInfo = true;
 
     // Filtrar enlaces para obtener navegación específica
     const prevLink = links?.find(link => link.label.includes('&laquo;') || link.label.includes('Anterior') || link.label.includes('Previous'));
@@ -93,9 +95,9 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                 <div className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                     {total > 0 ? (
                         getTextByMode({
-                            niños: `🔍 Mostrando ${from} a ${to} de ${total} ${entityName}`,
-                            jóvenes: `Mostrando ${from} a ${to} de ${total} ${entityName}`,
-                            adultos: `Mostrando ${from} a ${to} de ${total} ${entityName}`,
+                            niños: `🔍 Mostrando ${from} a ${to} de ${total} ${entityName}s`,
+                            jóvenes: `Mostrando ${from} a ${to} de ${total} ${entityName}s`,
+                            adultos: `Mostrando ${from} a ${to} de ${total} ${entityName}s`,
                         })
                     ) : (
                         getTextByMode({
@@ -107,7 +109,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                 </div>
 
                 {/* Navegación de páginas */}
-                {lastPage > 1 && (
+                {lastPage > 1 && total > 0 && (
                     <div className="flex flex-wrap items-center justify-center gap-1">
                         {/* Primera página */}
                         {currentPage > 2 && firstPageUrl && (
