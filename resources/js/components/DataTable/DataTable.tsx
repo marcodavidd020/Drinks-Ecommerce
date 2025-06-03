@@ -51,7 +51,8 @@ export default function DataTable({ data, columns, actions, emptyState, getItemK
         if (column.render) {
             return column.render(item[column.key], item);
         }
-        return item[column.key] || '-';
+        const value = item[column.key];
+        return value !== undefined && value !== null ? value : '-';
     };
 
     const renderAction = (action: Action, item: any, index: number) => {

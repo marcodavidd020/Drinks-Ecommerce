@@ -116,7 +116,16 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 jóvenes: 'Fecha Registro',
                 adultos: 'Fecha de Registro',
             },
-            render: (value: string) => new Date(value).toLocaleDateString(),
+            render: (value: string) => {
+                if (!value) return 'Fecha no disponible';
+                const date = new Date(value);
+                if (isNaN(date.getTime())) return 'Fecha inválida';
+                return date.toLocaleDateString('es-CO', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                });
+            },
             sortable: true,
         },
     ];

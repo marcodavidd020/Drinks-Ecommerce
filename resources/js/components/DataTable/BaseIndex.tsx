@@ -397,8 +397,8 @@ export default function BaseIndex<T extends BaseEntity>({
                 <Pagination
                     links={data.links || []}
                     meta={data.meta || {
-                        from: 0,
-                        to: 0,
+                        from: data.data?.length > 0 ? 1 : 0,
+                        to: data.data?.length || 0,
                         total: data.data?.length || 0,
                         current_page: 1,
                         last_page: 1,

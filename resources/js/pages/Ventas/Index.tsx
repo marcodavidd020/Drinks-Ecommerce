@@ -54,7 +54,10 @@ export default function VentasIndex({ ventas, filters }: VentasIndexProps) {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('es-CO', {
+        if (!dateString) return 'Fecha no disponible';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Fecha inválida';
+        return date.toLocaleDateString('es-CO', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -71,9 +74,9 @@ export default function VentasIndex({ ventas, filters }: VentasIndexProps) {
             },
             render: (numero: string, venta: Venta) => (
                 <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">#{numero}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">#{numero || 'Sin número'}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {venta.items_count} items
+                        {venta.items_count || 0} items
                     </div>
                 </div>
             ),

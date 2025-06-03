@@ -31,8 +31,8 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
     }
 
     // Información de paginación formateada
-    const from = meta?.from || 0;
-    const to = meta?.to || 0;
+    const from = meta?.from || (meta?.total && meta.total > 0 ? 1 : 0);
+    const to = meta?.to || meta?.total || 0;
     const total = meta?.total || 0;
     const currentPage = meta?.current_page || 1;
     const lastPage = meta?.last_page || 1;
