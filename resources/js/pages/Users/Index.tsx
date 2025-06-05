@@ -168,6 +168,7 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
     const customFilters = [
         {
             type: 'select' as const,
+            key: 'role',
             value: filters.role,
             onChange: (value: string) => {
                 // Esta lógica se manejará en BaseIndex
@@ -193,6 +194,7 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
         },
         {
             type: 'select' as const,
+            key: 'estado',
             value: filters.estado,
             onChange: (value: string) => {
                 // Esta lógica se manejará en BaseIndex

@@ -26,23 +26,28 @@ class UserController extends Controller
         $search = $request->get('search', '');
         $role = $request->get('role', '');
         $estado = $request->get('estado', '');
-        $perPage = $request->get('per_page', 10);
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $perPage = (int) $request->get('per_page', 10);
 
-        $users = User::with('roles')
-            ->when($search, function ($query, $search) {
+        $query = User::with('roles')
+            ->when($search, function ($query) use ($search) {
                 return $query->where('nombre', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");
             })
-            ->when($role, function ($query, $role) {
+            ->when($role, function ($query) use ($role) {
                 return $query->whereHas('roles', function ($q) use ($role) {
                     $q->where('name', $role);
                 });
             })
-            ->when($estado, function ($query, $estado) {
+            ->when($estado, function ($query) use ($estado) {
                 return $query->where('estado', $estado);
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+            });
+
+        // Aplicar ordenamiento
+        $query->orderBy($sortBy, $sortOrder);
+        
+        $users = $query->paginate($perPage);
 
         // Transformar datos para incluir el rol principal
         $users->getCollection()->transform(function ($user) {
@@ -61,6 +66,8 @@ class UserController extends Controller
                 'search' => $search,
                 'role' => $role,
                 'estado' => $estado,
+                'sort_by' => $sortBy,
+                'sort_order' => $sortOrder,
                 'per_page' => $perPage,
             ],
         ]);

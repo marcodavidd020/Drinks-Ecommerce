@@ -173,6 +173,7 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
     const customFilters = [
         {
             type: 'select' as const,
+            key: 'estado',
             value: filters.estado,
             onChange: (value: string) => {
                 // Esta lógica se manejará en BaseIndex
@@ -206,6 +207,7 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
         },
         {
             type: 'select' as const,
+            key: 'genero',
             value: filters.genero,
             onChange: (value: string) => {
                 // Esta lógica se manejará en BaseIndex

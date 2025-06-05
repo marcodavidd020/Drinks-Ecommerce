@@ -45,7 +45,7 @@ export default function SearchFilters({ filters }: SearchFiltersProps) {
 
     const renderFilter = (filter: Filter, index: number) => {
         const baseInputClasses =
-            'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100';
+            `w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100 ${getModeClasses()}`;
 
         switch (filter.type) {
             case 'search':

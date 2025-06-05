@@ -52,6 +52,7 @@ interface ActionConfig<T extends BaseEntity> {
 
 interface FilterConfig {
     type: 'search' | 'select';
+    key?: string; // Agregar key para identificar el filtro
     placeholder?: {
         niños: string;
         jóvenes: string;
@@ -267,11 +268,16 @@ export default function BaseIndex<T extends BaseEntity>({
             type: filter.type,
             value: filter.value,
             onChange: (value: string) => {
-                // Obtener el nombre del filtro basado en el índice
-                const filterNames = Object.keys(filters).filter(key => 
-                    key !== 'search' && key !== 'sort_by' && key !== 'sort_order' && key !== 'per_page'
-                );
-                const filterName = filterNames[index];
+                // Usar la key del filtro si está disponible, sino usar el índice como fallback
+                let filterName = filter.key;
+                
+                if (!filterName) {
+                    // Obtener el nombre del filtro basado en el índice como fallback
+                    const filterNames = Object.keys(filters).filter(key => 
+                        key !== 'search' && key !== 'sort_by' && key !== 'sort_order' && key !== 'per_page'
+                    );
+                    filterName = filterNames[index];
+                }
                 
                 if (filterName) {
                     handleFilterChange({ [filterName]: value, page: 1 });
