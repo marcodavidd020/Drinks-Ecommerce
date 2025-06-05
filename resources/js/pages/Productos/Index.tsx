@@ -173,6 +173,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
     const customFilters = [
         {
             type: 'select' as const,
+            key: 'categoria',
             value: filters.categoria,
             onChange: (value: string) => {
                 // Esta lógica se manejará en BaseIndex

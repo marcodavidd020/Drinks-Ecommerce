@@ -23,7 +23,7 @@ interface UsersIndexProps {
         links: any[];
         meta?: any;
     };
-    roles: Role[];
+    allRoles: Role[];
     filters: {
         search: string;
         role: string;
@@ -34,7 +34,7 @@ interface UsersIndexProps {
     };
 }
 
-export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
+export default function UsersIndex({ users, allRoles, filters }: UsersIndexProps) {
     const columns = [
         {
             key: 'nombre',
@@ -182,7 +182,7 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                         adultos: 'Todos los roles',
                     },
                 },
-                ...(roles || []).map(role => ({
+                ...(allRoles || []).map(role => ({
                     value: role.name,
                     label: {
                         niños: `🎭 ${role.name}`,

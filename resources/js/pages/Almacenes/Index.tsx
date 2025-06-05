@@ -5,7 +5,7 @@ interface Almacen {
     nombre: string;
     ubicacion: string;
     descripcion?: string;
-    inventarios_count: number;
+    productos_count: number; // Cambiado para coincidir con el backend
     created_at: string;
     updated_at: string;
 }
@@ -55,7 +55,7 @@ export default function AlmacenesIndex({ almacenes, filters }: AlmacenesIndexPro
             sortable: true,
         },
         {
-            key: 'inventarios_count',
+            key: 'productos_count',
             label: {
                 niños: '📦 Productos',
                 jóvenes: 'N° Productos',
@@ -64,7 +64,7 @@ export default function AlmacenesIndex({ almacenes, filters }: AlmacenesIndexPro
             type: 'number' as const,
             render: (count: number) => (
                 <span className="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    {count} productos
+                    {count || 0} productos
                 </span>
             ),
             sortable: true,

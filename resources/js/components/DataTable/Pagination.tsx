@@ -106,11 +106,11 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                     )}
                 </div>
 
-                {/* Navegación de páginas */}
-                {lastPage > 1 && total > 0 && (
+                {/* Navegación de páginas - mostrar información adicional incluso con una sola página */}
+                {total > 0 && (
                     <div className="flex flex-wrap items-center justify-center gap-1">
                         {/* Primera página */}
-                        {currentPage > 2 && firstPageUrl && (
+                        {lastPage > 1 && currentPage > 2 && firstPageUrl && (
                             <Link
                                 href={firstPageUrl}
                                 className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
@@ -129,7 +129,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                         )}
 
                         {/* Página anterior */}
-                        {prevPageUrl && (
+                        {lastPage > 1 && prevPageUrl && (
                             <Link
                                 href={prevPageUrl}
                                 className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
@@ -148,7 +148,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                         )}
 
                         {/* Páginas numeradas o generar manualmente */}
-                        {pageLinks.length > 0 ? (
+                        {lastPage > 1 && pageLinks.length > 0 ? (
                             pageLinks.map((link, index) => (
                                 <Link
                                     key={index}
@@ -174,7 +174,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                                     {link.label}
                                 </Link>
                             ))
-                        ) : (
+                        ) : lastPage > 1 ? (
                             // Generar páginas manualmente si no hay enlaces
                             Array.from({ length: Math.min(5, lastPage) }, (_, i) => {
                                 let pageNum;
@@ -214,10 +214,15 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                                     </Link>
                                 );
                             })
+                        ) : (
+                            // Mostrar indicador cuando solo hay una página
+                            <div className="flex items-center justify-center px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                Página única
+                            </div>
                         )}
 
                         {/* Página siguiente */}
-                        {nextPageUrl && (
+                        {lastPage > 1 && nextPageUrl && (
                             <Link
                                 href={nextPageUrl}
                                 className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
@@ -236,7 +241,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                         )}
 
                         {/* Última página */}
-                        {currentPage < lastPage - 1 && lastPageUrl && (
+                        {lastPage > 1 && currentPage < lastPage - 1 && lastPageUrl && (
                             <Link
                                 href={lastPageUrl}
                                 className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
