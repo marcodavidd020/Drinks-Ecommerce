@@ -25,9 +25,7 @@ interface PaginationProps {
 export default function Pagination({ links, meta, searchParams, entityName }: PaginationProps) {
     const { getTextByMode, getModeClasses } = useAppModeText();
 
-    // Debug: console log para ver qué datos recibimos
-    console.log('Pagination - meta:', meta);
-    console.log('Pagination - links:', links);
+
 
     // Si no hay metadatos válidos, renderizar componente básico
     if (!meta) {
