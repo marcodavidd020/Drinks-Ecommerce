@@ -31,9 +31,6 @@ interface ClientesIndexProps {
 }
 
 export default function ClientesIndex({ clientes, filters }: ClientesIndexProps) {
-    // Debug log para ver los datos que recibe el componente
-    console.log('Clientes data:', clientes);
-    console.log('Filters:', filters);
 
     const columns = [
         {
@@ -44,10 +41,9 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 adultos: 'Nombre',
             },
             render: (nombre: string, cliente: Cliente) => {
-                console.log('Cliente item:', cliente); // Debug log para cada cliente
                 const clienteNombre = cliente?.nombre || nombre || 'Sin nombre';
                 const clienteEmail = cliente?.email || 'Sin email';
-                
+
                 return (
                     <div>
                         <div className="font-medium text-gray-900 dark:text-gray-100">{clienteNombre}</div>
@@ -272,4 +268,4 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
             customFilters={customFilters}
         />
     );
-} 
+}

@@ -22,30 +22,72 @@ class ClienteController extends Controller
     {
         $search = $request->get('search', '');
         $estado = $request->get('estado', '');
-        $perPage = $request->get('per_page', 10);
+        $genero = $request->get('genero', '');
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $perPage = (int) $request->get('per_page', 10);
 
-        $clientes = Cliente::query()
-            ->with('user')
-            ->when($search, function ($query, $search) {
+        $query = Cliente::query()
+            ->with(['user', 'direccion'])
+            ->withCount('carritos')
+            ->when($search, function ($query) use ($search) {
                 return $query->whereHas('user', function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('celular', 'like', "%{$search}%");
                 })
-                ->orWhere('nit', 'like', "%{$search}%");
+                    ->orWhere('nit', 'like', "%{$search}%");
             })
-            ->when($estado, function ($query, $estado) {
+            ->when($estado, function ($query) use ($estado) {
                 return $query->whereHas('user', function ($q) use ($estado) {
                     $q->where('estado', $estado);
                 });
             })
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
-        
+            ->when($genero, function ($query) use ($genero) {
+                return $query->where('genero', $genero);
+            });
+
+        // Aplicar ordenamiento
+        if (in_array($sortBy, ['nombre', 'email', 'estado'])) {
+            $query->join('users', 'clientes.user_id', '=', 'users.id')
+                ->orderBy("users.{$sortBy}", $sortOrder)
+                ->select('clientes.*');
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $clientes = $query->paginate($perPage);
+
+        // Transformar los datos para incluir campos del usuario directamente
+        $clientes->getCollection()->transform(function ($cliente) {
+            return [
+                'id' => $cliente->id,
+                'nombre' => $cliente->user->nombre ?? 'Sin nombre',
+                'email' => $cliente->user->email ?? 'Sin email',
+                'celular' => $cliente->user->celular,
+                'direccion' => $cliente->direccion?->direccion_completa ?? null,
+                'fecha_nacimiento' => $cliente->fecha_nacimiento?->format('Y-m-d'),
+                'genero' => $cliente->genero,
+                'estado' => $cliente->user->estado ?? 'inactivo',
+                'ventas_count' => $cliente->carritos_count ?? 0,
+                'created_at' => $cliente->created_at->toISOString(),
+                'updated_at' => $cliente->updated_at->toISOString(),
+                'nit' => $cliente->nit,
+                'telefono' => $cliente->telefono,
+                // Mantener las relaciones por si las necesitamos
+                'user' => $cliente->user,
+                'direccion_obj' => $cliente->direccion,
+            ];
+        });
+
         return Inertia::render('Clientes/Index', [
             'clientes' => $clientes,
             'filters' => [
                 'search' => $search,
                 'estado' => $estado,
+                'genero' => $genero,
+                'sort_by' => $sortBy,
+                'sort_order' => $sortOrder,
                 'per_page' => $perPage,
             ],
         ]);
@@ -103,7 +145,6 @@ class ClienteController extends Controller
 
             return redirect()->route('clientes.index')
                 ->with('success', 'Cliente creado exitosamente.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al crear el cliente: ' . $e->getMessage()]);
@@ -116,7 +157,7 @@ class ClienteController extends Controller
     public function show(Cliente $cliente): Response
     {
         $cliente->load('user');
-        
+
         return Inertia::render('Clientes/Show', [
             'cliente' => $cliente
         ]);
@@ -128,7 +169,7 @@ class ClienteController extends Controller
     public function edit(Cliente $cliente): Response
     {
         $cliente->load('user');
-        
+
         return Inertia::render('Clientes/Edit', [
             'cliente' => $cliente
         ]);
@@ -171,7 +212,6 @@ class ClienteController extends Controller
 
             return redirect()->route('clientes.index')
                 ->with('success', 'Cliente actualizado exitosamente.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al actualizar el cliente: ' . $e->getMessage()]);
@@ -194,7 +234,6 @@ class ClienteController extends Controller
 
             return redirect()->route('clientes.index')
                 ->with('success', 'Cliente eliminado exitosamente.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al eliminar el cliente: ' . $e->getMessage()]);
@@ -207,13 +246,13 @@ class ClienteController extends Controller
     public function toggleStatus(Cliente $cliente): RedirectResponse
     {
         $newStatus = $cliente->user->estado === 'activo' ? 'inactivo' : 'activo';
-        
+
         $cliente->user->update([
             'estado' => $newStatus
         ]);
 
-        $mensaje = $newStatus === 'activo' 
-            ? 'Cliente activado exitosamente.' 
+        $mensaje = $newStatus === 'activo'
+            ? 'Cliente activado exitosamente.'
             : 'Cliente desactivado exitosamente.';
 
         return redirect()->route('clientes.index')
