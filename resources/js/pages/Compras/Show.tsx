@@ -1,7 +1,6 @@
-import { useAppMode } from '@/contexts/AppModeContext';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ShowHeader, InfoCard } from '@/components/Show';
 
 interface Producto {
@@ -46,7 +45,6 @@ interface ComprasShowProps {
 }
 
 export default function ComprasShow({ compra }: ComprasShowProps) {
-    const { getModeClasses } = useAppMode();
     const { getTextByMode } = useAppModeText();
 
     const formatCurrency = (amount: number) => {
@@ -100,13 +98,13 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                             jóvenes: `Compra #${compra.id}`,
                             adultos: `Compra #${compra.id}`,
                         })}
-                        subtitle={getTextByMode({
+                        description={getTextByMode({
                             niños: `Detalles completos de la compra realizada el ${formatDate(compra.fecha)}`,
                             jóvenes: `Detalles de la compra del ${formatDate(compra.fecha)}`,
                             adultos: `Información detallada de la compra realizada el ${formatDate(compra.fecha)}`,
                         })}
-                        backUrl={route('compras.index')}
-                        editUrl={route('compras.edit', compra.id)}
+                        backHref={route('compras.index')}
+                        editHref={route('compras.edit', compra.id)}
                     />
 
                     <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -122,7 +120,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '🔢 ID de Compra',
                                                 jóvenes: 'ID de Compra',
@@ -135,7 +133,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                                     </div>
 
                                     <div>
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '📅 Fecha de Compra',
                                                 jóvenes: 'Fecha de Compra',
@@ -148,7 +146,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                                     </div>
 
                                     <div>
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '📊 Estado',
                                                 jóvenes: 'Estado',
@@ -161,7 +159,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                                     </div>
 
                                     <div>
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '💰 Total de la Compra',
                                                 jóvenes: 'Total de la Compra',
@@ -174,7 +172,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '📊 Resumen',
                                                 jóvenes: 'Resumen',
@@ -188,7 +186,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
 
                                     {compra.observaciones && (
                                         <div className="md:col-span-2">
-                                            <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                 {getTextByMode({
                                                     niños: '📝 Observaciones',
                                                     jóvenes: 'Observaciones',
@@ -283,7 +281,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                             >
                                 <div className="space-y-4">
                                     <div>
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '🏷️ Nombre',
                                                 jóvenes: 'Nombre',
@@ -297,7 +295,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
 
                                     {compra.proveedor.email && (
                                         <div>
-                                            <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                 {getTextByMode({
                                                     niños: '📧 Email',
                                                     jóvenes: 'Email',
@@ -314,7 +312,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
 
                                     {compra.proveedor.telefono && (
                                         <div>
-                                            <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                 {getTextByMode({
                                                     niños: '📞 Teléfono',
                                                     jóvenes: 'Teléfono',
@@ -331,7 +329,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
 
                                     {compra.proveedor.direccion && (
                                         <div>
-                                            <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                 {getTextByMode({
                                                     niños: '📍 Dirección',
                                                     jóvenes: 'Dirección',
@@ -356,7 +354,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                             >
                                 <div className="space-y-4">
                                     <div className="flex justify-between">
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '📦 Productos',
                                                 jóvenes: 'Productos',
@@ -369,7 +367,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                                     </div>
 
                                     <div className="flex justify-between">
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '🔢 Unidades',
                                                 jóvenes: 'Unidades',
@@ -383,7 +381,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
 
                                     <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
                                         <div className="flex justify-between">
-                                            <dt className={`text-base font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                            <dt className="text-base font-semibold text-gray-900 dark:text-gray-100">
                                                 {getTextByMode({
                                                     niños: '💰 Total',
                                                     jóvenes: 'Total',
@@ -408,7 +406,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                             >
                                 <div className="space-y-4">
                                     <div>
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '📅 Creado',
                                                 jóvenes: 'Creado',
@@ -421,7 +419,7 @@ export default function ComprasShow({ compra }: ComprasShowProps) {
                                     </div>
 
                                     <div>
-                                        <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {getTextByMode({
                                                 niños: '🔄 Actualizado',
                                                 jóvenes: 'Actualizado',

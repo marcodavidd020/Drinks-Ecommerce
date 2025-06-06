@@ -23,7 +23,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ links, meta, searchParams, entityName }: PaginationProps) {
-    const { getTextByMode, getModeClasses } = useAppModeText();
+    const { getTextByMode } = useAppModeText();
 
 
 
@@ -31,7 +31,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
     if (!meta) {
         return (
             <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
-                <div className={`text-center text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
+                <div className={`text-center text-sm text-gray-600 dark:text-gray-400 `}>
                     {getTextByMode({
                         niños: '📄 Sin información de paginación',
                         jóvenes: 'Sin información de paginación',
@@ -55,14 +55,14 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
     // Filtrar enlaces para obtener navegación específica
     const prevLink = links?.find(link => link.label.includes('&laquo;') || link.label.includes('Anterior') || link.label.includes('Previous'));
     const nextLink = links?.find(link => link.label.includes('&raquo;') || link.label.includes('Siguiente') || link.label.includes('Next'));
-    
+
     // Enlaces de páginas numeradas (excluyendo anterior/siguiente)
-    const pageLinks = links?.filter(link => 
+    const pageLinks = links?.filter(link =>
         !link.label.includes('&laquo;') &&
         !link.label.includes('&raquo;') &&
-        !link.label.includes('Anterior') && 
-        !link.label.includes('Previous') && 
-        !link.label.includes('Siguiente') && 
+        !link.label.includes('Anterior') &&
+        !link.label.includes('Previous') &&
+        !link.label.includes('Siguiente') &&
         !link.label.includes('Next') &&
         link.url &&
         !isNaN(parseInt(link.label))
@@ -75,12 +75,12 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
         return '?' + params.toString();
     };
 
-    const firstPageUrl = pageLinks.length > 0 
-        ? pageLinks[0].url?.replace(/page=\d+/, 'page=1') 
+    const firstPageUrl = pageLinks.length > 0
+        ? pageLinks[0].url?.replace(/page=\d+/, 'page=1')
         : createPaginationUrl(1);
-    
-    const lastPageUrl = pageLinks.length > 0 
-        ? pageLinks[0].url?.replace(/page=\d+/, `page=${lastPage}`) 
+
+    const lastPageUrl = pageLinks.length > 0
+        ? pageLinks[0].url?.replace(/page=\d+/, `page=${lastPage}`)
         : createPaginationUrl(lastPage);
 
     const prevPageUrl = prevLink?.url || (currentPage > 1 ? createPaginationUrl(currentPage - 1) : null);
@@ -90,7 +90,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
         <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                 {/* Información de registros */}
-                <div className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
+                <div className={`text-sm text-gray-600 dark:text-gray-400 `}>
                     {total > 0 ? (
                         getTextByMode({
                             niños: `🔍 Mostrando ${from} a ${to} de ${total} ${entityName}s`,
@@ -113,7 +113,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                         {lastPage > 1 && currentPage > 2 && firstPageUrl && (
                             <Link
                                 href={firstPageUrl}
-                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
+                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 `}
                                 title={getTextByMode({
                                     niños: '¡Ir a la primera página!',
                                     jóvenes: 'Ir a la primera página',
@@ -132,7 +132,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                         {lastPage > 1 && prevPageUrl && (
                             <Link
                                 href={prevPageUrl}
-                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
+                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 `}
                                 title={getTextByMode({
                                     niños: '¡Ir a la página anterior!',
                                     jóvenes: 'Página anterior',
@@ -157,8 +157,8 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                                         link.active
                                             ? 'bg-blue-600 text-white shadow-md'
                                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                                    } ${getModeClasses()}`}
-                                    title={link.active 
+                                    } `}
+                                    title={link.active
                                         ? getTextByMode({
                                             niños: '📍 Página actual',
                                             jóvenes: 'Página actual',
@@ -187,7 +187,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                                 } else {
                                     pageNum = currentPage - 2 + i;
                                 }
-                                
+
                                 return (
                                     <Link
                                         key={pageNum}
@@ -196,8 +196,8 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                                             pageNum === currentPage
                                                 ? 'bg-blue-600 text-white shadow-md'
                                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                                        } ${getModeClasses()}`}
-                                        title={pageNum === currentPage 
+                                        } `}
+                                        title={pageNum === currentPage
                                             ? getTextByMode({
                                                 niños: '📍 Página actual',
                                                 jóvenes: 'Página actual',
@@ -225,7 +225,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                         {lastPage > 1 && nextPageUrl && (
                             <Link
                                 href={nextPageUrl}
-                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
+                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 `}
                                 title={getTextByMode({
                                     niños: '¡Ir a la siguiente página!',
                                     jóvenes: 'Página siguiente',
@@ -244,7 +244,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
                         {lastPage > 1 && currentPage < lastPage - 1 && lastPageUrl && (
                             <Link
                                 href={lastPageUrl}
-                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${getModeClasses()}`}
+                                className={`rounded-md px-3 py-2 text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 `}
                                 title={getTextByMode({
                                     niños: '¡Ir a la última página!',
                                     jóvenes: 'Ir a la última página',
@@ -264,7 +264,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
 
             {/* Información adicional de paginación */}
             {lastPage > 1 && (
-                <div className={`mt-2 text-center text-xs text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                <div className={`mt-2 text-center text-xs text-gray-500 dark:text-gray-400 `}>
                     {getTextByMode({
                         niños: `📄 Página ${currentPage} de ${lastPage}`,
                         jóvenes: `Página ${currentPage} de ${lastPage}`,

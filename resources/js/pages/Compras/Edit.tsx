@@ -67,7 +67,7 @@ export default function ComprasEdit({ compra, proveedores, productos }: ComprasE
     const [cantidad, setCantidad] = useState<number>(1);
     const [precioUnitario, setPrecioUnitario] = useState<number>(0);
 
-    const { data, setData, put, processing, errors } = useForm<CompraFormData>({
+    const { data, setData, put, processing, errors } = useForm({
         proveedor_id: compra.proveedor_id.toString(),
         fecha: compra.fecha,
         estado: compra.estado,
@@ -191,14 +191,15 @@ export default function ComprasEdit({ compra, proveedores, productos }: ComprasE
                     jóvenes: `Editar Compra #${compra.id}`,
                     adultos: `Editar Compra #${compra.id}`,
                 })}
-                subtitle={getTextByMode({
+                description={getTextByMode({
                     niños: 'Modifica los datos de la compra y sus productos',
                     jóvenes: 'Modifica los datos de la compra',
                     adultos: 'Modifica la información de la compra y sus productos asociados',
                 })}
-                backUrl={route('compras.show', compra.id)}
-                onSubmit={submit}
+                backHref={route('compras.show', compra.id)}
+                backText="Volver a compra"
             >
+                <form onSubmit={submit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <SelectField
                         label={getTextByMode({
@@ -422,15 +423,17 @@ export default function ComprasEdit({ compra, proveedores, productos }: ComprasE
                     )}
                 </div>
 
-                <FormButtons
-                    processing={processing}
-                    cancelUrl={route('compras.show', compra.id)}
-                    submitText={getTextByMode({
-                        niños: '💾 Actualizar Compra',
-                        jóvenes: 'Actualizar Compra',
-                        adultos: 'Actualizar Compra',
-                    })}
-                />
+                    <FormButtons
+                        isProcessing={processing}
+                        cancelHref={route('compras.show', compra.id)}
+                        submitLabel={getTextByMode({
+                            niños: '💾 Actualizar Compra',
+                            jóvenes: 'Actualizar Compra',
+                            adultos: 'Actualizar Compra',
+                        })}
+                        cancelLabel="Cancelar"
+                    />
+                </form>
             </FormPage>
         </DashboardLayout>
     );

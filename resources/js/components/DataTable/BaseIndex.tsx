@@ -75,11 +75,11 @@ interface BaseIndexProps<T extends BaseEntity> {
     // Datos
     data: BaseIndexData<T>;
     filters: BaseFilters;
-    
+
     // Configuración
     entityName: string;
     routeName: string;
-    
+
     // Título y descripción
     title: {
         niños: string;
@@ -91,20 +91,20 @@ interface BaseIndexProps<T extends BaseEntity> {
         jóvenes: string;
         adultos: string;
     };
-    
+
     // Configuración de columnas
     columns: ColumnConfig[];
-    
+
     // Configuración de acciones
     actions: ActionConfig<T>[];
-    
+
     // Configuración de filtros personalizados (opcional)
     customFilters?: FilterConfig[];
-    
+
     // Configuración adicional
     canCreate?: boolean;
     canDelete?: boolean;
-    
+
     // Callbacks personalizados
     onDelete?: (item: T) => void;
     renderEmptyState?: () => React.ReactNode;
@@ -125,8 +125,8 @@ export default function BaseIndex<T extends BaseEntity>({
     onDelete,
     renderEmptyState,
 }: BaseIndexProps<T>) {
-    const { getTextByMode, getModeClasses } = useAppModeText();
-    
+    const { getTextByMode } = useAppModeText();
+
     const [search, setSearch] = useState(filters.search);
     const [sortBy, setSortBy] = useState(filters.sort_by);
     const [sortOrder, setSortOrder] = useState(filters.sort_order);
@@ -270,15 +270,15 @@ export default function BaseIndex<T extends BaseEntity>({
             onChange: (value: string) => {
                 // Usar la key del filtro si está disponible, sino usar el índice como fallback
                 let filterName = filter.key;
-                
+
                 if (!filterName) {
                     // Obtener el nombre del filtro basado en el índice como fallback
-                    const filterNames = Object.keys(filters).filter(key => 
+                    const filterNames = Object.keys(filters).filter(key =>
                         key !== 'search' && key !== 'sort_by' && key !== 'sort_order' && key !== 'per_page'
                     );
                     filterName = filterNames[index];
                 }
-                
+
                 if (filterName) {
                     handleFilterChange({ [filterName]: value, page: 1 });
                 }
@@ -316,7 +316,7 @@ export default function BaseIndex<T extends BaseEntity>({
             onClick: action.onClick,
             icon: action.icon,
             title: getTextByMode(action.label),
-            className: action.variant === 'danger' 
+            className: action.variant === 'danger'
                 ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                 : action.variant === 'secondary'
                 ? 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
@@ -339,7 +339,7 @@ export default function BaseIndex<T extends BaseEntity>({
     // Estado vacío por defecto
     const defaultEmptyState = {
         icon: '📁',
-        title: search 
+        title: search
             ? getTextByMode({
                 niños: `😔 No encontré ${entityName}s que coincidan`,
                 jóvenes: `No se encontraron ${entityName}s`,
@@ -447,4 +447,4 @@ export default function BaseIndex<T extends BaseEntity>({
             />
         </DashboardLayout>
     );
-} 
+}

@@ -108,7 +108,7 @@ class NotaCompraController extends Controller
             'productos' => 'required|array|min:1',
             'productos.*.id' => 'required|exists:productos,id',
             'productos.*.cantidad' => 'required|integer|min:1',
-            'productos.*.precio' => 'required|numeric|min:0',
+            'productos.*.precio_unitario' => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -123,7 +123,7 @@ class NotaCompraController extends Controller
             // Calcular total
             $total = 0;
             foreach ($request->productos as $producto) {
-                $total += $producto['cantidad'] * $producto['precio'];
+                $total += $producto['cantidad'] * $producto['precio_unitario'];
             }
 
             // Crear nota de compra
@@ -141,8 +141,8 @@ class NotaCompraController extends Controller
                     'nota_compra_id' => $notaCompra->id,
                     'producto_id' => $producto['id'],
                     'cantidad' => $producto['cantidad'],
-                    'precio' => $producto['precio'],
-                    'total' => $producto['cantidad'] * $producto['precio'],
+                    'precio' => $producto['precio_unitario'],
+                    'total' => $producto['cantidad'] * $producto['precio_unitario'],
                 ]);
             }
 
@@ -214,7 +214,7 @@ class NotaCompraController extends Controller
             'productos' => 'required|array|min:1',
             'productos.*.id' => 'required|exists:productos,id',
             'productos.*.cantidad' => 'required|integer|min:1',
-            'productos.*.precio' => 'required|numeric|min:0',
+            'productos.*.precio_unitario' => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -229,7 +229,7 @@ class NotaCompraController extends Controller
             // Calcular nuevo total
             $total = 0;
             foreach ($request->productos as $producto) {
-                $total += $producto['cantidad'] * $producto['precio'];
+                $total += $producto['cantidad'] * $producto['precio_unitario'];
             }
 
             // Actualizar nota de compra
@@ -249,8 +249,8 @@ class NotaCompraController extends Controller
                     'nota_compra_id' => $compra->id,
                     'producto_id' => $producto['id'],
                     'cantidad' => $producto['cantidad'],
-                    'precio' => $producto['precio'],
-                    'total' => $producto['cantidad'] * $producto['precio'],
+                    'precio' => $producto['precio_unitario'],
+                    'total' => $producto['cantidad'] * $producto['precio_unitario'],
                 ]);
             }
 

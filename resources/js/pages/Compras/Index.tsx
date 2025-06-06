@@ -27,6 +27,12 @@ interface ComprasIndexProps {
         data: Compra[];
         links: Array<{ url?: string; label: string; active: boolean }>;
         meta?: Record<string, unknown>;
+        total: number;
+        from: number;
+        to: number;
+        per_page: number;
+        current_page: number;
+        last_page: number;
     };
     proveedores: Proveedor[];
     filters: {

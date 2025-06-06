@@ -1,4 +1,4 @@
-import { useAppMode } from '@/contexts/AppModeContext';
+
 
 interface InfoField {
     label: string;
@@ -9,24 +9,13 @@ interface InfoField {
 
 interface InfoCardProps {
     title: string;
-    fields: InfoField[];
+    fields?: InfoField[];
     columns?: 1 | 2 | 3;
     className?: string;
+    children?: React.ReactNode;
 }
 
-export default function InfoCard({ title, fields, columns = 2, className = '' }: InfoCardProps) {
-    const { settings } = useAppMode();
-
-    const getModeClasses = () => {
-        switch (settings.ageMode) {
-            case 'niños':
-                return 'font-comic text-adaptive-kids';
-            case 'jóvenes':
-                return 'font-modern text-adaptive-teen';
-            default:
-                return 'font-classic text-adaptive-adult';
-        }
-    };
+export default function InfoCard({ title, fields, columns = 2, className = '', children }: InfoCardProps) {
 
     const getGridClasses = () => {
         switch (columns) {
@@ -48,23 +37,31 @@ export default function InfoCard({ title, fields, columns = 2, className = '' }:
 
     return (
         <div className={`rounded-lg bg-white p-6 shadow dark:bg-gray-800 ${className}`}>
-            <h2 className={`mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+            <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {title}
             </h2>
 
-            <div className={`grid gap-4 ${getGridClasses()}`}>
-                {fields.map((field, index) => (
-                    <div key={index} className={getSpanClasses(field.span)}>
-                        <label className={`block text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                            {field.icon && <span className="mr-1">{field.icon}</span>}
-                            {field.label}
-                        </label>
-                        <div className={`mt-1 text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {field.value}
+            {children ? (
+                children
+            ) : fields && fields.length > 0 ? (
+                <div className={`grid gap-4 ${getGridClasses()}`}>
+                    {fields.map((field, index) => (
+                        <div key={index} className={getSpanClasses(field.span)}>
+                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
+                                {field.icon && <span className="mr-1">{field.icon}</span>}
+                                {field.label}
+                            </label>
+                            <div className="mt-1 text-gray-900 dark:text-gray-100">
+                                {field.value}
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-gray-500 dark:text-gray-400">
+                    No hay información disponible
+                </div>
+            )}
         </div>
     );
-} 
+}

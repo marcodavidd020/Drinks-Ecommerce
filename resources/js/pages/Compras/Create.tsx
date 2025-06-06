@@ -31,13 +31,7 @@ interface ComprasCreateProps {
     productos: Producto[];
 }
 
-interface CompraFormData {
-    proveedor_id: string;
-    fecha: string;
-    estado: string;
-    observaciones: string;
-    productos: ProductoSeleccionado[];
-}
+
 
 export default function ComprasCreate({ proveedores, productos }: ComprasCreateProps) {
     const { getTextByMode } = useAppModeText();
@@ -46,12 +40,12 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
     const [cantidad, setCantidad] = useState<number>(1);
     const [precioUnitario, setPrecioUnitario] = useState<number>(0);
 
-    const { data, setData, post, processing, errors } = useForm<CompraFormData>({
+    const { data, setData, post, processing, errors } = useForm({
         proveedor_id: '',
         fecha: new Date().toISOString().split('T')[0],
-        estado: 'pendiente',
+        estado: 'pendiente' as const,
         observaciones: '',
-        productos: [],
+        productos: [] as any[],
     });
 
     const formatCurrency = (amount: number) => {
@@ -72,14 +66,14 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
 
         // Verificar si el producto ya está seleccionado
         const existeProducto = productosSeleccionados.find(p => p.id === producto.id);
+        let nuevosProductos;
         if (existeProducto) {
             // Actualizar cantidad y precio si ya existe
-            const nuevosProductos = productosSeleccionados.map(p =>
+            nuevosProductos = productosSeleccionados.map(p =>
                 p.id === producto.id
                 ? { ...p, cantidad: cantidad, precio_unitario: precioUnitario, subtotal: cantidad * precioUnitario }
                 : p
             );
-            setProductosSeleccionados(nuevosProductos);
         } else {
             // Agregar nuevo producto
             const nuevoProducto: ProductoSeleccionado = {
@@ -88,8 +82,11 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
                 precio_unitario: precioUnitario,
                 subtotal: cantidad * precioUnitario,
             };
-            setProductosSeleccionados([...productosSeleccionados, nuevoProducto]);
+            nuevosProductos = [...productosSeleccionados, nuevoProducto];
         }
+
+        setProductosSeleccionados(nuevosProductos);
+        setData('productos', nuevosProductos as any);
 
         // Limpiar formulario
         setProductoSeleccionado('');
@@ -115,23 +112,22 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        console.log('Submit iniciado');
+        console.log('Datos del formulario:', data);
+        console.log('Productos seleccionados:', productosSeleccionados);
 
         if (productosSeleccionados.length === 0) {
             alert('Debe seleccionar al menos un producto');
             return;
         }
 
-        const formData = {
-            ...data,
-            productos: productosSeleccionados,
-        };
+        // Asegurar que los productos estén sincronizados en data antes del envío
+        setData('productos', productosSeleccionados);
 
-        post(route('compras.store'), {
-            data: formData,
-            onSuccess: () => {
-                // Redirigir será manejado por el controlador
-            },
-        });
+        console.log('Enviando datos con post simple');
+
+        // Usar solo post sin datos adicionales, ya que Inertia usa el estado de data automáticamente
+        post(route('compras.store'));
     };
 
     return (
@@ -148,16 +144,18 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
                     jóvenes: 'Crear Nueva Compra',
                     adultos: 'Crear Nueva Compra',
                 })}
-                subtitle={getTextByMode({
+                description={getTextByMode({
                     niños: 'Registra una nueva compra de productos a un proveedor',
                     jóvenes: 'Registra una nueva compra de productos',
                     adultos: 'Registra una nueva compra de productos a un proveedor',
                 })}
-                backUrl={route('compras.index')}
-                onSubmit={submit}
+                backHref={route('compras.index')}
+                backText="Volver a compras"
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <SelectField
+                <form onSubmit={submit} className="space-y-6">
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <SelectField
                         label={getTextByMode({
                             niños: '🏪 Proveedor',
                             jóvenes: 'Proveedor',
@@ -197,7 +195,7 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
                             adultos: 'Estado',
                         })}
                         value={data.estado}
-                        onChange={(e) => setData('estado', e.target.value)}
+                        onChange={(e) => setData('estado', e.target.value as any)}
                         error={errors.estado}
                         required
                     >
@@ -220,10 +218,11 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
                             placeholder="Observaciones adicionales sobre la compra..."
                         />
                     </div>
-                </div>
+                        </div>
+                    </div>
 
-                {/* Sección de Productos */}
-                <div className="mt-8">
+                    {/* Sección de Productos */}
+                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                         {getTextByMode({
                             niños: '🛒 Productos de la Compra',
@@ -370,15 +369,17 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
                     )}
                 </div>
 
-                <FormButtons
-                    processing={processing}
-                    cancelUrl={route('compras.index')}
-                    submitText={getTextByMode({
-                        niños: '💾 Guardar Compra',
-                        jóvenes: 'Guardar Compra',
-                        adultos: 'Crear Compra',
-                    })}
-                />
+                    <FormButtons
+                        isProcessing={processing}
+                        submitLabel={getTextByMode({
+                            niños: '💾 Guardar Compra',
+                            jóvenes: 'Guardar Compra',
+                            adultos: 'Crear Compra',
+                        })}
+                        cancelHref={route('compras.index')}
+                        cancelLabel="Cancelar"
+                    />
+                </form>
             </FormPage>
         </DashboardLayout>
     );
