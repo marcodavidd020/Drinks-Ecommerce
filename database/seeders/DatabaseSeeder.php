@@ -71,7 +71,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('   • Productos con inventarios');
         $this->command->info('   • Promociones con descuentos (activas, pendientes, vencidas)');
         $this->command->info('   • Clientes y proveedores (personas y empresas)');
-        $this->command->info('   • Ventas históricas con detalles (6 meses)');
+        $this->command->info('   • Ventas y notas de venta con detalles (6 meses)');
         $this->command->info('   • Notas de compra con detalles (4 meses)');
         $this->command->info('   • PQRS de ejemplo (3 meses)');
         $this->command->info('   • Carritos con detalles de productos (30 días)');

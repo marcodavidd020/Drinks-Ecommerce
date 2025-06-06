@@ -30,6 +30,7 @@ class NotaCompra extends Model
         'fecha',
         'total',
         'estado',
+        'observaciones',
     ];
 
     /**
@@ -67,11 +68,27 @@ class NotaCompra extends Model
     }
 
     /**
-     * Verificar si la compra está completada
+     * Verificar si la compra está recibida
      */
-    public function estaCompletada(): bool
+    public function estaRecibida(): bool
     {
-        return $this->estado === 'completada';
+        return $this->estado === 'recibida';
+    }
+
+    /**
+     * Verificar si la compra está pendiente
+     */
+    public function estaPendiente(): bool
+    {
+        return $this->estado === 'pendiente';
+    }
+
+    /**
+     * Verificar si la compra está cancelada
+     */
+    public function estaCancelada(): bool
+    {
+        return $this->estado === 'cancelada';
     }
 
     /**
