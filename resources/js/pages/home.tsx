@@ -16,7 +16,7 @@ interface HomeProps {
         totalClientes: number;
         totalVentas: number;
     };
-    
+
     // Categorías con conteo de productos
     categorias: Array<{
         id: number;
@@ -24,7 +24,7 @@ interface HomeProps {
         descripcion?: string;
         productos_count: number;
     }>;
-    
+
     // Productos destacados/populares
     productosDestacados: Array<{
         id: number;
@@ -40,7 +40,7 @@ interface HomeProps {
         };
         stock_total: number;
     }>;
-    
+
     // Promociones activas
     promociones: Array<{
         id: number;
@@ -55,7 +55,7 @@ interface HomeProps {
             descuento_fijo?: number;
         }>;
     }>;
-    
+
     // Productos más vendidos
     masVendidos: Array<{
         id: number;
@@ -74,12 +74,12 @@ interface HomeProps {
     }>;
 }
 
-export default function Home({ 
-    stats, 
-    categorias, 
-    productosDestacados, 
-    promociones, 
-    masVendidos 
+export default function Home({
+    stats,
+    categorias,
+    productosDestacados,
+    promociones,
+    masVendidos
 }: HomeProps) {
     const { settings } = useAppMode();
 
@@ -101,11 +101,11 @@ export default function Home({
     return (
         <AppLayout showNavbar={true} showModeSelector={true}>
             <Head title="Inicio - Nuestra Tienda" />
-            
+
             {/* Aplicar clases específicas del modo a todo el contenido */}
             <div className={`min-h-screen -mx-4 sm:-mx-6 lg:-mx-8 -my-6 ${getModeClasses()}`}>
                 {/* Hero Section */}
-                <HeroSection 
+                <HeroSection
                     totalProductos={stats.totalProductos}
                     totalCategorias={stats.totalCategorias}
                     totalPromociones={stats.totalPromociones}
@@ -157,7 +157,7 @@ export default function Home({
                             </h2>
                             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
                         </div>
-                        <ProductsFeatured 
+                        <ProductsFeatured
                             productos={productosDestacados}
                             title="Productos Destacados"
                         />
@@ -178,7 +178,7 @@ export default function Home({
                                 </h2>
                                 <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-blue-500 mx-auto rounded-full"></div>
                             </div>
-                            <ProductsFeatured 
+                            <ProductsFeatured
                                 productos={masVendidos}
                                 title="Más Vendidos"
                             />
@@ -196,7 +196,7 @@ export default function Home({
                         {settings.ageMode === 'niños' && (
                             <>
                                 <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-300/20 rounded-full animate-bounce"></div>
-                                <div className="absolute bottom-10 right-10 w-16 h-16 bg-pink-300/20 rounded-full animate-bounce" style={{animationDelay: '1s'}}></div>
+                                <div className="absolute bottom-10 right-10 w-16 h-16 bg-pink-300/20 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
                             </>
                         )}
                         {settings.ageMode === 'jóvenes' && (
@@ -223,10 +223,10 @@ export default function Home({
                                     adultos: 'Reciba información exclusiva sobre ofertas especiales, nuevos productos y noticias importantes de nuestra empresa'
                                 })}
                             </p>
-                            
+
                             <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mb-8">
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     placeholder={getTextByMode({
                                         niños: '¡Tu email aquí! 📧',
                                         jóvenes: 'your.email@example.com',
@@ -270,10 +270,10 @@ export default function Home({
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                             {[
-                                { value: stats.totalProductos, label: getTextByMode({niños: 'Productos Geniales', jóvenes: 'Products', adultos: 'Productos'}), color: 'text-blue-600', icon: '📦' },
-                                { value: `${stats.totalClientes}+`, label: getTextByMode({niños: 'Amigos Felices', jóvenes: 'Happy Customers', adultos: 'Clientes Satisfechos'}), color: 'text-green-600', icon: '😊' },
-                                { value: stats.totalCategorias, label: getTextByMode({niños: 'Tipos de Cosas', jóvenes: 'Categories', adultos: 'Categorías'}), color: 'text-purple-600', icon: '📂' },
-                                { value: stats.totalVentas, label: getTextByMode({niños: 'Ventas Súper', jóvenes: 'Sales Made', adultos: 'Ventas Realizadas'}), color: 'text-orange-600', icon: '💰' }
+                                { value: stats.totalProductos, label: getTextByMode({ niños: 'Productos Geniales', jóvenes: 'Products', adultos: 'Productos' }), color: 'text-blue-600', icon: '📦' },
+                                { value: `${stats.totalClientes}+`, label: getTextByMode({ niños: 'Amigos Felices', jóvenes: 'Happy Customers', adultos: 'Clientes Satisfechos' }), color: 'text-green-600', icon: '😊' },
+                                { value: stats.totalCategorias, label: getTextByMode({ niños: 'Tipos de Cosas', jóvenes: 'Categories', adultos: 'Categorías' }), color: 'text-purple-600', icon: '📂' },
+                                { value: stats.totalVentas, label: getTextByMode({ niños: 'Ventas Súper', jóvenes: 'Sales Made', adultos: 'Ventas Realizadas' }), color: 'text-orange-600', icon: '💰' }
                             ].map((stat, index) => (
                                 <div key={index} className="text-center group">
                                     <div className={`text-4xl md:text-6xl font-bold ${stat.color} mb-3 transition-transform duration-300 group-hover:scale-110`}>
@@ -300,7 +300,7 @@ export default function Home({
                                     adultos: 'Comience su Experiencia de Compra Premium'
                                 })}
                             </h2>
-                            
+
                             <p className={`text-gray-600 dark:text-gray-400 mb-12 text-lg md:text-xl max-w-3xl mx-auto ${getModeClasses()}`}>
                                 {getTextByMode({
                                     niños: '¡Tenemos absolutamente todo lo que necesitas y mucho más! Descubre productos increíbles que te van a encantar y sorprender.',
@@ -310,7 +310,7 @@ export default function Home({
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                                <Link 
+                                <Link
                                     href="/productos"
                                     className={`bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-5 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl ${getModeClasses()}`}
                                 >
@@ -320,8 +320,8 @@ export default function Home({
                                         adultos: 'Explorar Catálogo'
                                     })}
                                 </Link>
-                                
-                                <Link 
+
+                                <Link
                                     href="/contacto"
                                     className={`border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-bold py-5 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-105 ${getModeClasses()}`}
                                 >
@@ -345,7 +345,7 @@ export default function Home({
                     background-size: 400% 400%;
                     animation: gradient 3s ease infinite;
                 }
-                
+
                 @keyframes gradient {
                     0% { background-position: 0% 50%; }
                     50% { background-position: 100% 50%; }
@@ -355,4 +355,4 @@ export default function Home({
             }} />
         </AppLayout>
     );
-} 
+}
