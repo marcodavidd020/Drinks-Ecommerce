@@ -438,3 +438,4 @@ export default function ComprasEdit({ compra, proveedores, productos }: ComprasE
         </DashboardLayout>
     );
 }
+ 

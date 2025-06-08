@@ -120,7 +120,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('promociones', PromocionController::class)->parameters([
         'promociones' => 'promocion'
     ]);
-
+    
     // Rutas adicionales para gestión de roles y permisos
     Route::get('/admin/roles', function () {
         return Inertia::render('Admin/Roles');

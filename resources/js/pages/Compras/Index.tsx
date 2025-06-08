@@ -291,3 +291,4 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
         />
     );
 }
+ 

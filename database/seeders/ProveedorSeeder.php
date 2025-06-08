@@ -26,11 +26,11 @@ class ProveedorSeeder extends Seeder
                     'proveedorable_type' => Pempresa::class,
                 ],
                 [
-                    'nombre' => $empresa->razon_social,
-                    'telefono' => $empresa->telefono,
-                    'direccion' => $empresa->direccion,
-                    'email' => $empresa->email,
-                    'tipo' => 'empresa',
+                'nombre' => $empresa->razon_social,
+                'telefono' => $empresa->telefono,
+                'direccion' => $empresa->direccion,
+                'email' => $empresa->email,
+                'tipo' => 'empresa',
                 ]
             );
         }
@@ -41,15 +41,15 @@ class ProveedorSeeder extends Seeder
         foreach ($personas as $persona) {
             Proveedor::updateOrCreate(
                 [
-                    'proveedorable_id' => $persona->id,
-                    'proveedorable_type' => Ppersona::class,
+                'proveedorable_id' => $persona->id,
+                'proveedorable_type' => Ppersona::class,
                 ],
                 [
                     'nombre' => $persona->nombre,
-                    'telefono' => $persona->telefono,
-                    'direccion' => $persona->direccion,
-                    'email' => $persona->email,
-                    'tipo' => 'persona',
+                'telefono' => $persona->telefono,
+                'direccion' => $persona->direccion,
+                'email' => $persona->email,
+                'tipo' => 'persona',
                 ]
             );
         }

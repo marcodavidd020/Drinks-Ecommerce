@@ -44,19 +44,19 @@ export default function InfoCard({ title, fields, columns = 2, className = '', c
             {children ? (
                 children
             ) : fields && fields.length > 0 ? (
-                <div className={`grid gap-4 ${getGridClasses()}`}>
-                    {fields.map((field, index) => (
-                        <div key={index} className={getSpanClasses(field.span)}>
+            <div className={`grid gap-4 ${getGridClasses()}`}>
+                {fields.map((field, index) => (
+                    <div key={index} className={getSpanClasses(field.span)}>
                             <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {field.icon && <span className="mr-1">{field.icon}</span>}
-                                {field.label}
-                            </label>
+                            {field.icon && <span className="mr-1">{field.icon}</span>}
+                            {field.label}
+                        </label>
                             <div className="mt-1 text-gray-900 dark:text-gray-100">
-                                {field.value}
-                            </div>
+                            {field.value}
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
+            </div>
             ) : (
                 <div className="text-gray-500 dark:text-gray-400">
                     No hay información disponible
@@ -64,4 +64,4 @@ export default function InfoCard({ title, fields, columns = 2, className = '', c
             )}
         </div>
     );
-}
+} 
