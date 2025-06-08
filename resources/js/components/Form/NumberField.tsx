@@ -59,4 +59,4 @@ const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
 
 NumberField.displayName = 'NumberField';
 
-export { NumberField }; 
+export { NumberField };

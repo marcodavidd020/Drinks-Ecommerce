@@ -162,4 +162,4 @@ export default function PromotionsBanner({ promociones }: PromotionsBannerProps)
             </div>
         </section>
     );
-} 
+}

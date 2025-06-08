@@ -53,4 +53,4 @@ const PriceField = forwardRef<HTMLInputElement, PriceFieldProps>(
 
 PriceField.displayName = 'PriceField';
 
-export { PriceField }; 
+export { PriceField };
