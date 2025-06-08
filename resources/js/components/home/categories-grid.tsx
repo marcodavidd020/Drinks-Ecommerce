@@ -208,4 +208,4 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
             </div>
         </div>
     );
-} 
+}
