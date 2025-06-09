@@ -57,14 +57,8 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
             render: (producto: Producto) => (
                 <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">{producto.nombre}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Código: {producto.cod_producto}
-                    </div>
-                    {producto.categoria && (
-                        <div className="text-xs text-gray-400 dark:text-gray-500">
-                            {producto.categoria.nombre}
-                        </div>
-                    )}
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Código: {producto.cod_producto}</div>
+                    {producto.categoria && <div className="text-xs text-gray-400 dark:text-gray-500">{producto.categoria.nombre}</div>}
                 </div>
             ),
             sortable: true,
@@ -96,8 +90,8 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
                         stock > 50
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                             : stock > 10
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                     }`}
                 >
                     {stock} unidades
@@ -157,7 +151,7 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
                         adultos: 'Todos los almacenes',
                     },
                 },
-                ...almacenes.map(almacen => ({
+                ...almacenes.map((almacen) => ({
                     value: almacen.id.toString(),
                     label: {
                         niños: `🏬 ${almacen.nombre}`,
@@ -182,7 +176,7 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
                         adultos: 'Todas las categorías',
                     },
                 },
-                ...categorias.map(categoria => ({
+                ...categorias.map((categoria) => ({
                     value: categoria.id.toString(),
                     label: {
                         niños: `📁 ${categoria.nombre}`,
@@ -215,4 +209,4 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
             customFilters={customFilters}
         />
     );
-} 
+}

@@ -36,6 +36,16 @@ class DetalleCompra extends Model
     ];
 
     /**
+     * The attributes that should be appended to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'precio_unitario',
+        'subtotal',
+    ];
+
+    /**
      * Relación con NotaCompra
      */
     public function notaCompra(): BelongsTo
@@ -49,6 +59,22 @@ class DetalleCompra extends Model
     public function producto(): BelongsTo
     {
         return $this->belongsTo(Producto::class);
+    }
+
+    /**
+     * Accessor para precio_unitario (alias de precio)
+     */
+    public function getPrecioUnitarioAttribute(): float
+    {
+        return (float) $this->precio;
+    }
+
+    /**
+     * Accessor para subtotal (alias de total)
+     */
+    public function getSubtotalAttribute(): float
+    {
+        return (float) $this->total;
     }
 
     /**

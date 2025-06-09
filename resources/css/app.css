@@ -1,8 +1,8 @@
 /* Importar todas las fuentes y estilos externos primero */
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 /* Importar estilos de modos personalizados */
 @import './modes.css';
 
@@ -11,7 +11,7 @@
 @layer base {
     :root {
         --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
         --radius: 0.5rem;
         --radius-lg: var(--radius);
@@ -133,14 +133,14 @@
 }
 
 .mode-jóvenes {
-    --font-primary: 'Inter', sans-serif;
+    --font-primary: 'Poppins', sans-serif;
     --color-primary: #6366f1; /* indigo-500 */
     --color-secondary: #8b5cf6; /* violet-500 */
     --color-accent: #f59e0b; /* amber-500 */
 }
 
 .mode-adultos {
-    --font-primary: 'Playfair Display', serif;
+    --font-primary: 'Inter', sans-serif;
     --color-primary: #1f2937; /* gray-800 */
     --color-secondary: #374151; /* gray-700 */
     --color-accent: #3b82f6; /* blue-500 */
@@ -313,11 +313,11 @@
 }
 
 .font-modern {
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 .font-classic {
-    font-family: 'Playfair Display', serif !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
 /* === UTILIDADES ESPECÍFICAS === */

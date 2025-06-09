@@ -121,13 +121,15 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
             return;
         }
 
-        // Asegurar que los productos estén sincronizados en data antes del envío
-        setData('productos', productosSeleccionados);
+        console.log('Enviando datos con productos:', productosSeleccionados);
 
-        console.log('Enviando datos con post simple');
-
-        // Usar solo post sin datos adicionales, ya que Inertia usa el estado de data automáticamente
-        post(route('compras.store'));
+        // Enviar los datos directamente incluyendo los productos
+        post(route('compras.store'), {
+            data: {
+                ...data,
+                productos: productosSeleccionados
+            }
+        });
     };
 
     return (
