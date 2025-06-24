@@ -20,7 +20,7 @@ class Proveedor extends Model
      *
      * @var string
      */
-    protected $table = 'proveedores';
+    protected $table = 'proveedor';
 
     /**
      * The attributes that are mass assignable.

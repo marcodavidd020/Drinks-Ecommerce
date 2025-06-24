@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tipo_pago', function (Blueprint $table) {
+        Schema::create('rol_permiso', function (Blueprint $table) {
             $table->id();
-            $table->string('tipo_pago');
+            $table->foreignId('rol_id')->constrained('rol')->onDelete('cascade');
+            $table->foreignId('permiso_id')->constrained('permiso')->onDelete('cascade');
             $table->timestamps();
+            
+            // Evitar duplicados
+            $table->unique(['rol_id', 'permiso_id']);
         });
     }
 
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tipo_pago');
+        Schema::dropIfExists('rol_permiso');
     }
 };

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\AjusteInventario;
+use App\Models\Administrativo;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -16,8 +17,8 @@ class AjusteInventarioSeeder extends Seeder
      */
     public function run(): void
     {
-        // Obtener un administrativo aleatorio de la tabla administrativos
-        $administrativo = DB::table('administrativos')->first();
+        // Obtener un administrativo aleatorio usando el modelo
+        $administrativo = Administrativo::first();
 
         if (!$administrativo) {
             $this->command->warn('No hay administrativos disponibles. Ejecuta primero los seeders correspondientes.');

@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detalle_compras', function (Blueprint $table) {
+        Schema::create('detalle_compra', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('nota_compra_id')->constrained('notas_compra')->onDelete('cascade');
-            $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
+            $table->foreignId('nota_compra_id')->constrained('nota_compra')->onDelete('cascade');
+            $table->foreignId('producto_id')->constrained('producto')->onDelete('cascade');
             $table->integer('cantidad');
             $table->decimal('precio', 10, 2);
             $table->decimal('total', 10, 2);
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detalle_compras');
+        Schema::dropIfExists('detalle_compra');
     }
 };

@@ -16,7 +16,7 @@ class Direccion extends Model
      *
      * @var string
      */
-    protected $table = 'direcciones';
+    protected $table = 'direccion';
 
     /**
      * The attributes that are mass assignable.

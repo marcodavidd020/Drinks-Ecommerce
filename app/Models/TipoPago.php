@@ -16,7 +16,7 @@ class TipoPago extends Model
      *
      * @var string
      */
-    protected $table = 'tipos_pago';
+    protected $table = 'tipo_pago';
 
     /**
      * The attributes that are mass assignable.

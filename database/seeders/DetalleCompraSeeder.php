@@ -39,7 +39,7 @@ class DetalleCompraSeeder extends Seeder
                 $total = $cantidad * $precioCompra;
                 $totalCompra += $total;
 
-                DB::table('detalle_compras')->insert([
+                DB::table('detalle_compra')->insert([
                     'nota_compra_id' => $notaCompra->id,
                     'producto_id' => $producto->id,
                     'cantidad' => $cantidad,

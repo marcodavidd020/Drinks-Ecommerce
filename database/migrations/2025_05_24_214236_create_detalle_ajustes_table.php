@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detalle_ajustes', function (Blueprint $table) {
+        Schema::create('detalle_ajuste', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ajuste_inventario_id')->constrained('ajuste_inventarios')->onDelete('cascade');
-            $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
+            $table->foreignId('ajuste_inventario_id')->constrained('ajuste_inventario')->onDelete('cascade');
+            $table->foreignId('producto_id')->constrained('producto')->onDelete('cascade');
             $table->integer('cantidad');
             $table->enum('tipo_ajuste', ['entrada', 'salida']);
             $table->text('motivo')->nullable();
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detalle_ajustes');
+        Schema::dropIfExists('detalle_ajuste');
     }
 };

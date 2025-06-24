@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ajuste_inventarios', function (Blueprint $table) {
+        Schema::create('ajuste_inventario', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('administrativo_id')->constrained('administrativos')->onDelete('cascade');
+            $table->foreignId('administrativo_id')->constrained('administrativo')->onDelete('cascade');
             $table->date('fecha');
             $table->text('glosa')->nullable();
             $table->timestamps();
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ajuste_inventarios');
+        Schema::dropIfExists('ajuste_inventario');
     }
 };

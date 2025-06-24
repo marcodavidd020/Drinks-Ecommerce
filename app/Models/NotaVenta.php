@@ -17,7 +17,7 @@ class NotaVenta extends Model
      *
      * @var string
      */
-    protected $table = 'notas_venta';
+    protected $table = 'nota_venta';
 
     /**
      * The attributes that are mass assignable.

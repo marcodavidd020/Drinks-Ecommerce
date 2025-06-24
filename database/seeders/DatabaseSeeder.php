@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Enums\RoleEnum;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,7 +20,10 @@ class DatabaseSeeder extends Seeder
 
         // 1. Seeders de configuración base
         $this->call([
-            RoleAndPermissionSeeder::class,
+            RolSeeder::class,
+            PermisoSeeder::class,
+            RolPermisoSeeder::class,
+            UserRolSeeder::class,
         ]);
 
         // Crear usuario super admin
@@ -38,8 +42,9 @@ class DatabaseSeeder extends Seeder
             PromocionSeeder::class,
         ]);
 
-        // 4. Seeders de clientes
+        // 4. Seeders de clientes y administrativos
         $this->call([
+            AdministrativoSeeder::class,
             ClienteSeeder::class,
         ]);
 
@@ -85,12 +90,12 @@ class DatabaseSeeder extends Seeder
     private function createSuperAdmin(): void
     {
         // Verificar si el usuario ya existe
-        if (User::where('email', 'super@admin.com')->exists()) {
+        if (DB::table('user')->where('email', 'super@admin.com')->exists()) {
             return;
         }
 
-        // Crear el usuario super admin
-        $superAdmin = User::create([
+        // Crear el usuario super admin directamente en la tabla
+        $superAdminId = DB::table('user')->insertGetId([
             'nombre' => 'Super Administrador',
             'email' => 'super@admin.com',
             'celular' => '+1234567899',
@@ -98,10 +103,20 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'estado' => 'activo',
             'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        // Asignar rol de super-admin
-        $superAdmin->assignRole('super-admin');
+        // Asignar rol de admin usando nuestro sistema de user_rol
+        $adminRole = DB::table('rol')->where('nombre', 'admin')->first();
+        if ($adminRole && $superAdminId) {
+            DB::table('user_rol')->insert([
+                'user_id' => $superAdminId,
+                'rol_id' => $adminRole->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $this->command->info('✅ Usuario Super Administrador creado exitosamente');
         $this->command->info('   Email: super@admin.com');

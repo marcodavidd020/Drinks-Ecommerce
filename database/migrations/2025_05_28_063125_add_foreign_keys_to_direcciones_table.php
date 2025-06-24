@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('direcciones', function (Blueprint $table) {
+        Schema::table('direccion', function (Blueprint $table) {
             // Agregar columnas para relaciones polimórficas
             $table->unsignedBigInteger('cliente_id')->nullable()->after('id');
             $table->unsignedBigInteger('proveedor_id')->nullable()->after('cliente_id');
@@ -24,8 +24,8 @@ return new class extends Migration
             $table->string('codigo_postal', 10)->nullable()->after('departamento');
             
             // Agregar índices y llaves foráneas
-            $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
-            $table->foreign('proveedor_id')->references('id')->on('proveedores')->onDelete('cascade');
+            $table->foreign('cliente_id')->references('id')->on('cliente')->onDelete('cascade');
+            $table->foreign('proveedor_id')->references('id')->on('proveedor')->onDelete('cascade');
         });
     }
 
@@ -34,7 +34,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('direcciones', function (Blueprint $table) {
+        Schema::table('direccion', function (Blueprint $table) {
             $table->dropForeign(['cliente_id']);
             $table->dropForeign(['proveedor_id']);
             $table->dropColumn([

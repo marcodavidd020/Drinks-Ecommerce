@@ -37,7 +37,7 @@ class VentasSeeder extends Seeder
 
         DB::transaction(function () use ($clientes, $productos, &$totalVentas, &$totalDetalles) {
             // Crear ventas de los últimos 6 meses
-            for ($mes = 5; $mes >= 0; $mes--) {
+            for ($mes = 1; $mes >= 0; $mes--) {
                 $fecha = Carbon::now()->subMonths($mes);
                 $ventasEnMes = rand(15, 30); // Entre 15 y 30 ventas por mes
 

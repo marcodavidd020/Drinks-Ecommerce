@@ -156,38 +156,50 @@ class InventarioSeeder extends Seeder
             }
         }
 
-        // Crear promociones de bebidas
+        // Crear promociones específicas para productos
         $promociones = [
             [
-                'nombre' => 'Happy Hour Refrescos',
+                'nombre' => 'Happy Hour Coca-Cola',
                 'fecha_inicio' => now()->subDays(10),
                 'fecha_fin' => now()->addDays(20),
-                'descuento' => '2x1 en refrescos de 350ml'
+                'descuento' => '2x1 en Coca-Cola 350ml',
+                'producto_codigo' => 'REF001'
             ],
             [
-                'nombre' => 'Descuento Jugos Naturales',
+                'nombre' => 'Descuento Jugo de Naranja',
                 'fecha_inicio' => now()->subDays(5),
                 'fecha_fin' => now()->addDays(15),
-                'descuento' => '25% de descuento en jugos naturales'
+                'descuento' => '25% de descuento en jugo de naranja',
+                'producto_codigo' => 'JUG001'
             ],
             [
                 'nombre' => 'Promoción Cerveza Nacional',
                 'fecha_inicio' => now(),
                 'fecha_fin' => now()->addDays(30),
-                'descuento' => 'Pack de 6 cervezas por el precio de 5'
+                'descuento' => 'Pack de 6 cervezas por el precio de 5',
+                'producto_codigo' => 'CER001'
             ],
             [
-                'nombre' => 'Descuento Vinos Premium',
+                'nombre' => 'Descuento Vino Tinto',
                 'fecha_inicio' => now()->subDays(3),
                 'fecha_fin' => now()->addDays(25),
-                'descuento' => '15% de descuento en vinos y licores premium'
+                'descuento' => '15% de descuento en vino tinto reserva',
+                'producto_codigo' => 'VIN001'
             ],
         ];
 
         foreach ($promociones as $promocionData) {
-            // Verificar si ya existe
-            if (!Promocion::where('nombre', $promocionData['nombre'])->exists()) {
-                Promocion::create($promocionData);
+            // Buscar el producto por código
+            $producto = Producto::where('cod_producto', $promocionData['producto_codigo'])->first();
+            
+            if ($producto && !Promocion::where('nombre', $promocionData['nombre'])->exists()) {
+                Promocion::create([
+                    'nombre' => $promocionData['nombre'],
+                    'fecha_inicio' => $promocionData['fecha_inicio'],
+                    'fecha_fin' => $promocionData['fecha_fin'],
+                    'descuento' => $promocionData['descuento'],
+                    'producto_id' => $producto->id,
+                ]);
             }
         }
     }

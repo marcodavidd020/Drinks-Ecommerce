@@ -18,7 +18,7 @@ class Almacen extends Model
      *
      * @var string
      */
-    protected $table = 'almacenes';
+    protected $table = 'almacen';
 
     /**
      * The primary key for the model.

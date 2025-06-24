@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pqrsonas', function (Blueprint $table) {
+        Schema::create('pqrsona', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
             $table->string('apellido');
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->date('fecha_creacion');
             $table->date('fecha_respuesta')->nullable();
             $table->text('respuesta')->nullable();
-            $table->foreignId('administrativo_id')->nullable()->constrained('administrativos')->onDelete('set null');
+            $table->foreignId('administrativo_id')->nullable()->constrained('administrativo')->onDelete('set null');
             $table->timestamps();
         });
     }
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pqrsonas');
+        Schema::dropIfExists('pqrsona');
     }
 };

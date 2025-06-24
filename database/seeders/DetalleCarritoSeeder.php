@@ -39,7 +39,7 @@ class DetalleCarritoSeeder extends Seeder
                 $subtotal = $cantidad * $precioUnitario;
                 $totalCarrito += $subtotal;
 
-                DB::table('detalle_carritos')->insert([
+                DB::table('detalle_carrito')->insert([
                     'carrito_id' => $carrito->id,
                     'producto_id' => $producto->id,
                     'cantidad' => $cantidad,

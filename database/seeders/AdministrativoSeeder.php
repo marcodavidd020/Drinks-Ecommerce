@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\RoleEnum;
 use App\Models\Administrativo;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class AdministrativoSeeder extends Seeder
 {
@@ -60,7 +60,15 @@ class AdministrativoSeeder extends Seeder
             ]
         ];
 
+        $empleadoRole = DB::table('rol')->where('nombre', 'empleado')->first();
+        $adminRole = DB::table('rol')->where('nombre', 'admin')->first();
+
         foreach ($administrativosData as $administrativoData) {
+            // Verificar si el usuario ya existe
+            if (User::where('email', $administrativoData['email'])->exists()) {
+                continue;
+            }
+
             // Crear el usuario
             $user = User::create([
                 'nombre' => $administrativoData['nombre'],
@@ -72,12 +80,19 @@ class AdministrativoSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
 
-            // Asignar rol de empleado por defecto
-            $user->assignRole(RoleEnum::EMPLEADO->value);
-
-            // Si es gerente, asignar rol de admin
+            // Asignar rol apropiado
+            $roleToAssign = $empleadoRole;
             if (str_contains(strtolower($administrativoData['cargo']), 'gerente')) {
-                $user->assignRole(RoleEnum::ADMIN->value);
+                $roleToAssign = $adminRole;
+            }
+
+            if ($roleToAssign) {
+                DB::table('user_rol')->insert([
+                    'user_id' => $user->id,
+                    'rol_id' => $roleToAssign->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
 
             // Crear el registro de administrativo
@@ -88,28 +103,41 @@ class AdministrativoSeeder extends Seeder
             ]);
         }
 
-        // Crear algunos administrativos adicionales con factory
-        $cargos = [
-            'Analista de Sistemas',
-            'Contador',
-            'Auxiliar Contable',
-            'Recepcionista',
-            'Coordinador de Logística',
-            'Especialista en Marketing',
-            'Analista de Recursos Humanos'
-        ];
+        // Crear algunos administrativos adicionales con factory (solo si no hay suficientes)
+        $totalAdministrativos = Administrativo::count();
+        $administrativosQueCrear = max(0, 12 - $totalAdministrativos); // Objetivo: 12 administrativos en total
+        
+        if ($administrativosQueCrear > 0) {
+            $cargos = [
+                'Analista de Sistemas',
+                'Contador',
+                'Auxiliar Contable',
+                'Recepcionista',
+                'Coordinador de Logística',
+                'Especialista en Marketing',
+                'Analista de Recursos Humanos'
+            ];
 
-        User::factory()
-            ->count(7)
-            ->create()
-            ->each(function (User $user, int $index) use ($cargos) {
-                $user->assignRole(RoleEnum::EMPLEADO->value);
-                
-                Administrativo::create([
-                    'user_id' => $user->id,
-                    'salario' => fake()->randomFloat(2, 1500, 4000),
-                    'cargo' => $cargos[$index] ?? 'Empleado General',
-                ]);
-            });
+            User::factory()
+                ->count($administrativosQueCrear)
+                ->create()
+                ->each(function (User $user, int $index) use ($cargos, $empleadoRole) {
+                    // Asignar rol de empleado
+                    if ($empleadoRole) {
+                        DB::table('user_rol')->insert([
+                            'user_id' => $user->id,
+                            'rol_id' => $empleadoRole->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                    
+                    Administrativo::create([
+                        'user_id' => $user->id,
+                        'salario' => fake()->randomFloat(2, 1500, 4000),
+                        'cargo' => $cargos[$index] ?? 'Empleado General',
+                    ]);
+                });
+        }
     }
 }

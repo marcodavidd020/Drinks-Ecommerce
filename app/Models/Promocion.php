@@ -17,7 +17,7 @@ class Promocion extends Model
      *
      * @var string
      */
-    protected $table = 'promociones';
+    protected $table = 'promocion';
 
     /**
      * The attributes that are mass assignable.

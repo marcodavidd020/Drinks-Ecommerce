@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('direcciones', function (Blueprint $table) {
+        Schema::create('direccion', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
             $table->decimal('longitud', 10, 8)->nullable();
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('direcciones');
+        Schema::dropIfExists('direccion');
     }
 };

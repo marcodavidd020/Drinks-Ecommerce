@@ -14,6 +14,13 @@ class AjusteInventario extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'ajuste_inventario';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

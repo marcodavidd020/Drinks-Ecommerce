@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('promociones', function (Blueprint $table) {
+        Schema::create('promocion', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->text('descuento')->nullable();
-            $table->enum('estado', ['activa', 'inactiva'])->default('activa');
+            $table->foreignId('producto_id')->constrained('producto')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('promociones');
+        Schema::dropIfExists('promocion');
     }
 };

@@ -22,7 +22,7 @@ class Ppersona extends Model
      *
      * @var string
      */
-    protected $table = 'personas';
+    protected $table = 'ppersona';
 
     /**
      * The attributes that are mass assignable.

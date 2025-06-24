@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\RoleEnum;
 use App\Models\Cliente;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ClienteSeeder extends Seeder
 {
@@ -56,6 +56,11 @@ class ClienteSeeder extends Seeder
         ];
 
         foreach ($clientesData as $clienteData) {
+            // Verificar si el usuario ya existe
+            if (User::where('email', $clienteData['email'])->exists()) {
+                continue;
+            }
+
             // Crear el usuario
             $user = User::create([
                 'nombre' => $clienteData['nombre'],
@@ -67,8 +72,16 @@ class ClienteSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
 
-            // Asignar rol de cliente
-            $user->assignRole(RoleEnum::CLIENTE->value);
+            // Asignar rol de cliente usando nuestro sistema user_rol
+            $clienteRole = DB::table('rol')->where('nombre', 'cliente')->first();
+            if ($clienteRole) {
+                DB::table('user_rol')->insert([
+                    'user_id' => $user->id,
+                    'rol_id' => $clienteRole->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             // Crear el registro de cliente
             Cliente::create([
@@ -77,17 +90,32 @@ class ClienteSeeder extends Seeder
             ]);
         }
 
-        // Crear algunos clientes adicionales con factory
-        User::factory()
-            ->count(10)
-            ->create()
-            ->each(function (User $user) {
-                $user->assignRole(RoleEnum::CLIENTE->value);
-                
-                Cliente::create([
-                    'user_id' => $user->id,
-                    'nit' => fake()->unique()->numerify('########-#'),
-                ]);
-            });
+        // Crear algunos clientes adicionales con factory (solo si no hay suficientes)
+        $totalClientes = Cliente::count();
+        $clientesQueCrear = max(0, 15 - $totalClientes); // Objetivo: 15 clientes en total
+        
+        if ($clientesQueCrear > 0) {
+            $clienteRole = DB::table('rol')->where('nombre', 'cliente')->first();
+            
+            User::factory()
+                ->count($clientesQueCrear)
+                ->create()
+                ->each(function (User $user) use ($clienteRole) {
+                    // Asignar rol de cliente
+                    if ($clienteRole) {
+                        DB::table('user_rol')->insert([
+                            'user_id' => $user->id,
+                            'rol_id' => $clienteRole->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                    
+                    Cliente::create([
+                        'user_id' => $user->id,
+                        'nit' => fake()->unique()->numerify('########-#'),
+                    ]);
+                });
+        }
     }
 }

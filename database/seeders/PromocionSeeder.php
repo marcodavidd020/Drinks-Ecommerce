@@ -16,134 +16,95 @@ class PromocionSeeder extends Seeder
      */
     public function run(): void
     {
-        // Obtener algunos productos para las promociones
-        $productos = Producto::take(10)->get();
+        // Obtener productos disponibles
+        $productos = Producto::all();
 
         if ($productos->isEmpty()) {
             $this->command->warn('No hay productos disponibles para crear promociones. Ejecuta ProductoSeeder primero.');
             return;
         }
 
-        // Promoción 1: Black Friday
-        $blackFriday = Promocion::create([
-            'nombre' => 'Black Friday 2024',
-            'fecha_inicio' => Carbon::now()->subDays(30),
-            'fecha_fin' => Carbon::now()->addDays(5),
-            'estado' => 'activa',
-        ]);
+        // Crear promociones específicas para cada producto
+        $promocionesData = [
+            [
+                'nombre' => 'Black Friday Coca-Cola',
+                'fecha_inicio' => Carbon::now()->subDays(30),
+                'fecha_fin' => Carbon::now()->addDays(5),
+                'descuento' => '30% de descuento',
+                'producto_codigo' => 'REF001'
+            ],
+            [
+                'nombre' => 'Descuento Jugo de Mango',
+                'fecha_inicio' => Carbon::now()->subDays(15),
+                'fecha_fin' => Carbon::now()->addDays(15),
+                'descuento' => '25% de descuento',
+                'producto_codigo' => 'JUG002'
+            ],
+            [
+                'nombre' => 'Promoción Agua Mineral',
+                'fecha_inicio' => Carbon::now()->subDays(5),
+                'fecha_fin' => Carbon::now()->addDays(25),
+                'descuento' => 'Compra 2 lleva 3',
+                'producto_codigo' => 'AGU001'
+            ],
+            [
+                'nombre' => 'Oferta Red Bull',
+                'fecha_inicio' => Carbon::now()->addDays(10),
+                'fecha_fin' => Carbon::now()->addDays(40),
+                'descuento' => '$5 de descuento',
+                'producto_codigo' => 'ENE001'
+            ],
+            [
+                'nombre' => 'Happy Hour Cerveza',
+                'fecha_inicio' => Carbon::now()->subDays(20),
+                'fecha_fin' => Carbon::now()->subDays(5),
+                'descuento' => '2x1 en cerveza nacional',
+                'producto_codigo' => 'CER001'
+            ],
+            [
+                'nombre' => 'Promoción Vino Premium',
+                'fecha_inicio' => Carbon::now()->addDays(5),
+                'fecha_fin' => Carbon::now()->addDays(35),
+                'descuento' => '15% de descuento en vinos',
+                'producto_codigo' => 'VIN001'
+            ],
+        ];
 
-        // Asociar productos con descuentos para Black Friday
-        if ($productos->count() >= 4) {
-            $blackFriday->productos()->attach($productos[0]->id, [
-                'descuento_porcentaje' => 30.00,
-                'descuento_fijo' => null,
-            ]);
-
-            $blackFriday->productos()->attach($productos[1]->id, [
-                'descuento_porcentaje' => 25.00,
-                'descuento_fijo' => null,
-            ]);
-
-            $blackFriday->productos()->attach($productos[2]->id, [
-                'descuento_porcentaje' => null,
-                'descuento_fijo' => 5000.00,
-            ]);
-
-            $blackFriday->productos()->attach($productos[3]->id, [
-                'descuento_porcentaje' => 40.00,
-                'descuento_fijo' => null,
-            ]);
+        $count = 0;
+        foreach ($promocionesData as $promocionData) {
+            // Buscar producto por código
+            $producto = $productos->where('cod_producto', $promocionData['producto_codigo'])->first();
+            
+            if ($producto && !Promocion::where('nombre', $promocionData['nombre'])->exists()) {
+                Promocion::create([
+                    'nombre' => $promocionData['nombre'],
+                    'fecha_inicio' => $promocionData['fecha_inicio'],
+                    'fecha_fin' => $promocionData['fecha_fin'],
+                    'descuento' => $promocionData['descuento'],
+                    'producto_id' => $producto->id,
+                ]);
+                $count++;
+            }
         }
 
-        // Promoción 2: Navidad
-        $navidad = Promocion::create([
-            'nombre' => 'Promoción Navideña',
-            'fecha_inicio' => Carbon::now()->addDays(20),
-            'fecha_fin' => Carbon::now()->addDays(45),
-            'estado' => 'activa',
-        ]);
-
-        // Asociar productos para Navidad
-        if ($productos->count() >= 6) {
-            $navidad->productos()->attach($productos[4]->id, [
-                'descuento_porcentaje' => 20.00,
-                'descuento_fijo' => null,
-            ]);
-
-            $navidad->productos()->attach($productos[5]->id, [
-                'descuento_porcentaje' => null,
-                'descuento_fijo' => 3000.00,
-            ]);
+        // Crear promociones adicionales para productos restantes
+        $productosRestantes = $productos->whereNotIn('cod_producto', array_column($promocionesData, 'producto_codigo'));
+        
+        foreach ($productosRestantes->take(5) as $producto) {
+            if (!Promocion::where('producto_id', $producto->id)->exists()) {
+                Promocion::create([
+                    'nombre' => 'Promoción Especial ' . $producto->nombre,
+                    'fecha_inicio' => Carbon::now()->subDays(rand(1, 30)),
+                    'fecha_fin' => Carbon::now()->addDays(rand(10, 60)),
+                    'descuento' => rand(10, 40) . '% de descuento',
+                    'producto_id' => $producto->id,
+                ]);
+                $count++;
+            }
         }
 
-        // Promoción 3: Año Nuevo (futura)
-        $anoNuevo = Promocion::create([
-            'nombre' => 'Ofertas de Año Nuevo',
-            'fecha_inicio' => Carbon::now()->addDays(60),
-            'fecha_fin' => Carbon::now()->addDays(75),
-            'estado' => 'activa',
-        ]);
-
-        // Asociar productos para Año Nuevo
-        if ($productos->count() >= 8) {
-            $anoNuevo->productos()->attach($productos[6]->id, [
-                'descuento_porcentaje' => 15.00,
-                'descuento_fijo' => null,
-            ]);
-
-            $anoNuevo->productos()->attach($productos[7]->id, [
-                'descuento_porcentaje' => 35.00,
-                'descuento_fijo' => null,
-            ]);
-        }
-
-        // Promoción 4: Liquidación (vencida)
-        $liquidacion = Promocion::create([
-            'nombre' => 'Gran Liquidación de Verano',
-            'fecha_inicio' => Carbon::now()->subDays(90),
-            'fecha_fin' => Carbon::now()->subDays(60),
-            'estado' => 'activa',
-        ]);
-
-        // Asociar productos para Liquidación
-        if ($productos->count() >= 10) {
-            $liquidacion->productos()->attach($productos[8]->id, [
-                'descuento_porcentaje' => 50.00,
-                'descuento_fijo' => null,
-            ]);
-
-            $liquidacion->productos()->attach($productos[9]->id, [
-                'descuento_porcentaje' => null,
-                'descuento_fijo' => 8000.00,
-            ]);
-        }
-
-        // Promoción 5: Inactiva
-        $inactiva = Promocion::create([
-            'nombre' => 'Promoción Suspendida',
-            'fecha_inicio' => Carbon::now()->subDays(10),
-            'fecha_fin' => Carbon::now()->addDays(10),
-            'estado' => 'inactiva',
-        ]);
-
-        // Asociar algunos productos a la promoción inactiva
-        if ($productos->count() >= 3) {
-            $inactiva->productos()->attach($productos[0]->id, [
-                'descuento_porcentaje' => 10.00,
-                'descuento_fijo' => null,
-            ]);
-
-            $inactiva->productos()->attach($productos[1]->id, [
-                'descuento_porcentaje' => null,
-                'descuento_fijo' => 2000.00,
-            ]);
-        }
-
-        $this->command->info('✅ Promociones creadas exitosamente!');
-        $this->command->info('   - Black Friday 2024 (activa)');
-        $this->command->info('   - Promoción Navideña (pendiente)');
-        $this->command->info('   - Ofertas de Año Nuevo (pendiente)');
-        $this->command->info('   - Gran Liquidación de Verano (vencida)');
-        $this->command->info('   - Promoción Suspendida (inactiva)');
+        $this->command->info("✅ {$count} promociones creadas exitosamente!");
+        $this->command->info('   - Promociones activas, pendientes y vencidas');
+        $this->command->info('   - Cada promoción asociada a un producto específico');
     }
 } 

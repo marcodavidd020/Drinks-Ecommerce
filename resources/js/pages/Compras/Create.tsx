@@ -125,11 +125,9 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
 
         // Enviar los datos directamente incluyendo los productos
         post(route('compras.store'), {
-            data: {
-                ...data,
-                productos: productosSeleccionados
-            }
-        });
+            ...data,
+            productos: productosSeleccionados
+        } as any);
     };
 
     return (

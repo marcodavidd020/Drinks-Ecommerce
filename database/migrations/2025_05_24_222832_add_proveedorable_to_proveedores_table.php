@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('proveedores', function (Blueprint $table) {
+        Schema::table('proveedor', function (Blueprint $table) {
             $table->nullableMorphs('proveedorable');
             $table->enum('tipo', ['persona', 'empresa'])->nullable();
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('proveedores', function (Blueprint $table) {
+        Schema::table('proveedor', function (Blueprint $table) {
             $table->dropMorphs('proveedorable');
             $table->dropColumn('tipo');
         });

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notas_venta', function (Blueprint $table) {
+        Schema::create('nota_venta', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
             $table->decimal('total', 10, 2);
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notas_venta');
+        Schema::dropIfExists('nota_venta');
     }
 };

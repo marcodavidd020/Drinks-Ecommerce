@@ -18,7 +18,7 @@ class NotaCompra extends Model
      *
      * @var string
      */
-    protected $table = 'notas_compra';
+    protected $table = 'nota_compra';
 
     /**
      * The attributes that are mass assignable.

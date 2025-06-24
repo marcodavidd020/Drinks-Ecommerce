@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('carritos', function (Blueprint $table) {
+        Schema::create('carrito', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cliente_id')->constrained('clientes')->onDelete('cascade');
+            $table->foreignId('cliente_id')->constrained('cliente')->onDelete('cascade');
             $table->date('fecha');
             $table->decimal('total', 10, 2)->default(0);
             $table->enum('estado', ['activo', 'procesado', 'abandonado'])->default('activo');
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('carritos');
+        Schema::dropIfExists('carrito');
     }
 };
