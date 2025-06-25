@@ -27,6 +27,7 @@ class Carrito extends Model
      */
     protected $fillable = [
         'cliente_id',
+        'pedido_id',
         'fecha',
         'total',
         'estado',
@@ -80,5 +81,14 @@ class Carrito extends Model
     public function getTotalProductosAttribute(): int
     {
         return $this->detalles()->sum('cantidad');
+    }
+
+    /**
+     * Relación con Pedido (N:1)
+     * Un carrito pertenece a un pedido
+     */
+    public function pedido(): BelongsTo
+    {
+        return $this->belongsTo(Pedido::class, 'pedido_id');
     }
 }

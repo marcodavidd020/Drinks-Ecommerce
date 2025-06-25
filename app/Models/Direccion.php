@@ -39,4 +39,13 @@ class Direccion extends Model
         'longitud' => 'decimal:8',
         'latitud' => 'decimal:8',
     ];
+
+    /**
+     * Relación con Pedidos (1:N)
+     * Una dirección puede tener muchos pedidos
+     */
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class, 'direccion_id');
+    }
 }

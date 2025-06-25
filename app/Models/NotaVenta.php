@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class NotaVenta extends Model
@@ -25,6 +26,7 @@ class NotaVenta extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'pedido_id',
         'fecha',
         'total',
         'estado',
@@ -82,5 +84,14 @@ class NotaVenta extends Model
             'estado' => 'completada',
             'total' => $this->calcularTotal(),
         ]);
+    }
+
+    /**
+     * Relación con Pedido (N:1)
+     * Una nota de venta pertenece a un pedido
+     */
+    public function pedido(): BelongsTo
+    {
+        return $this->belongsTo(Pedido::class, 'pedido_id');
     }
 }
