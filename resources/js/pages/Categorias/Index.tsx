@@ -12,8 +12,8 @@ interface Categoria {
 interface CategoriasIndexProps {
     categorias: {
         data: Categoria[];
-        links: any[];
-        meta?: any;
+        links: Record<string, unknown>[];
+        meta?: Record<string, unknown>;
     };
     filters: {
         search: string;

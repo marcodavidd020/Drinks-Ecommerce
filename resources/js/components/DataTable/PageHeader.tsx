@@ -10,7 +10,6 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ 
-    title, 
     description, 
     buttonText, 
     buttonHref, 

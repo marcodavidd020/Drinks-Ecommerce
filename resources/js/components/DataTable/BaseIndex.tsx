@@ -7,13 +7,13 @@ import { useEffect, useState } from 'react';
 
 interface BaseEntity {
     id: number;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 interface BaseIndexData<T extends BaseEntity> {
     data: T[];
-    links: any[];
-    meta?: any;
+    links: Record<string, unknown>[];
+    meta?: Record<string, unknown>;
 }
 
 interface BaseFilters {
@@ -21,7 +21,7 @@ interface BaseFilters {
     sort_by: string;
     sort_order: string;
     per_page: number;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 interface ColumnConfig {
@@ -32,7 +32,7 @@ interface ColumnConfig {
         adultos: string;
     };
     type?: 'text' | 'number' | 'date' | 'badge' | 'custom';
-    render?: (value: any, item: any) => React.ReactNode;
+    render?: (value: unknown, item: unknown) => React.ReactNode;
     sortable?: boolean;
     className?: string;
 }
@@ -123,7 +123,6 @@ export default function BaseIndex<T extends BaseEntity>({
     canCreate = true,
     canDelete = true,
     onDelete,
-    renderEmptyState,
 }: BaseIndexProps<T>) {
     const { getTextByMode } = useAppModeText();
 
@@ -140,30 +139,28 @@ export default function BaseIndex<T extends BaseEntity>({
     useEffect(() => {
         const timer = setTimeout(() => {
             if (search !== filters.search) {
-                handleSearch();
+                router.get(
+                    `/${routeName}`,
+                    {
+                        search,
+                        sort_by: sortBy,
+                        sort_order: sortOrder,
+                        per_page: perPage,
+                    },
+                    {
+                        preserveState: true,
+                        replace: true,
+                    },
+                );
             }
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [search]);
+    }, [search, filters.search, routeName, sortBy, sortOrder, perPage]);
 
-    const handleSearch = () => {
-        router.get(
-            `/${routeName}`,
-            {
-                search,
-                sort_by: sortBy,
-                sort_order: sortOrder,
-                per_page: perPage,
-            },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
 
-    const handleFilterChange = (newFilters: any) => {
+
+    const handleFilterChange = (newFilters: Record<string, unknown>) => {
         // Actualizar estados locales si cambiaron
         if (newFilters.sort_by !== undefined) setSortBy(newFilters.sort_by);
         if (newFilters.sort_order !== undefined) setSortOrder(newFilters.sort_order);

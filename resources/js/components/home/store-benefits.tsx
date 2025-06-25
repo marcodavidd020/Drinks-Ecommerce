@@ -100,7 +100,7 @@ export default function StoreBenefits() {
         }
     };
 
-    const renderSpecialEffects = (index: number) => {
+    const renderSpecialEffects = () => {
         if (settings.ageMode === 'niños') {
             return (
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/0 via-yellow-100/20 to-yellow-100/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
@@ -163,7 +163,7 @@ export default function StoreBenefits() {
                             </p>
 
                             {/* Special effects */}
-                            {renderSpecialEffects(index)}
+                            {renderSpecialEffects()}
                         </div>
                     ))}
                 </div>

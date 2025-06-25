@@ -21,7 +21,6 @@ const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
         containerClassName, 
         allowDecimals = false,
         allowNegative = false,
-        integerOnly = false,
         id, 
         step,
         min,

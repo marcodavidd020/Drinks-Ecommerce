@@ -4,7 +4,7 @@ export function useRoute() {
     return useMemo(() => {
         // Verificar si window.route está disponible
         if (typeof window !== 'undefined' && window.route) {
-            return (name: string, params?: any, absolute?: boolean): string => {
+            return (name: string, params?: Record<string, unknown>, absolute?: boolean): string => {
                 try {
                     return window.route(name, params, absolute);
                 } catch (error) {
@@ -15,7 +15,7 @@ export function useRoute() {
         }
         
         // Fallback cuando window.route no está disponible
-        return (name: string, params?: any, absolute?: boolean): string => {
+        return (name: string): string => {
             return `/${name.replace('.', '/')}`;
         };
     }, []);

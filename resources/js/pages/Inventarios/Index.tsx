@@ -30,8 +30,8 @@ interface ProductoInventario {
 interface InventariosIndexProps {
     inventarios: {
         data: ProductoInventario[];
-        links: any[];
-        meta?: any;
+        links: Record<string, unknown>[];
+        meta?: Record<string, unknown>;
     };
     almacenes: Almacen[];
     categorias: Categoria[];
@@ -106,7 +106,7 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
                 jóvenes: 'Fecha Creación',
                 adultos: 'Fecha de Creación',
             },
-            render: (value: string) => new Date(value).toLocaleDateString(),
+            render: (fecha: string) => new Date(fecha).toLocaleDateString(),
             sortable: true,
         },
     ];
@@ -139,7 +139,7 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
         {
             type: 'select' as const,
             value: filters.almacen,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [
@@ -164,7 +164,7 @@ export default function InventariosIndex({ inventarios, almacenes, categorias, f
         {
             type: 'select' as const,
             value: filters.categoria,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [

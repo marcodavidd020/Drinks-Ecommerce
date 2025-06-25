@@ -3,8 +3,8 @@ import { useAppMode } from '@/contexts/AppModeContext';
 interface Filter {
     type: 'search' | 'select' | 'per_page';
     placeholder?: string;
-    value: any;
-    onChange: (value: any) => void;
+    value: unknown;
+    onChange: (value: unknown) => void;
     options?: Array<{ value: string | number; label: string }>;
     colSpan?: number;
 }
@@ -39,7 +39,7 @@ export default function SearchFilters({ filters }: SearchFiltersProps) {
     };
 
     // Asegurar que el valor nunca sea null
-    const getSafeValue = (value: any, defaultValue: any = '') => {
+    const getSafeValue = (value: unknown, defaultValue: unknown = '') => {
         return value === null || value === undefined ? defaultValue : value;
     };
 
@@ -54,7 +54,7 @@ export default function SearchFilters({ filters }: SearchFiltersProps) {
                         <input
                             type="text"
                             placeholder={filter.placeholder}
-                            value={getSafeValue(filter.value)}
+                            value={String(getSafeValue(filter.value))}
                             onChange={(e) => filter.onChange(e.target.value)}
                             className={baseInputClasses}
                         />
@@ -64,7 +64,7 @@ export default function SearchFilters({ filters }: SearchFiltersProps) {
             case 'select':
                 return (
                     <div key={index}>
-                        <select value={getSafeValue(filter.value)} onChange={(e) => filter.onChange(e.target.value)} className={baseInputClasses}>
+                        <select value={String(getSafeValue(filter.value))} onChange={(e) => filter.onChange(e.target.value)} className={baseInputClasses}>
                             {filter.options?.map((option) => (
                                 <option key={option.value} value={option.value}>
                                     {option.label}
@@ -78,7 +78,7 @@ export default function SearchFilters({ filters }: SearchFiltersProps) {
                 return (
                     <div key={index}>
                         <select
-                            value={getSafeValue(filter.value, 10)}
+                            value={Number(getSafeValue(filter.value, 10))}
                             onChange={(e) => filter.onChange(Number(e.target.value))}
                             className={baseInputClasses}
                         >

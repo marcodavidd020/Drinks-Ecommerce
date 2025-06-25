@@ -18,7 +18,7 @@ interface PaginationMeta {
 interface PaginationProps {
     links: PaginationLink[];
     meta: PaginationMeta;
-    searchParams: Record<string, any>;
+    searchParams: Record<string, unknown>;
     entityName: string;
 }
 
@@ -50,7 +50,7 @@ export default function Pagination({ links, meta, searchParams, entityName }: Pa
     const lastPage = meta?.last_page || 1;
 
     // Siempre mostrar información de paginación si hay datos
-    const showPaginationInfo = true;
+    // const showPaginationInfo = true;
 
     // Filtrar enlaces para obtener navegación específica
     const prevLink = links?.find(link => link.label.includes('&laquo;') || link.label.includes('Anterior') || link.label.includes('Previous'));

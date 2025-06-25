@@ -17,8 +17,8 @@ interface Cliente {
 interface ClientesIndexProps {
     clientes: {
         data: Cliente[];
-        links: any[];
-        meta?: any;
+        links: Record<string, unknown>[];
+        meta?: Record<string, unknown>;
     };
     filters: {
         search: string;
@@ -132,9 +132,9 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                 jóvenes: 'Fecha Registro',
                 adultos: 'Fecha de Registro',
             },
-            render: (value: string) => {
-                if (!value) return 'Fecha no disponible';
-                const date = new Date(value);
+            render: (fecha: string) => {
+                if (!fecha) return 'Fecha no disponible';
+                const date = new Date(fecha);
                 if (isNaN(date.getTime())) return 'Fecha inválida';
                 return date.toLocaleDateString('es-CO', {
                     year: 'numeric',
@@ -175,7 +175,7 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
             type: 'select' as const,
             key: 'estado',
             value: filters.estado,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [
@@ -209,7 +209,7 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
             type: 'select' as const,
             key: 'genero',
             value: filters.genero,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [

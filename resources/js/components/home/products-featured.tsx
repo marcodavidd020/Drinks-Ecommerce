@@ -22,7 +22,7 @@ interface ProductsFeaturedProps {
     title: string;
 }
 
-export default function ProductsFeatured({ productos, title }: ProductsFeaturedProps) {
+export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
     const { settings } = useAppMode();
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {

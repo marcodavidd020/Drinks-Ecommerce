@@ -4,22 +4,22 @@ import { Link } from '@inertiajs/react';
 interface Column {
     key: string;
     label: string;
-    render?: (value: any, item: any) => React.ReactNode;
+    render?: (value: unknown, item: unknown) => React.ReactNode;
     className?: string;
 }
 
 interface Action {
     type: 'view' | 'edit' | 'delete' | 'toggle' | 'custom';
     href?: string;
-    onClick?: (item: any) => void;
+    onClick?: (item: Record<string, unknown>) => void;
     icon: string;
     title: string;
     className?: string;
-    condition?: (item: any) => boolean;
+    condition?: (item: Record<string, unknown>) => boolean;
 }
 
 interface DataTableProps {
-    data: any[];
+    data: Record<string, unknown>[];
     columns: Column[];
     actions: Action[];
     emptyState: {
@@ -30,7 +30,7 @@ interface DataTableProps {
         addButtonText?: string;
         addButtonHref?: string;
     };
-    getItemKey: (item: any) => string | number;
+    getItemKey: (item: Record<string, unknown>) => string | number;
 }
 
 export default function DataTable({ data, columns, actions, emptyState, getItemKey }: DataTableProps) {
@@ -47,7 +47,7 @@ export default function DataTable({ data, columns, actions, emptyState, getItemK
         }
     };
 
-    const renderCellValue = (column: Column, item: any) => {
+    const renderCellValue = (column: Column, item: Record<string, unknown>) => {
         if (column.render) {
             return column.render(item[column.key], item);
         }
@@ -55,7 +55,7 @@ export default function DataTable({ data, columns, actions, emptyState, getItemK
         return value !== undefined && value !== null ? value : '-';
     };
 
-    const renderAction = (action: Action, item: any, index: number) => {
+    const renderAction = (action: Action, item: Record<string, unknown>, index: number) => {
         // Verificar condición si existe
         if (action.condition && !action.condition(item)) {
             return null;
@@ -65,7 +65,7 @@ export default function DataTable({ data, columns, actions, emptyState, getItemK
 
         if (action.type === 'view') {
             return (
-                <Link key={index} href={action.href?.replace(':id', item.id) || ''} className={baseClasses} title={action.title}>
+                <Link key={index} href={action.href?.replace(':id', String(item.id)) || ''} className={baseClasses} title={action.title}>
                     {action.icon}
                 </Link>
             );
@@ -73,7 +73,7 @@ export default function DataTable({ data, columns, actions, emptyState, getItemK
 
         if (action.type === 'edit') {
             return (
-                <Link key={index} href={action.href?.replace(':id', item.id) || ''} className={baseClasses} title={action.title}>
+                <Link key={index} href={action.href?.replace(':id', String(item.id)) || ''} className={baseClasses} title={action.title}>
                     {action.icon}
                 </Link>
             );

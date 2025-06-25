@@ -5,8 +5,8 @@ interface FormField {
     type: 'text' | 'email' | 'tel' | 'url' | 'number' | 'textarea' | 'select' | 'date';
     name: string;
     label: string;
-    value: any;
-    onChange: (value: any) => void;
+    value: unknown;
+    onChange: (value: unknown) => void;
     placeholder?: string;
     required?: boolean;
     options?: Array<{ value: string | number; label: string }>;
@@ -66,7 +66,7 @@ export default function FormSection({ title, fields, columns = 2, children }: Fo
                 return (
                     <textarea
                         id={field.name}
-                        value={field.value}
+                        value={String(field.value || '')}
                         onChange={handleChange}
                         rows={field.rows || 3}
                         className={baseInputClasses}
@@ -77,7 +77,7 @@ export default function FormSection({ title, fields, columns = 2, children }: Fo
 
             case 'select':
                 return (
-                    <select id={field.name} value={field.value} onChange={handleChange} className={baseInputClasses} required={field.required}>
+                    <select id={field.name} value={String(field.value || '')} onChange={handleChange} className={baseInputClasses} required={field.required}>
                         {field.options?.map((option) => (
                             <option key={option.value} value={option.value}>
                                 {option.label}
@@ -91,7 +91,7 @@ export default function FormSection({ title, fields, columns = 2, children }: Fo
                     <input
                         id={field.name}
                         type={field.type}
-                        value={field.value}
+                        value={String(field.value || '')}
                         onChange={handleChange}
                         className={baseInputClasses}
                         placeholder={field.placeholder}

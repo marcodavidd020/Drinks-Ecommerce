@@ -24,7 +24,6 @@ const ModeSelector: React.FC = () => {
     updateThemeMode,
     updateFontSize,
     updateContrast,
-    toggleAutoTheme,
     resetToDefaults,
   } = useAppMode();
 

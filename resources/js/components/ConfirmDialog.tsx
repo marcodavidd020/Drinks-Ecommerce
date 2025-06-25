@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppMode } from '@/contexts/AppModeContext';
 
 interface ConfirmDialogProps {

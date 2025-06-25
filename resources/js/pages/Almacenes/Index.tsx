@@ -13,8 +13,8 @@ interface Almacen {
 interface AlmacenesIndexProps {
     almacenes: {
         data: Almacen[];
-        links: any[];
-        meta?: any;
+        links: Record<string, unknown>[];
+        meta?: Record<string, unknown>;
     };
     filters: {
         search: string;
