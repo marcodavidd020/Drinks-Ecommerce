@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->text('descuento')->nullable();
-            $table->foreignId('producto_id')->constrained('producto')->onDelete('cascade');
+            $table->foreignId('producto_id')->nullable()->constrained('producto')->onDelete('cascade');
             $table->timestamps();
         });
     }

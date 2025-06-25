@@ -8,14 +8,18 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * 
+     * Comentado: según diagrama, Cliente solo debe tener nit
+     * Los datos personales (teléfono, género) están en la tabla user
      */
     public function up(): void
     {
-        Schema::table('cliente', function (Blueprint $table) {
-            $table->string('telefono', 20)->nullable()->after('nit');
-            $table->date('fecha_nacimiento')->nullable()->after('telefono');
-            $table->enum('genero', ['masculino', 'femenino', 'otro', 'prefiero_no_decir'])->nullable()->after('fecha_nacimiento');
-        });
+        // No agregar campos adicionales - Cliente solo tiene nit según el diagrama
+        // Schema::table('cliente', function (Blueprint $table) {
+        //     $table->string('telefono', 20)->nullable()->after('nit');
+        //     $table->date('fecha_nacimiento')->nullable()->after('telefono');
+        //     $table->enum('genero', ['masculino', 'femenino', 'otro', 'prefiero_no_decir'])->nullable()->after('fecha_nacimiento');
+        // });
     }
 
     /**
@@ -23,8 +27,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cliente', function (Blueprint $table) {
-            $table->dropColumn(['telefono', 'fecha_nacimiento', 'genero']);
-        });
+        // Schema::table('cliente', function (Blueprint $table) {
+        //     $table->dropColumn(['telefono', 'fecha_nacimiento', 'genero']);
+        // });
     }
 };

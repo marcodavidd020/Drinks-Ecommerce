@@ -46,7 +46,7 @@ class DetalleAjusteSeeder extends Seeder
                 
                 $totalAjuste += $total;
 
-                DB::table('detalle_ajustes')->insert([
+                DB::table('detalle_ajuste')->insert([
                     'ajuste_inventario_id' => $ajuste->id,
                     'producto_id' => $producto->id,
                     'cantidad' => $cantidad,

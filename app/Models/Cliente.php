@@ -23,24 +23,14 @@ class Cliente extends Model
 
     /**
      * The attributes that are mass assignable.
+     * Según diagrama: Cliente solo tiene nit (además de id, user_id, timestamps)
+     * Los datos personales están en la tabla user
      *
      * @var array<int, string>
      */
     protected $fillable = [
         'user_id',
         'nit',
-        'telefono',
-        'fecha_nacimiento',
-        'genero',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'fecha_nacimiento' => 'date',
     ];
 
     /**

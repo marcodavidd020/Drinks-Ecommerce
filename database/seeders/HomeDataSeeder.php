@@ -23,12 +23,12 @@ class HomeDataSeeder extends Seeder
     public function run(): void
     {
         // Limpiar datos existentes
-        DB::table('detalle_ventas')->delete();
-        DB::table('notas_venta')->delete();
-        DB::table('producto_inventarios')->delete();
-        DB::table('productos')->delete();
-        DB::table('categorias')->delete();
-        DB::table('promociones')->delete();
+        DB::table('detalle_venta')->delete();
+        DB::table('nota_venta')->delete();
+        DB::table('producto_inventario')->delete();
+        DB::table('producto')->delete();
+        DB::table('categoria')->delete();
+        DB::table('promocion')->delete();
 
         // Crear categorías de bebidas
         $categorias = [
@@ -113,9 +113,9 @@ class HomeDataSeeder extends Seeder
             ]);
 
             // Crear almacén principal si no existe
-            $almacen = DB::table('almacenes')->where('nombre', 'Almacén Principal')->first();
+            $almacen = DB::table('almacen')->where('nombre', 'Almacén Principal')->first();
             if (!$almacen) {
-                $almacenId = DB::table('almacenes')->insertGetId([
+                $almacenId = DB::table('almacen')->insertGetId([
                     'nombre' => 'Almacén Principal',
                     'descripcion' => 'Almacén central de bebidas',
                     'ubicacion' => 'Bodega Central',
