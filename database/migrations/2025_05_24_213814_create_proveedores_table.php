@@ -13,10 +13,19 @@ return new class extends Migration
     {
         Schema::create('proveedor', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
+            $table->enum('tipo', ['persona', 'empresa']);
+            
+            // Campos para persona
+            $table->string('nombre')->nullable(); // Nombre de la persona
+            $table->string('apellido')->nullable();
+
+            // Campos para empresa
+            $table->string('razon_social')->nullable();
+
+            // Campos comunes
             $table->string('telefono')->nullable();
-            $table->string('direccion');
-            $table->string('email')->nullable();
+            $table->string('email')->nullable()->unique();
+            
             $table->timestamps();
         });
     }

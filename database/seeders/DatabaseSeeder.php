@@ -31,12 +31,11 @@ class DatabaseSeeder extends Seeder
 
         // 2. Seeders de entidades base
         $this->call([
-            PempresaSeeder::class,
+            ProveedorSeeder::class,
         ]);
 
         // 3. Seeders de productos y proveedores
         $this->call([
-            ProveedorSeeder::class,
             ProductoSeeder::class,
             InventarioSeeder::class,
             PromocionSeeder::class,

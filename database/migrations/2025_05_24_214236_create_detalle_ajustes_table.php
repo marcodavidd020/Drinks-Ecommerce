@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('detalle_ajuste', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ajuste_inventario_id')->constrained('ajuste_inventario')->onDelete('cascade');
-            $table->foreignId('producto_id')->constrained('producto')->onDelete('cascade');
+            $table->foreignId('producto_almacen_id')->constrained('producto_almacen')->onDelete('cascade');
             $table->integer('cantidad');
             $table->enum('tipo_ajuste', ['entrada', 'salida']);
             $table->text('motivo')->nullable();

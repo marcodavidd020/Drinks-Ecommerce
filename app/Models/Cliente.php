@@ -1,14 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Cliente extends Model
 {
@@ -23,10 +20,8 @@ class Cliente extends Model
 
     /**
      * The attributes that are mass assignable.
-     * Según diagrama: Cliente solo tiene nit (además de id, user_id, timestamps)
-     * Los datos personales están en la tabla user
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $fillable = [
         'user_id',
@@ -34,7 +29,7 @@ class Cliente extends Model
     ];
 
     /**
-     * Relación con User
+     * Get the user that owns the client.
      */
     public function user(): BelongsTo
     {
@@ -42,34 +37,10 @@ class Cliente extends Model
     }
 
     /**
-     * Relación con Dirección
-     */
-    public function direccion(): HasOne
-    {
-        return $this->hasOne(Direccion::class);
-    }
-
-    /**
-     * Relación con Carrito
-     */
-    public function carritos(): HasMany
-    {
-        return $this->hasMany(Carrito::class);
-    }
-
-    /**
-     * Relación con NotasVenta
+     * Get the sales for the client.
      */
     public function notasVenta(): HasMany
     {
         return $this->hasMany(NotaVenta::class);
-    }
-
-    /**
-     * Obtener carrito activo del cliente
-     */
-    public function carritoActivo(): ?Carrito
-    {
-        return $this->carritos()->where('estado', 'activo')->first();
     }
 }
