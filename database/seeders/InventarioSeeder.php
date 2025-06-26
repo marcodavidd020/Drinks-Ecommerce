@@ -35,21 +35,6 @@ class InventarioSeeder extends Seeder
             }
         }
 
-        // Crear proveedores de bebidas
-        $proveedores = [
-            ['nombre' => 'Distribuidora de Bebidas Nacional S.A.', 'telefono' => '+57-1-2234567', 'direccion' => 'Av. El Dorado 1234', 'email' => 'ventas@bebidasnacional.com'],
-            ['nombre' => 'Importadora de Licores Premium', 'telefono' => '+57-1-2345678', 'direccion' => 'Calle 72 # 10-15', 'email' => 'contacto@licorpremium.com'],
-            ['nombre' => 'Jugos y Refrescos del Valle', 'telefono' => '+57-2-2456789', 'direccion' => 'Carrera 15 # 25-30', 'email' => 'info@jugosdelvalle.com'],
-            ['nombre' => 'Cervecería Artesanal Andina', 'telefono' => '+57-4-2567890', 'direccion' => 'Zona Industrial Norte', 'email' => 'ventas@cervezaandina.com'],
-        ];
-
-        foreach ($proveedores as $proveedorData) {
-            // Verificar si ya existe
-            if (!Proveedor::where('nombre', $proveedorData['nombre'])->exists()) {
-                Proveedor::create($proveedorData);
-            }
-        }
-
         // Crear categorías de bebidas
         $categorias = [
             ['nombre' => 'Refrescos', 'descripcion' => 'Bebidas gasificadas y refrescos'],
