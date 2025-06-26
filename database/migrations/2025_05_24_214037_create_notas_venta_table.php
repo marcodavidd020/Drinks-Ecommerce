@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('nota_venta', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('cliente_id')->constrained('cliente')->onDelete('cascade');
             $table->date('fecha');
             $table->decimal('total', 10, 2);
             $table->enum('estado', ['pendiente', 'completada', 'cancelada'])->default('pendiente');

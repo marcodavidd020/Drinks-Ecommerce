@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('producto_inventario', function (Blueprint $table) {
+        Schema::create('producto_almacen', function (Blueprint $table) {
             $table->id();
             $table->foreignId('producto_id')->constrained('producto')->onDelete('cascade');
             $table->foreignId('almacen_id')->constrained('almacen')->onDelete('cascade');
             $table->integer('stock')->default(0);
             $table->timestamps();
-            
-            // Índice único para evitar duplicados
+
             $table->unique(['producto_id', 'almacen_id']);
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('producto_inventario');
+        Schema::dropIfExists('producto_almacen');
     }
 };

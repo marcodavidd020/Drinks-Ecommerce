@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Pempresa;
-use App\Models\Ppersona;
+use App\Models\Persona;
 use App\Models\Proveedor;
 use Illuminate\Database\Seeder;
 
@@ -36,19 +36,19 @@ class ProveedorSeeder extends Seeder
         }
 
         // Crear proveedores a partir de las personas existentes
-        $this->command->info('Creando proveedores desde Ppersonas...');
-        $personas = Ppersona::whereNotNull('telefono')->whereNotNull('email')->limit(10)->get();
+        $this->command->info('Creando proveedores desde Personas...');
+        $personas = Persona::limit(10)->get();
         foreach ($personas as $persona) {
             Proveedor::updateOrCreate(
                 [
                 'proveedorable_id' => $persona->id,
-                'proveedorable_type' => Ppersona::class,
+                'proveedorable_type' => Persona::class,
                 ],
                 [
-                    'nombre' => $persona->nombre,
-                'telefono' => $persona->telefono,
-                'direccion' => $persona->direccion,
-                'email' => $persona->email,
+                    'nombre' => $persona->nombre . ' ' . $persona->apellido,
+                'telefono' => fake()->e164PhoneNumber(),
+                'direccion' => fake()->address(),
+                'email' => fake()->unique()->safeEmail(),
                 'tipo' => 'persona',
                 ]
             );

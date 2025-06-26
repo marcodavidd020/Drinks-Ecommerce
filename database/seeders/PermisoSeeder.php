@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permiso;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class PermisoSeeder extends Seeder
 {
@@ -15,50 +15,52 @@ class PermisoSeeder extends Seeder
     {
         $permisos = [
             // Permisos de usuarios
-            ['nombre' => 'ver_usuarios', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'crear_usuarios', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'editar_usuarios', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'eliminar_usuarios', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'ver_usuarios'],
+            ['nombre' => 'crear_usuarios'],
+            ['nombre' => 'editar_usuarios'],
+            ['nombre' => 'eliminar_usuarios'],
             
             // Permisos de productos
-            ['nombre' => 'ver_productos', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'crear_productos', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'editar_productos', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'eliminar_productos', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'ver_productos'],
+            ['nombre' => 'crear_productos'],
+            ['nombre' => 'editar_productos'],
+            ['nombre' => 'eliminar_productos'],
             
             // Permisos de ventas
-            ['nombre' => 'ver_ventas', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'crear_ventas', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'editar_ventas', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'eliminar_ventas', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'ver_ventas'],
+            ['nombre' => 'crear_ventas'],
+            ['nombre' => 'editar_ventas'],
+            ['nombre' => 'eliminar_ventas'],
             
             // Permisos de compras
-            ['nombre' => 'ver_compras', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'crear_compras', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'editar_compras', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'eliminar_compras', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'ver_compras'],
+            ['nombre' => 'crear_compras'],
+            ['nombre' => 'editar_compras'],
+            ['nombre' => 'eliminar_compras'],
             
             // Permisos de promociones
-            ['nombre' => 'ver_promociones', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'crear_promociones', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'editar_promociones', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'eliminar_promociones', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'ver_promociones'],
+            ['nombre' => 'crear_promociones'],
+            ['nombre' => 'editar_promociones'],
+            ['nombre' => 'eliminar_promociones'],
             
             // Permisos de inventario
-            ['nombre' => 'ver_inventario', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'ajustar_inventario', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'ver_inventario'],
+            ['nombre' => 'ajustar_inventario'],
             
             // Permisos de reportes
-            ['nombre' => 'ver_reportes', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'generar_reportes', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'ver_reportes'],
+            ['nombre' => 'generar_reportes'],
             
             // Permisos administrativos
-            ['nombre' => 'configurar_sistema', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'gestionar_roles', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'gestionar_permisos', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'configurar_sistema'],
+            ['nombre' => 'gestionar_roles'],
+            ['nombre' => 'gestionar_permisos'],
         ];
 
-        DB::table('permiso')->insert($permisos);
+        foreach ($permisos as $permiso) {
+            Permiso::updateOrCreate(['nombre' => $permiso['nombre']], $permiso);
+        }
         
         $this->command->info('✅ Permisos básicos del sistema creados exitosamente');
     }
