@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Categoria;
 use App\Models\Producto;
-use App\Models\ProductoInventario;
+use App\Models\ProductoAlmacen;
 use App\Models\Promocion;
 use App\Models\NotaVenta;
 use App\Models\DetalleVenta;
@@ -25,7 +25,7 @@ class HomeDataSeeder extends Seeder
         // Limpiar datos existentes
         DB::table('detalle_venta')->delete();
         DB::table('nota_venta')->delete();
-        DB::table('producto_inventario')->delete();
+        DB::table('producto_almacen')->delete();
         DB::table('producto')->delete();
         DB::table('categoria')->delete();
         DB::table('promocion')->delete();
@@ -127,7 +127,7 @@ class HomeDataSeeder extends Seeder
             }
 
             // Crear inventario
-            ProductoInventario::create([
+            ProductoAlmacen::create([
                 'producto_id' => $producto->id,
                 'almacen_id' => $almacenId,
                 'stock' => $productoData['stock'],

@@ -53,7 +53,6 @@ class DatabaseSeeder extends Seeder
             VentasSeeder::class,
             NotaCompraSeeder::class,
             AjusteInventarioSeeder::class,
-            PqrsSeeder::class,
             CarritoSeeder::class,
         ]);
 
@@ -78,7 +77,6 @@ class DatabaseSeeder extends Seeder
         $this->command->info('   • Clientes y proveedores (personas y empresas)');
         $this->command->info('   • Ventas y notas de venta con detalles (6 meses)');
         $this->command->info('   • Notas de compra con detalles (4 meses)');
-        $this->command->info('   • PQRS de ejemplo (3 meses)');
         $this->command->info('   • Carritos con detalles de productos (30 días)');
         $this->command->info('   • Ajustes de inventario con detalles');
         $this->command->info('   • Datos específicos para home y tienda');

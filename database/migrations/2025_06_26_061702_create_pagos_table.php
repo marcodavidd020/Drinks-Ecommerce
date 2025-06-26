@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detalle_venta', function (Blueprint $table) {
+        Schema::create('pagos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('nota_venta_id')->constrained('nota_venta')->onDelete('cascade');
-            $table->foreignId('producto_almacen_id')->constrained('producto_almacen')->onDelete('cascade');
-            $table->integer('cantidad');
-            $table->decimal('total', 10, 2);
+            $table->foreignId('tipo_pago_id')->constrained('tipo_pago')->onDelete('cascade');
+            $table->dateTime('fechapago');
+            $table->enum('estado', ['pendiente', 'pagado', 'fallido', 'reembolsado'])->default('pendiente');
+            $table->string('pago_facil_id')->nullable()->comment('ID de transacción de la pasarela de pago');
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detalle_venta');
+        Schema::dropIfExists('pagos');
     }
 };

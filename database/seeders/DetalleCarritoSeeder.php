@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Carrito;
-use App\Models\Producto;
+use App\Models\ProductoAlmacen;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -17,31 +17,30 @@ class DetalleCarritoSeeder extends Seeder
     public function run(): void
     {
         $carritos = Carrito::all();
-        $productos = Producto::all();
+        $productosAlmacen = ProductoAlmacen::with('producto')->get();
 
-        if ($carritos->isEmpty() || $productos->isEmpty()) {
-            $this->command->warn('No hay carritos o productos disponibles. Ejecuta primero CarritoSeeder y ProductoSeeder.');
+        if ($carritos->isEmpty() || $productosAlmacen->isEmpty()) {
+            $this->command->warn('No hay carritos o productos en almacén. Ejecuta CarritoSeeder e InventarioSeeder.');
             return;
         }
 
         $totalDetalles = 0;
 
         foreach ($carritos as $carrito) {
-            // Cada carrito tiene entre 1 y 5 productos
             $cantidadProductos = rand(1, 5);
-            $productosSeleccionados = $productos->random($cantidadProductos);
+            $productosSeleccionados = $productosAlmacen->random($cantidadProductos);
             
             $totalCarrito = 0;
 
-            foreach ($productosSeleccionados as $producto) {
-                $cantidad = rand(1, 10);
-                $precioUnitario = $producto->precio_venta;
+            foreach ($productosSeleccionados as $productoAlmacen) {
+                $cantidad = rand(1, 3); // Cantidades más realistas para un carrito
+                $precioUnitario = $productoAlmacen->producto->precio_venta;
                 $subtotal = $cantidad * $precioUnitario;
                 $totalCarrito += $subtotal;
 
                 DB::table('detalle_carrito')->insert([
                     'carrito_id' => $carrito->id,
-                    'producto_id' => $producto->id,
+                    'producto_almacen_id' => $productoAlmacen->id,
                     'cantidad' => $cantidad,
                     'precio_unitario' => $precioUnitario,
                     'subtotal' => $subtotal,
@@ -52,7 +51,6 @@ class DetalleCarritoSeeder extends Seeder
                 $totalDetalles++;
             }
 
-            // Actualizar el total del carrito basado en los detalles
             $carrito->update(['total' => $totalCarrito]);
         }
 

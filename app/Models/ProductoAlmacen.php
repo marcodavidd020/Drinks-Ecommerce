@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProductoInventario extends Model
+class ProductoAlmacen extends Model
 {
     use HasFactory;
 
@@ -17,7 +17,7 @@ class ProductoInventario extends Model
      *
      * @var string
      */
-    protected $table = 'producto_inventario';
+    protected $table = 'producto_almacen';
 
     /**
      * The attributes that are mass assignable.

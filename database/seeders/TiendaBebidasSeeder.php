@@ -6,7 +6,7 @@ namespace Database\Seeders;
 
 use App\Models\Categoria;
 use App\Models\Producto;
-use App\Models\ProductoInventario;
+use App\Models\ProductoAlmacen;
 use App\Models\Almacen;
 use Illuminate\Database\Seeder;
 
@@ -85,7 +85,7 @@ class TiendaBebidasSeeder extends Seeder
 
             // Crear inventario para este producto en todos los almacenes
             foreach ($almacenes as $almacen) {
-                ProductoInventario::create([
+                ProductoAlmacen::create([
                     'producto_id' => $producto->id,
                     'almacen_id' => $almacen->id,
                     'stock' => fake()->numberBetween(15, 150),

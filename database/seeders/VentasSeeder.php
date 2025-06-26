@@ -7,7 +7,7 @@ namespace Database\Seeders;
 use App\Models\NotaVenta;
 use App\Models\DetalleVenta;
 use App\Models\Cliente;
-use App\Models\Producto;
+use App\Models\ProductoAlmacen;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -22,20 +22,20 @@ class VentasSeeder extends Seeder
         $this->command->info('🔍 Iniciando VentasSeeder...');
 
         $clientes = Cliente::all();
-        $productos = Producto::all();
+        $productosAlmacen = ProductoAlmacen::with('producto')->get();
 
         $this->command->info('📊 Clientes encontrados: ' . $clientes->count());
-        $this->command->info('📦 Productos encontrados: ' . $productos->count());
+        $this->command->info('📦 Productos en almacén encontrados: ' . $productosAlmacen->count());
 
-        if ($clientes->isEmpty() || $productos->isEmpty()) {
-            $this->command->warn('No hay suficientes datos base. Ejecuta primero ClienteSeeder y ProductoSeeder.');
+        if ($clientes->isEmpty() || $productosAlmacen->isEmpty()) {
+            $this->command->warn('No hay suficientes datos base. Ejecuta ClienteSeeder e InventarioSeeder primero.');
             return;
         }
 
         $totalVentas = 0;
         $totalDetalles = 0;
 
-        DB::transaction(function () use ($clientes, $productos, &$totalVentas, &$totalDetalles) {
+        DB::transaction(function () use ($clientes, $productosAlmacen, &$totalVentas, &$totalDetalles) {
             // Crear ventas de los últimos 6 meses
             for ($mes = 1; $mes >= 0; $mes--) {
                 $fecha = Carbon::now()->subMonths($mes);
@@ -49,15 +49,16 @@ class VentasSeeder extends Seeder
                     // Calcular total simulado basado en productos aleatorios
                     $cantidadProductos = rand(1, 6);
                     $total = 0;
+                    $productosVenta = $productosAlmacen->random($cantidadProductos);
 
-                    for ($j = 0; $j < $cantidadProductos; $j++) {
-                        $producto = $productos->random();
+                    foreach ($productosVenta as $productoAlmacen) {
                         $cantidad = rand(1, 5);
-                        $total += $cantidad * $producto->precio_venta;
+                        $total += $cantidad * $productoAlmacen->producto->precio_venta;
                     }
 
-                    // Crear nota de venta simple
+                    // Crear nota de venta
                     $notaVenta = NotaVenta::create([
+                        'cliente_id' => $clientes->random()->id,
                         'fecha' => $fechaVenta,
                         'total' => $total,
                         'estado' => $this->getRandomEstado(),
@@ -66,29 +67,20 @@ class VentasSeeder extends Seeder
 
                     $totalVentas++;
 
-                    // Crear detalles de venta para productos aleatorios
-                    for ($j = 0; $j < $cantidadProductos; $j++) {
-                        $producto = $productos->random();
+                    // Crear detalles de venta para los productos seleccionados
+                    foreach ($productosVenta as $productoAlmacen) {
                         $cantidad = rand(1, 5);
-                        $precioUnitario = $producto->precio_venta;
+                        $precioUnitario = $productoAlmacen->producto->precio_venta;
                         $totalLinea = $cantidad * $precioUnitario;
 
-                        // Verificar si ya existe este producto en esta venta
-                        $detalleExistente = DetalleVenta::where('nota_venta_id', $notaVenta->id)
-                            ->where('producto_id', $producto->id)
-                            ->first();
+                        DetalleVenta::create([
+                            'nota_venta_id' => $notaVenta->id,
+                            'producto_almacen_id' => $productoAlmacen->id,
+                            'cantidad' => $cantidad,
+                            'total' => $totalLinea,
+                        ]);
 
-                        if (!$detalleExistente) {
-                            DetalleVenta::create([
-                                'nota_venta_id' => $notaVenta->id,
-                                'producto_id' => $producto->id,
-                                'cantidad' => $cantidad,
-                                'precio_unitario' => $precioUnitario,
-                                'total' => $totalLinea,
-                            ]);
-
-                            $totalDetalles++;
-                        }
+                        $totalDetalles++;
                     }
                 }
             }

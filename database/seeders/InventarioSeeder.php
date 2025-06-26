@@ -8,7 +8,7 @@ use App\Models\Almacen;
 use App\Models\Categoria;
 use App\Models\Direccion;
 use App\Models\Producto;
-use App\Models\ProductoInventario;
+use App\Models\ProductoAlmacen;
 use App\Models\Promocion;
 use App\Models\Proveedor;
 use App\Models\TipoPago;
@@ -128,10 +128,10 @@ class InventarioSeeder extends Seeder
         foreach ($productos as $producto) {
             foreach ($almacenes as $almacen) {
                 // Verificar si ya existe este inventario
-                if (!ProductoInventario::where('producto_id', $producto->id)
+                if (!ProductoAlmacen::where('producto_id', $producto->id)
                       ->where('almacen_id', $almacen->id)
                       ->exists()) {
-                    ProductoInventario::create([
+                    ProductoAlmacen::create([
                         'producto_id' => $producto->id,
                         'almacen_id' => $almacen->id,
                         'stock' => fake()->numberBetween(10, 100),
