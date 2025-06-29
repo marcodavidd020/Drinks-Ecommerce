@@ -12,9 +12,9 @@ export default function ClienteCreate() {
         email: '',
         celular: '',
         nit: '',
-        telefono: '',
-        fecha_nacimiento: '',
-        genero: '',
+        password: '',
+        password_confirmation: '',
+        estado: 'activo',
     });
 
     const submit = (e: FormEvent) => {
@@ -135,73 +135,70 @@ export default function ClienteCreate() {
                     <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
                         <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                             {getTextByMode({
-                                niños: '📞 Información de Contacto',
-                                jóvenes: '📞 Información Adicional',
-                                adultos: 'Información Adicional',
+                                niños: '🔐 Información de Acceso',
+                                jóvenes: '🔐 Datos de Acceso',
+                                adultos: 'Información de Acceso',
                             })}
                         </h2>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <InputField
-                                label={getTextByMode({
-                                    niños: '📞 Teléfono fijo',
-                                    jóvenes: '📞 Teléfono fijo',
-                                    adultos: 'Teléfono fijo',
-                                })}
-                                type="tel"
-                                value={data.telefono}
-                                onChange={(e) => setData('telefono', e.target.value)}
-                                placeholder={getTextByMode({
-                                    niños: '📞 6012345678',
-                                    jóvenes: '601 234 5678',
-                                    adultos: '(601) 234-5678',
-                                })}
-                                error={errors.telefono}
-                            />
-
-                            <InputField
-                                label={getTextByMode({
-                                    niños: '🎂 Cumpleaños del amigo',
-                                    jóvenes: '🎂 Fecha de nacimiento',
-                                    adultos: 'Fecha de nacimiento',
-                                })}
-                                type="date"
-                                value={data.fecha_nacimiento}
-                                onChange={(e) => setData('fecha_nacimiento', e.target.value)}
-                                error={errors.fecha_nacimiento}
-                            />
-
                             <SelectField
                                 label={getTextByMode({
-                                    niños: '🚻 Género del amigo',
-                                    jóvenes: '🚻 Género',
-                                    adultos: 'Género',
+                                    niños: '🚦 Estado del amigo',
+                                    jóvenes: '🚦 Estado',
+                                    adultos: 'Estado',
                                 })}
-                                value={data.genero}
-                                onChange={(e) => setData('genero', e.target.value)}
-                                placeholder={getTextByMode({
-                                    niños: '🤔 Elige una opción',
-                                    jóvenes: 'Seleccionar género',
-                                    adultos: 'Seleccione una opción',
-                                })}
+                                value={data.estado}
+                                onChange={(e) => setData('estado', e.target.value)}
                                 options={[
-                                    { value: 'masculino', label: getTextByMode({
-                                        niños: '👨 Niño',
-                                        jóvenes: '👨 Masculino',
-                                        adultos: 'Masculino',
+                                    { value: 'activo', label: getTextByMode({
+                                        niños: '🟢 Activo',
+                                        jóvenes: '🟢 Activo',
+                                        adultos: 'Activo',
                                     })},
-                                    { value: 'femenino', label: getTextByMode({
-                                        niños: '👩 Niña',
-                                        jóvenes: '👩 Femenino',
-                                        adultos: 'Femenino',
-                                    })},
-                                    { value: 'otro', label: getTextByMode({
-                                        niños: '🧑 Otro',
-                                        jóvenes: '🧑 Otro',
-                                        adultos: 'Otro',
+                                    { value: 'inactivo', label: getTextByMode({
+                                        niños: '🔴 Inactivo',
+                                        jóvenes: '🔴 Inactivo',
+                                        adultos: 'Inactivo',
                                     })}
                                 ]}
-                                containerClassName="sm:col-span-2"
-                                error={errors.genero}
+                                error={errors.estado}
+                                required
+                            />
+
+                            <InputField
+                                label={getTextByMode({
+                                    niños: '🔒 Contraseña del amigo',
+                                    jóvenes: '🔒 Contraseña',
+                                    adultos: 'Contraseña',
+                                })}
+                                type="password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: '🔒 Contraseña segura...',
+                                    jóvenes: 'Contraseña segura',
+                                    adultos: 'Mínimo 8 caracteres',
+                                })}
+                                error={errors.password}
+                                required
+                            />
+
+                            <InputField
+                                label={getTextByMode({
+                                    niños: '🔒 Confirmar contraseña',
+                                    jóvenes: '🔒 Confirmar contraseña',
+                                    adultos: 'Confirmar contraseña',
+                                })}
+                                type="password"
+                                value={data.password_confirmation}
+                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                placeholder={getTextByMode({
+                                    niños: '🔒 Repite la contraseña...',
+                                    jóvenes: 'Confirma la contraseña',
+                                    adultos: 'Repita la contraseña',
+                                })}
+                                error={errors.password_confirmation}
+                                required
                             />
                         </div>
                     </div>

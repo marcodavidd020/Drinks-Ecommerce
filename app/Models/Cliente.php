@@ -43,4 +43,12 @@ class Cliente extends Model
     {
         return $this->hasMany(NotaVenta::class);
     }
+
+    /**
+     * Get the carts for the client.
+     */
+    public function carritos(): HasMany
+    {
+        return $this->hasMany(Carrito::class);
+    }
 }

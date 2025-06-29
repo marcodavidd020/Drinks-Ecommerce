@@ -14,9 +14,6 @@ interface Cliente {
     id: number;
     user: User;
     nit?: string;
-    telefono?: string;
-    fecha_nacimiento?: string;
-    genero?: string;
     created_at: string;
     updated_at: string;
 }
@@ -88,49 +85,6 @@ export default function ClienteShow({ cliente }: ClienteShowProps) {
             }),
             icon: '🆔'
         },
-        {
-            label: getTextByMode({
-                niños: '📞 Teléfono',
-                jóvenes: '📞 Teléfono',
-                adultos: 'Teléfono Fijo',
-            }),
-            value: cliente.telefono || getTextByMode({
-                niños: '❌ Sin teléfono',
-                jóvenes: 'No registrado',
-                adultos: 'No registrado',
-            }),
-            icon: '📞'
-        },
-        {
-            label: getTextByMode({
-                niños: '🎂 Cumpleaños',
-                jóvenes: '🎂 Fecha de Nacimiento',
-                adultos: 'Fecha de Nacimiento',
-            }),
-            value: cliente.fecha_nacimiento
-                ? formatDate(cliente.fecha_nacimiento)
-                : getTextByMode({
-                      niños: '❌ Sin fecha',
-                      jóvenes: 'No registrada',
-                      adultos: 'No registrada',
-                  }),
-            icon: '🎂'
-        },
-        {
-            label: getTextByMode({
-                niños: '👫 Género',
-                jóvenes: '👫 Género',
-                adultos: 'Género',
-            }),
-            value: cliente.genero
-                ? cliente.genero.charAt(0).toUpperCase() + cliente.genero.slice(1).replace('_', ' ')
-                : getTextByMode({
-                      niños: '❌ Sin especificar',
-                      jóvenes: 'No especificado',
-                      adultos: 'No especificado',
-                  }),
-            icon: '👫'
-        }
     ];
 
     // Información del sistema

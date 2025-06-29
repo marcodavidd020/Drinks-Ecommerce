@@ -5,9 +5,6 @@ interface Cliente {
     nombre: string;
     email: string;
     celular?: string;
-    direccion?: string;
-    fecha_nacimiento?: string;
-    genero?: string;
     estado: 'activo' | 'inactivo';
     ventas_count: number;
     created_at: string;
@@ -23,7 +20,6 @@ interface ClientesIndexProps {
     filters: {
         search: string;
         estado: string;
-        genero: string;
         sort_by: string;
         sort_order: string;
         per_page: number;
@@ -63,25 +59,6 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
             render: (celular: string, cliente: Cliente) => {
                 const clienteCelular = cliente?.celular || celular || 'No registrado';
                 return clienteCelular;
-            },
-            sortable: true,
-        },
-        {
-            key: 'genero',
-            label: {
-                niños: '👦👧 Género',
-                jóvenes: 'Género',
-                adultos: 'Género',
-            },
-            render: (genero: string, cliente: Cliente) => {
-                const clienteGenero = cliente?.genero || genero;
-                if (!clienteGenero) return 'No especificado';
-                const generoMap = {
-                    masculino: '👨 Masculino',
-                    femenino: '👩 Femenino',
-                    otro: '🏳️‍⚧️ Otro',
-                };
-                return generoMap[clienteGenero as keyof typeof generoMap] || clienteGenero;
             },
             sortable: true,
         },
@@ -201,48 +178,6 @@ export default function ClientesIndex({ clientes, filters }: ClientesIndexProps)
                         niños: '🔴 Inactivos',
                         jóvenes: '🔴 Inactivos',
                         adultos: 'Inactivos',
-                    },
-                },
-            ],
-        },
-        {
-            type: 'select' as const,
-            key: 'genero',
-            value: filters.genero,
-            onChange: () => {
-                // Esta lógica se manejará en BaseIndex
-            },
-            options: [
-                {
-                    value: '',
-                    label: {
-                        niños: '👦👧 Todos los géneros',
-                        jóvenes: 'Todos los géneros',
-                        adultos: 'Todos los géneros',
-                    },
-                },
-                {
-                    value: 'masculino',
-                    label: {
-                        niños: '👨 Masculino',
-                        jóvenes: 'Masculino',
-                        adultos: 'Masculino',
-                    },
-                },
-                {
-                    value: 'femenino',
-                    label: {
-                        niños: '👩 Femenino',
-                        jóvenes: 'Femenino',
-                        adultos: 'Femenino',
-                    },
-                },
-                {
-                    value: 'otro',
-                    label: {
-                        niños: '🏳️‍⚧️ Otro',
-                        jóvenes: 'Otro',
-                        adultos: 'Otro',
                     },
                 },
             ],

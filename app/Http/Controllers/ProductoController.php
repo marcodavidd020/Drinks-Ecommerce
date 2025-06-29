@@ -47,7 +47,7 @@ class ProductoController extends Controller
 
         // Construir la consulta
         $query = Producto::query()
-            ->with(['categoria', 'inventarios']);
+            ->with(['categoria', 'productoAlmacenes']);
 
         // Aplicar filtros de búsqueda
         if ($search) {
@@ -71,7 +71,7 @@ class ProductoController extends Controller
 
         // Procesar los resultados
         $productos->getCollection()->transform(function ($producto) {
-            $producto->stock_total = $producto->inventarios->sum('stock');
+            $producto->stock_total = $producto->productoAlmacenes->sum('stock');
             $producto->stock_minimo = 10; // Simulado
             $producto->stock_maximo = 100; // Simulado
             $producto->estado = 'activo'; // Simulado
@@ -143,10 +143,10 @@ class ProductoController extends Controller
      */
     public function show(Producto $producto): Response
     {
-        $producto->load(['categoria', 'inventarios.almacen']);
+        $producto->load(['categoria', 'productoAlmacenes.almacen']);
 
         // Calcular stock total
-        $producto->stock_total = $producto->inventarios->sum('stock');
+        $producto->stock_total = $producto->productoAlmacenes->sum('stock');
 
         return Inertia::render('Productos/Show', [
             'producto' => $producto

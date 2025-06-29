@@ -9,11 +9,8 @@ interface Proveedor {
     nombre: string;
     telefono?: string;
     email?: string;
-    direccion?: string;
     tipo: string;
     razon_social?: string;
-    nit?: string;
-    representante_legal?: string;
     apellido?: string;
 }
 
@@ -25,14 +22,11 @@ export default function ProveedorEdit({ proveedor }: ProveedorEditProps) {
     const { getTextByMode, getModeClasses } = useAppModeText();
 
     const { data, setData, put, processing, errors } = useForm({
-        nombre: proveedor.nombre,
+        nombre: proveedor.nombre || '',
         telefono: proveedor.telefono || '',
         email: proveedor.email || '',
-        direccion: proveedor.direccion || '',
-        tipo: proveedor.tipo,
+        tipo: proveedor.tipo || 'persona',
         razon_social: proveedor.razon_social || '',
-        nit: proveedor.nit || '',
-        representante_legal: proveedor.representante_legal || '',
         apellido: proveedor.apellido || '',
     });
 
@@ -184,121 +178,44 @@ export default function ProveedorEdit({ proveedor }: ProveedorEditProps) {
                                     })}
                                     error={errors.telefono}
                                 />
-
-                                <TextareaField
-                                    label={getTextByMode({
-                                        niños: '📍 Dirección',
-                                        jóvenes: '📍 Dirección',
-                                        adultos: 'Dirección',
-                                    })}
-                                    value={data.direccion}
-                                    onChange={(e) => setData('direccion', e.target.value)}
-                                    rows={3}
-                                    placeholder={getTextByMode({
-                                        niños: 'Calle 123 #45-67',
-                                        jóvenes: 'Dirección completa',
-                                        adultos: 'Dirección completa del proveedor',
-                                    })}
-                                    error={errors.direccion}
-                                />
                             </div>
                         </div>
 
-                        {/* Información específica para empresas */}
-                        {isTipoEmpresa && (
-                            <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
-                                <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🏢 Información de la Empresa',
-                                        jóvenes: '🏢 Datos de la Empresa',
-                                        adultos: 'Información de la Empresa',
-                                    })}
-                                </h2>
+                        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800 lg:col-span-1">
+                            <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                {getTextByMode({
+                                    niños: '🏢 Detalles de la Empresa',
+                                    jóvenes: '🏢 Datos de la Empresa',
+                                    adultos: 'Detalles de la Empresa',
+                                })}
+                            </h2>
+                            {isTipoEmpresa ? (
                                 <div className="space-y-4">
                                     <InputField
                                         label={getTextByMode({
-                                            niños: '🏭 Razón Social',
-                                            jóvenes: '🏭 Razón Social',
+                                            niños: '🏢 Razón Social',
+                                            jóvenes: '🏢 Razón Social',
                                             adultos: 'Razón Social',
                                         })}
                                         type="text"
                                         value={data.razon_social}
                                         onChange={(e) => setData('razon_social', e.target.value)}
-                                        placeholder={getTextByMode({
-                                            niños: 'ABC Empresa S.A.S.',
-                                            jóvenes: 'Razón social oficial',
-                                            adultos: 'Razón social de la empresa',
-                                        })}
+                                        placeholder="Razón social de la empresa"
                                         error={errors.razon_social}
                                     />
-
-                                    <InputField
-                                        label={getTextByMode({
-                                            niños: '🔢 NIT',
-                                            jóvenes: '🔢 NIT',
-                                            adultos: 'NIT',
-                                        })}
-                                        type="text"
-                                        value={data.nit}
-                                        onChange={(e) => setData('nit', e.target.value)}
-                                        placeholder={getTextByMode({
-                                            niños: '123456789-0',
-                                            jóvenes: 'NIT de la empresa',
-                                            adultos: 'Número de identificación tributaria',
-                                        })}
-                                        error={errors.nit}
-                                    />
-
-                                    <InputField
-                                        label={getTextByMode({
-                                            niños: '👔 Representante Legal',
-                                            jóvenes: '👔 Representante Legal',
-                                            adultos: 'Representante Legal',
-                                        })}
-                                        type="text"
-                                        value={data.representante_legal}
-                                        onChange={(e) => setData('representante_legal', e.target.value)}
-                                        placeholder={getTextByMode({
-                                            niños: 'Juan Pérez',
-                                            jóvenes: 'Nombre del representante',
-                                            adultos: 'Nombre completo del representante legal',
-                                        })}
-                                        error={errors.representante_legal}
-                                    />
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Información específica para personas */}
-                        {isTipoPersona && (
-                            <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
-                                <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '👤 Información Personal',
-                                        jóvenes: '👤 Datos Personales',
-                                        adultos: 'Información Personal',
-                                    })}
-                                </h2>
-                                <div className="space-y-4">
-                                    <InputField
-                                        label={getTextByMode({
-                                            niños: '🆔 Número de Documento',
-                                            jóvenes: '🆔 Documento de Identidad',
-                                            adultos: 'Documento de Identidad',
+                            ) : (
+                                <div className="flex h-full items-center justify-center rounded-lg border border-dashed bg-gray-50 p-4 text-center dark:bg-gray-800/50">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {getTextByMode({
+                                            niños: 'Selecciona "Empresa" para ver más opciones.',
+                                            jóvenes: 'Selecciona "Empresa" para ver estos campos.',
+                                            adultos: 'Estos campos solo aplican a proveedores de tipo "Empresa".',
                                         })}
-                                        type="text"
-                                        value={data.nit}
-                                        onChange={(e) => setData('nit', e.target.value)}
-                                        placeholder={getTextByMode({
-                                            niños: '12345678',
-                                            jóvenes: 'Cédula de ciudadanía',
-                                            adultos: 'Número de cédula o documento',
-                                        })}
-                                        error={errors.nit}
-                                    />
+                                    </p>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     <FormButtons

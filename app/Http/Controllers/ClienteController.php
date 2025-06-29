@@ -22,13 +22,12 @@ class ClienteController extends Controller
     {
         $search = $request->get('search', '');
         $estado = $request->get('estado', '');
-        $genero = $request->get('genero', '');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $perPage = (int) $request->get('per_page', 10);
 
         $query = Cliente::query()
-            ->with(['user', 'direccion'])
+            ->with(['user'])
             ->withCount('carritos')
             ->when($search, function ($query) use ($search) {
                 return $query->whereHas('user', function ($q) use ($search) {
@@ -42,9 +41,6 @@ class ClienteController extends Controller
                 return $query->whereHas('user', function ($q) use ($estado) {
                     $q->where('estado', $estado);
                 });
-            })
-            ->when($genero, function ($query) use ($genero) {
-                return $query->where('genero', $genero);
             });
 
         // Aplicar ordenamiento
@@ -65,18 +61,13 @@ class ClienteController extends Controller
                 'nombre' => $cliente->user->nombre ?? 'Sin nombre',
                 'email' => $cliente->user->email ?? 'Sin email',
                 'celular' => $cliente->user->celular,
-                'direccion' => $cliente->direccion?->direccion_completa ?? null,
-                'fecha_nacimiento' => $cliente->fecha_nacimiento?->format('Y-m-d'),
-                'genero' => $cliente->genero,
                 'estado' => $cliente->user->estado ?? 'inactivo',
                 'ventas_count' => $cliente->carritos_count ?? 0,
                 'created_at' => $cliente->created_at->toISOString(),
                 'updated_at' => $cliente->updated_at->toISOString(),
                 'nit' => $cliente->nit,
-                'telefono' => $cliente->telefono,
                 // Mantener las relaciones por si las necesitamos
                 'user' => $cliente->user,
-                'direccion_obj' => $cliente->direccion,
             ];
         });
 
@@ -85,7 +76,6 @@ class ClienteController extends Controller
             'filters' => [
                 'search' => $search,
                 'estado' => $estado,
-                'genero' => $genero,
                 'sort_by' => $sortBy,
                 'sort_order' => $sortOrder,
                 'per_page' => $perPage,
@@ -110,11 +100,8 @@ class ClienteController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'nit' => ['required', 'string', 'max:20', 'unique:clientes'],
-            'tipo_documento' => ['required', 'string', 'in:CC,CE,NIT,TI,PP'],
-            'direccion' => ['nullable', 'string', 'max:500'],
-            'telefono' => ['nullable', 'string', 'max:20'],
-            'ciudad' => ['nullable', 'string', 'max:100'],
+            'nit' => ['required', 'string', 'max:20', 'unique:cliente'],
+            'celular' => ['nullable', 'string', 'max:20'],
             'estado' => ['required', 'string', 'in:activo,inactivo'],
         ]);
 
@@ -126,6 +113,7 @@ class ClienteController extends Controller
                 'nombre' => $validated['nombre'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
+                'celular' => $validated['celular'],
                 'role' => 'user',
                 'estado' => $validated['estado'],
                 'email_verified_at' => now(),
@@ -135,10 +123,6 @@ class ClienteController extends Controller
             Cliente::create([
                 'user_id' => $user->id,
                 'nit' => $validated['nit'],
-                'tipo_documento' => $validated['tipo_documento'],
-                'direccion' => $validated['direccion'],
-                'telefono' => $validated['telefono'],
-                'ciudad' => $validated['ciudad'],
             ]);
 
             DB::commit();
@@ -184,10 +168,7 @@ class ClienteController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $cliente->user_id],
             'celular' => ['nullable', 'string', 'max:20'],
-            'nit' => ['nullable', 'string', 'max:20', 'unique:clientes,nit,' . $cliente->id],
-            'telefono' => ['nullable', 'string', 'max:20'],
-            'fecha_nacimiento' => ['nullable', 'date'],
-            'genero' => ['nullable', 'string', 'in:masculino,femenino,otro,prefiero_no_decir'],
+            'nit' => ['nullable', 'string', 'max:20', 'unique:cliente,nit,' . $cliente->id],
         ]);
 
         try {
@@ -203,9 +184,6 @@ class ClienteController extends Controller
             // Actualizar el cliente
             $cliente->update([
                 'nit' => $validated['nit'],
-                'telefono' => $validated['telefono'],
-                'fecha_nacimiento' => $validated['fecha_nacimiento'],
-                'genero' => $validated['genero'],
             ]);
 
             DB::commit();

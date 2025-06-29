@@ -15,9 +15,6 @@ interface Cliente {
     id: number;
     user: User;
     nit?: string;
-    telefono?: string;
-    fecha_nacimiento?: string;
-    genero?: string;
 }
 
 interface ClienteEditProps {
@@ -32,9 +29,6 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
         email: cliente.user.email,
         celular: cliente.user.celular || '',
         nit: cliente.nit || '',
-        telefono: cliente.telefono || '',
-        fecha_nacimiento: cliente.fecha_nacimiento || '',
-        genero: cliente.genero || '',
     });
 
     const submit = (e: FormEvent) => {
@@ -148,80 +142,6 @@ export default function ClienteEdit({ cliente }: ClienteEditProps) {
                                     adultos: '12345678-9 o CC 12345678',
                                 })}
                                 error={errors.nit}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
-                        <h2 className={`mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
-                            {getTextByMode({
-                                niños: '📞 Información de Contacto',
-                                jóvenes: '📞 Información Adicional',
-                                adultos: 'Información Adicional',
-                            })}
-                        </h2>
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <InputField
-                                label={getTextByMode({
-                                    niños: '📞 Teléfono fijo',
-                                    jóvenes: '📞 Teléfono fijo',
-                                    adultos: 'Teléfono fijo',
-                                })}
-                                type="tel"
-                                value={data.telefono}
-                                onChange={(e) => setData('telefono', e.target.value)}
-                                placeholder={getTextByMode({
-                                    niños: '📞 6012345678',
-                                    jóvenes: '601 234 5678',
-                                    adultos: '(601) 234-5678',
-                                })}
-                                error={errors.telefono}
-                            />
-
-                            <InputField
-                                label={getTextByMode({
-                                    niños: '🎂 Cumpleaños del amigo',
-                                    jóvenes: '🎂 Fecha de nacimiento',
-                                    adultos: 'Fecha de nacimiento',
-                                })}
-                                type="date"
-                                value={data.fecha_nacimiento}
-                                onChange={(e) => setData('fecha_nacimiento', e.target.value)}
-                                error={errors.fecha_nacimiento}
-                            />
-
-                            <SelectField
-                                label={getTextByMode({
-                                    niños: '🚻 Género del amigo',
-                                    jóvenes: '🚻 Género',
-                                    adultos: 'Género',
-                                })}
-                                value={data.genero}
-                                onChange={(e) => setData('genero', e.target.value)}
-                                placeholder={getTextByMode({
-                                    niños: '🤔 Elige una opción',
-                                    jóvenes: 'Seleccionar género',
-                                    adultos: 'Seleccione una opción',
-                                })}
-                                options={[
-                                    { value: 'masculino', label: getTextByMode({
-                                        niños: '👨 Niño',
-                                        jóvenes: '👨 Masculino',
-                                        adultos: 'Masculino',
-                                    })},
-                                    { value: 'femenino', label: getTextByMode({
-                                        niños: '👩 Niña',
-                                        jóvenes: '👩 Femenino',
-                                        adultos: 'Femenino',
-                                    })},
-                                    { value: 'otro', label: getTextByMode({
-                                        niños: '🧑 Otro',
-                                        jóvenes: '🧑 Otro',
-                                        adultos: 'Otro',
-                                    })}
-                                ]}
-                                containerClassName="sm:col-span-2"
-                                error={errors.genero}
                             />
                         </div>
                     </div>

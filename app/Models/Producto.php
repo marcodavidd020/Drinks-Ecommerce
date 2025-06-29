@@ -55,21 +55,21 @@ class Producto extends Model
     }
 
     /**
-     * Relación con Almacenes a través de ProductoInventario
+     * Relación con Almacenes a través de la tabla pivote producto_almacen
      */
     public function almacenes(): BelongsToMany
     {
-        return $this->belongsToMany(Almacen::class, 'producto_inventarios')
+        return $this->belongsToMany(Almacen::class, 'producto_almacen')
             ->withPivot('stock')
             ->withTimestamps();
     }
 
     /**
-     * Relación con ProductoInventario
+     * Relación con el modelo de la tabla pivote ProductoAlmacen
      */
-    public function inventarios(): HasMany
+    public function productoAlmacenes(): HasMany
     {
-        return $this->hasMany(ProductoInventario::class);
+        return $this->hasMany(ProductoAlmacen::class);
     }
 
     /**
@@ -119,7 +119,7 @@ class Producto extends Model
      */
     public function getStockTotalAttribute(): int
     {
-        return $this->inventarios()->sum('stock');
+        return $this->productoAlmacenes()->sum('stock');
     }
 
     /**
@@ -127,7 +127,7 @@ class Producto extends Model
      */
     public function getStockEnAlmacen(int $almacenId): int
     {
-        $inventario = $this->inventarios()->where('almacen_id', $almacenId)->first();
-        return $inventario ? $inventario->stock : 0;
+        $inventario = $this->productoAlmacenes()->where('almacen_id', $almacenId)->first();
+        return $inventario ? (int) $inventario->stock : 0;
     }
 }
