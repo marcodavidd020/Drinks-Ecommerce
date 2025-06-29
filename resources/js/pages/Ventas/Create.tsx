@@ -47,8 +47,13 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
     const { data, setData, post, processing, errors, reset } = useForm({
         fecha: fecha_actual,
         observaciones: '',
-        detalles: [] as any[],
-        completar_automaticamente: true,
+        detalles: [] as Array<{
+            producto_id: number;
+            cantidad: number;
+            precio_unitario: number;
+            total: number;
+        }>,
+        completar_automaticamente: true as boolean,
     });
 
     // Actualizar los productos filtrados cuando cambia el filtro de búsqueda
@@ -89,7 +94,7 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
         }));
 
         setData('detalles', detallesFormateados);
-    }, [detalles]);
+    }, [detalles, setData]);
 
     const agregarDetalle = () => {
         if (productoSeleccionado === '') {
@@ -253,7 +258,7 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
                                         id="completar_automaticamente"
                                         type="checkbox"
                                         checked={data.completar_automaticamente}
-                                        onChange={(e) => setData('completar_automaticamente', e.target.checked as any)}
+                                        onChange={(e) => setData('completar_automaticamente', e.target.checked)}
                                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                                     />
                                     <label
@@ -302,7 +307,7 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
                                         adultos: 'Seleccionar Producto',
                                     })}
                                     value={productoSeleccionado.toString()}
-                                    onChange={(e) => setProductoSeleccionado(e.target.value as any)}
+                                    onChange={(e) => setProductoSeleccionado(e.target.value === '' ? '' : Number(e.target.value))}
                                     placeholder="Seleccione un producto"
                                     options={productosFiltrados.map(producto => ({
                                         value: producto.id.toString(),
@@ -319,7 +324,6 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
                                         })}
                                         value={cantidad.toString()}
                                         onChange={(e) => setCantidad(parseInt(e.target.value) || 0)}
-                                        integerOnly
                                         min={1}
                                     />
 

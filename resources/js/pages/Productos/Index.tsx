@@ -23,8 +23,8 @@ interface Producto {
 interface ProductosIndexProps {
     productos: {
         data: Producto[];
-        links: any[];
-        meta?: any;
+        links: Array<{ url?: string; label: string; active: boolean }>;
+        meta?: Record<string, unknown>;
         total: number;
         from: number;
         to: number;

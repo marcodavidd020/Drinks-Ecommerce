@@ -10,7 +10,8 @@ import {
     Title,
     Tooltip,
     Legend,
-    Filler
+    Filler,
+    TooltipItem
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
@@ -27,9 +28,21 @@ ChartJS.register(
     Filler
 );
 
+interface ChartData {
+    labels: string[];
+    datasets: Array<{
+        label: string;
+        data: number[];
+        backgroundColor?: string | string[];
+        borderColor?: string | string[];
+        borderWidth?: number;
+        fill?: boolean;
+    }>;
+}
+
 interface ChartComparisonProps {
     title: string;
-    data: any;
+    data: ChartData;
     chartType: 'line' | 'bar' | 'doughnut';
     height?: number;
 }
@@ -66,26 +79,28 @@ export default function ChartComparison({
                 cornerRadius: 8,
                 displayColors: true,
                 callbacks: {
-                    label: function(context: any) {
+                    label: function(context: TooltipItem<'line' | 'bar' | 'doughnut'>) {
                         if (chartType === 'doughnut') {
-                            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                            const percentage = ((context.parsed * 100) / total).toFixed(1);
+                            const dataArray = context.dataset.data as number[];
+                            const total = dataArray.reduce((a: number, b: number) => a + b, 0);
+                            const currentValue = context.parsed as number;
+                            const percentage = ((currentValue * 100) / total).toFixed(1);
                             return `${context.label}: ${new Intl.NumberFormat('es-CO', {
                                 style: 'currency',
                                 currency: 'COP',
                                 minimumFractionDigits: 0
-                            }).format(context.parsed)} (${percentage}%)`;
+                            }).format(currentValue)} (${percentage}%)`;
                         } else {
                             let label = context.dataset.label || '';
                             if (label) {
                                 label += ': ';
                             }
-                            if (context.parsed.y !== null) {
+                            if ((context.parsed as {y: number}).y !== null) {
                                 label += new Intl.NumberFormat('es-CO', {
                                     style: 'currency',
                                     currency: 'COP',
                                     minimumFractionDigits: 0
-                                }).format(context.parsed.y);
+                                }).format((context.parsed as {y: number}).y);
                             }
                             return label;
                         }
@@ -100,13 +115,13 @@ export default function ChartComparison({
                     color: 'rgba(0, 0, 0, 0.1)',
                 },
                 ticks: {
-                    callback: function(value: any) {
+                    callback: function(value: string | number) {
                         return new Intl.NumberFormat('es-CO', {
                             style: 'currency',
                             currency: 'COP',
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0
-                        }).format(value);
+                        }).format(Number(value));
                     }
                 }
             },
@@ -130,8 +145,6 @@ export default function ChartComparison({
                 return <Line data={data} options={options} />;
         }
     };
-
-
 
     return (
         <div className="card card-adaptive p-6">

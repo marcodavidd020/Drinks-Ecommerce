@@ -16,8 +16,8 @@ interface Proveedor {
 interface ProveedoresIndexProps {
     proveedores: {
         data: Proveedor[];
-        links: any[];
-        meta?: any;
+        links: Array<{ url?: string; label: string; active: boolean }>;
+        meta?: Record<string, unknown>;
     };
     filters: {
         search: string;

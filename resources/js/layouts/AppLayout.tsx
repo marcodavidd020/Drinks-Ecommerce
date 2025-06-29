@@ -11,6 +11,10 @@ interface User {
   role?: string;
 }
 
+interface AuthProps {
+  user?: User;
+}
+
 interface AppLayoutProps {
   children: ReactNode;
   title?: string;
@@ -30,7 +34,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const { props } = usePage();
   
   // Obtener el usuario de las props de Inertia
-  const user = (props.auth as any)?.user as User | undefined;
+  const user = (props.auth as AuthProps)?.user;
 
   return (
     <div className="min-h-screen">

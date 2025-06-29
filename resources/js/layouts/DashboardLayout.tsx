@@ -11,6 +11,10 @@ interface User {
     role?: string;
 }
 
+interface AuthProps {
+    user?: User;
+}
+
 interface BreadcrumbItem {
     title: string;
     href?: string;
@@ -30,7 +34,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, head
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
     // Obtener el usuario de las props de Inertia
-    const user = (props.auth as any)?.user as User | undefined;
+    const user = (props.auth as AuthProps)?.user;
 
     const handleLogout = () => {
         router.post(

@@ -20,8 +20,8 @@ interface User {
 interface UsersIndexProps {
     users: {
         data: User[];
-        links: any[];
-        meta?: any;
+        links: Array<{ url?: string; label: string; active: boolean }>;
+        meta?: Record<string, unknown>;
     };
     allRoles: Role[];
     filters: {

@@ -39,7 +39,7 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
         fecha_inicio: '',
         fecha_fin: '',
         estado: 'activa',
-        productos: [] as any[],
+        productos: [] as ProductoSeleccionado[],
     });
 
     const productosFiltrados = productos.filter(producto =>

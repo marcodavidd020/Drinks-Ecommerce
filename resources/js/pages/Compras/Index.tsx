@@ -92,7 +92,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'ID',
                 adultos: 'ID',
             },
-            render: (value: any) => `#${value}`,
+            render: (value: unknown) => `#${value}`,
             sortable: true,
         },
         {
@@ -102,7 +102,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Fecha',
                 adultos: 'Fecha',
             },
-            render: (value: any) => formatDate(value),
+            render: (value: unknown) => formatDate(value as string),
             sortable: true,
         },
         {
@@ -112,7 +112,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Proveedor',
                 adultos: 'Proveedor',
             },
-            render: (_: any, item: any) => (
+            render: (_: unknown, item: unknown) => (
                 <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">
                         {(item as Compra).proveedor.nombre}
@@ -133,7 +133,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Productos',
                 adultos: 'Productos',
             },
-            render: (value: any) => `${value} ${value === 1 ? 'producto' : 'productos'}`,
+            render: (value: unknown) => `${value} ${value === 1 ? 'producto' : 'productos'}`,
             sortable: true,
         },
         {
@@ -143,7 +143,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Total',
                 adultos: 'Total',
             },
-            render: (value: any) => formatCurrency(value),
+            render: (value: unknown) => formatCurrency(value as number),
             sortable: true,
         },
         {
@@ -153,7 +153,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Estado',
                 adultos: 'Estado',
             },
-            render: (value: any) => getEstadoBadge(value),
+            render: (value: unknown) => getEstadoBadge(value as string),
             sortable: true,
         },
         {
@@ -163,7 +163,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Fecha Creación',
                 adultos: 'Fecha de Creación',
             },
-            render: (value: any) => new Date(value).toLocaleDateString(),
+            render: (value: unknown) => new Date(value as string).toLocaleDateString(),
             sortable: true,
         },
     ];

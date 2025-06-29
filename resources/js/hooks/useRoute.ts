@@ -1,6 +1,11 @@
 import { route as ziggyRoute } from 'ziggy-js';
 import { useCallback } from 'react';
 
+// Tipos para parámetros de rutas
+type RouteParams = Record<string, string | number>;
+type ZiggyDefaults = Record<string, unknown>;
+type ZiggyRoutes = Record<string, unknown>;
+
 // Declaración global para Ziggy
 declare global {
     interface Window {
@@ -8,8 +13,8 @@ declare global {
         Ziggy: {
             url: string;
             port: number | null;
-            defaults: Record<string, any>;
-            routes: Record<string, any>;
+            defaults: ZiggyDefaults;
+            routes: ZiggyRoutes;
         };
     }
 }
@@ -18,7 +23,7 @@ declare global {
  * Hook para usar las rutas de Laravel/Ziggy en React
  */
 export function useRoute() {
-    const route = useCallback((name: string, params?: any, absolute = true) => {
+    const route = useCallback((name: string, params?: RouteParams, absolute = true) => {
         // Usar la función global de Ziggy si está disponible
         if (window.route) {
             return window.route(name, params, absolute);
@@ -68,7 +73,7 @@ export type RouteNames =
 export function useTypedRoute() {
     const { route, current, has } = useRoute();
 
-    const typedRoute = useCallback((name: RouteNames, params?: any, absolute = true) => {
+    const typedRoute = useCallback((name: RouteNames, params?: RouteParams, absolute = true) => {
         return route(name, params, absolute);
     }, [route]);
 

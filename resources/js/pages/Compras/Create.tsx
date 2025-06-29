@@ -152,59 +152,59 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
                             jóvenes: 'Proveedor',
                             adultos: 'Proveedor',
                         })}
-                        value={data.proveedor_id}
-                        onChange={(e) => setData('proveedor_id', e.target.value)}
-                        error={errors.proveedor_id}
-                        required
-                    >
-                        <option value="">Selecciona un proveedor</option>
-                        {proveedores.map((proveedor) => (
-                            <option key={proveedor.id} value={proveedor.id}>
-                                {proveedor.nombre}
-                                {proveedor.email && ` (${proveedor.email})`}
-                            </option>
-                        ))}
-                    </SelectField>
+                                value={data.proveedor_id as string}
+        onChange={(e) => setData('proveedor_id', e.target.value)}
+        error={errors.proveedor_id}
+        required
+    >
+        <option value="">Selecciona un proveedor</option>
+        {proveedores.map((proveedor) => (
+            <option key={proveedor.id} value={proveedor.id}>
+                {proveedor.nombre}
+                {proveedor.email && ` (${proveedor.email})`}
+            </option>
+        ))}
+    </SelectField>
 
-                    <InputField
-                        label={getTextByMode({
-                            niños: '📅 Fecha',
-                            jóvenes: 'Fecha',
-                            adultos: 'Fecha de Compra',
-                        })}
-                        type="date"
-                        value={data.fecha}
-                        onChange={(e) => setData('fecha', e.target.value)}
-                        error={errors.fecha}
-                        required
-                    />
+    <InputField
+        label={getTextByMode({
+            niños: '📅 Fecha',
+            jóvenes: 'Fecha',
+            adultos: 'Fecha de Compra',
+        })}
+        type="date"
+        value={data.fecha as string}
+        onChange={(e) => setData('fecha', e.target.value)}
+        error={errors.fecha}
+        required
+    />
 
-                    <SelectField
-                        label={getTextByMode({
-                            niños: '📊 Estado',
-                            jóvenes: 'Estado',
-                            adultos: 'Estado',
-                        })}
-                        value={data.estado}
-                        onChange={(e) => setData('estado', e.target.value as any)}
-                        error={errors.estado}
-                        required
-                    >
-                        <option value="pendiente">Pendiente</option>
-                        <option value="recibida">Recibida</option>
-                        <option value="cancelada">Cancelada</option>
-                    </SelectField>
+    <SelectField
+        label={getTextByMode({
+            niños: '📊 Estado',
+            jóvenes: 'Estado',
+            adultos: 'Estado',
+        })}
+        value={data.estado as string}
+        onChange={(e) => setData('estado', e.target.value as any)}
+        error={errors.estado}
+        required
+    >
+        <option value="pendiente">Pendiente</option>
+        <option value="recibida">Recibida</option>
+        <option value="cancelada">Cancelada</option>
+    </SelectField>
 
-                    <div className="md:col-span-2">
-                        <TextareaField
-                            label={getTextByMode({
-                                niños: '📝 Observaciones',
-                                jóvenes: 'Observaciones',
-                                adultos: 'Observaciones',
-                            })}
-                            value={data.observaciones}
-                            onChange={(e) => setData('observaciones', e.target.value)}
-                            error={errors.observaciones}
+    <div className="md:col-span-2">
+        <TextareaField
+            label={getTextByMode({
+                niños: '📝 Observaciones',
+                jóvenes: 'Observaciones',
+                adultos: 'Observaciones',
+            })}
+            value={data.observaciones as string}
+            onChange={(e) => setData('observaciones', e.target.value)}
+            error={errors.observaciones}
                             rows={3}
                             placeholder="Observaciones adicionales sobre la compra..."
                         />
