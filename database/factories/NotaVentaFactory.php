@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\NotaVenta;
+use App\Models\Cliente;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Carbon\Carbon;
 

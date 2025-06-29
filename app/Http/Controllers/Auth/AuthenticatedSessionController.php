@@ -43,9 +43,6 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        // Sincronizar roles entre ambos sistemas
-        $user->sincronizarRoles();
-
         $request->session()->regenerate();
 
         // Redirigir según el rol del usuario
