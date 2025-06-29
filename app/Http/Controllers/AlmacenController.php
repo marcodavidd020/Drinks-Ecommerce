@@ -40,7 +40,7 @@ class AlmacenController extends Controller
         $perPage = $request->get('per_page', 10);
 
         // Construir la consulta
-        $query = Almacen::query()->withCount('inventarios as productos_count');
+        $query = Almacen::query()->withCount('productoAlmacenes as productos_count');
         
         // Aplicar filtros de búsqueda
         if ($search) {
@@ -128,7 +128,7 @@ class AlmacenController extends Controller
         }]);
         
         // Contar los productos relacionados
-        $productosCount = $almacen->inventarios()->count();
+        $productosCount = $almacen->productoAlmacenes()->count();
         
         // Log de productos
         Log::info('Productos encontrados:', [
@@ -204,7 +204,7 @@ class AlmacenController extends Controller
     public function destroy(Almacen $almacen)
     {
         // Verificar si tiene productos asociados
-        if ($almacen->inventarios()->count() > 0) {
+        if ($almacen->productoAlmacenes()->count() > 0) {
             return back()->with('error', 'No se puede eliminar el almacén porque tiene productos asociados.');
         }
         

@@ -49,21 +49,21 @@ class Almacen extends Model
     ];
 
     /**
-     * Relación con Productos a través de ProductoInventario
+     * Relación con Productos a través de la tabla pivote producto_almacen
      */
     public function productos(): BelongsToMany
     {
-        return $this->belongsToMany(Producto::class, 'producto_inventarios')
+        return $this->belongsToMany(Producto::class, 'producto_almacen')
             ->withPivot('stock')
             ->withTimestamps();
     }
 
     /**
-     * Relación con ProductoInventario
+     * Relación con el modelo de la tabla pivote ProductoAlmacen
      */
-    public function inventarios(): HasMany
+    public function productoAlmacenes(): HasMany
     {
-        return $this->hasMany(ProductoInventario::class);
+        return $this->hasMany(ProductoAlmacen::class);
     }
 
     /**
