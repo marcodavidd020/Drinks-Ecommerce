@@ -26,6 +26,7 @@ class NotaVenta extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'cliente_id',
         'pedido_id',
         'fecha',
         'total',
@@ -84,6 +85,15 @@ class NotaVenta extends Model
             'estado' => 'completada',
             'total' => $this->calcularTotal(),
         ]);
+    }
+
+    /**
+     * Relación con Cliente (N:1)
+     * Una nota de venta pertenece a un cliente
+     */
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'cliente_id');
     }
 
     /**

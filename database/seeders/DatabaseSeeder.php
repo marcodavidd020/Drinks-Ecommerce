@@ -26,10 +26,11 @@ class DatabaseSeeder extends Seeder
 
         // 2. Seeders de entidades base
         $this->call([
+            CategoriaSeeder::class,
             ProveedorSeeder::class,
         ]);
 
-        // 3. Seeders de productos y proveedores
+        // 3. Seeders de productos y almacenes
         $this->call([
             ProductoSeeder::class,
             InventarioSeeder::class,

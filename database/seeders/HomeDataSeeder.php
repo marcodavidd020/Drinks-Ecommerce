@@ -22,13 +22,8 @@ class HomeDataSeeder extends Seeder
      */
     public function run(): void
     {
-        // Limpiar datos existentes
-        DB::table('detalle_venta')->delete();
-        DB::table('nota_venta')->delete();
-        DB::table('producto_almacen')->delete();
-        DB::table('producto')->delete();
-        DB::table('categoria')->delete();
-        DB::table('promocion')->delete();
+        // No limpiar datos existentes para no interferir con otros seeders
+        // Solo crear datos adicionales si no existen
 
         // Crear categorías de bebidas
         $categorias = [
@@ -59,7 +54,10 @@ class HomeDataSeeder extends Seeder
         ];
 
         foreach ($categorias as $categoriaData) {
-            Categoria::create($categoriaData);
+            Categoria::firstOrCreate(
+                ['nombre' => $categoriaData['nombre']],
+                $categoriaData
+            );
         }
 
         // Obtener las categorías creadas
@@ -103,14 +101,17 @@ class HomeDataSeeder extends Seeder
         foreach ($productos as $index => $productoData) {
             $categoria = $categoriasCreadas->where('nombre', $productoData['categoria'])->first();
             
-            $producto = Producto::create([
-                'cod_producto' => 'BEB' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
-                'nombre' => $productoData['nombre'],
-                'descripcion' => 'Deliciosa bebida ' . strtolower($productoData['nombre']),
-                'precio_compra' => $productoData['precio_compra'],
-                'precio_venta' => $productoData['precio_venta'],
-                'categoria_id' => $categoria->id,
-            ]);
+            $codigoProducto = 'BEB' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+            $producto = Producto::firstOrCreate(
+                ['cod_producto' => $codigoProducto],
+                [
+                    'nombre' => $productoData['nombre'],
+                    'descripcion' => 'Deliciosa bebida ' . strtolower($productoData['nombre']),
+                    'precio_compra' => $productoData['precio_compra'],
+                    'precio_venta' => $productoData['precio_venta'],
+                    'categoria_id' => $categoria->id,
+                ]
+            );
 
             // Crear almacén principal si no existe
             $almacen = DB::table('almacen')->where('nombre', 'Almacén Principal')->first();
@@ -127,11 +128,15 @@ class HomeDataSeeder extends Seeder
             }
 
             // Crear inventario
-            ProductoAlmacen::create([
-                'producto_id' => $producto->id,
-                'almacen_id' => $almacenId,
-                'stock' => $productoData['stock'],
-            ]);
+            ProductoAlmacen::firstOrCreate(
+                [
+                    'producto_id' => $producto->id,
+                    'almacen_id' => $almacenId,
+                ],
+                [
+                    'stock' => $productoData['stock'],
+                ]
+            );
         }
 
         // Crear promociones de bebidas
@@ -157,7 +162,10 @@ class HomeDataSeeder extends Seeder
         ];
 
         foreach ($promociones as $promocionData) {
-            Promocion::create($promocionData);
+            Promocion::firstOrCreate(
+                ['nombre' => $promocionData['nombre']],
+                $promocionData
+            );
         }
 
         // Crear cliente demo si no existe

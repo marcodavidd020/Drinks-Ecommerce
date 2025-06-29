@@ -25,6 +25,7 @@ class NotaVentaFactory extends Factory
         $total = fake()->numberBetween(50000, 2000000);
         
         return [
+            'cliente_id' => Cliente::factory(),
             'fecha' => $fecha,
             'total' => $total,
             'estado' => fake()->randomElement(['pendiente', 'completada', 'cancelada']),

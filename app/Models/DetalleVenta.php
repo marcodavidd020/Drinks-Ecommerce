@@ -26,9 +26,8 @@ class DetalleVenta extends Model
      */
     protected $fillable = [
         'nota_venta_id',
-        'producto_id',
+        'producto_almacen_id',
         'cantidad',
-        'precio_unitario',
         'total',
     ];
 
@@ -38,7 +37,6 @@ class DetalleVenta extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'precio_unitario' => 'decimal:2',
         'total' => 'decimal:2',
     ];
 
@@ -51,22 +49,18 @@ class DetalleVenta extends Model
     }
 
     /**
-     * Relación con Producto
+     * Relación con ProductoAlmacen
      */
-    public function producto(): BelongsTo
+    public function productoAlmacen(): BelongsTo
     {
-        return $this->belongsTo(Producto::class);
+        return $this->belongsTo(ProductoAlmacen::class);
     }
 
     /**
-     * Calcular el total automáticamente
+     * Acceso al producto a través de ProductoAlmacen
      */
-    protected static function boot()
+    public function getProductoAttribute()
     {
-        parent::boot();
-
-        static::saving(function (DetalleVenta $detalle) {
-            $detalle->total = $detalle->cantidad * $detalle->precio_unitario;
-        });
+        return $this->productoAlmacen->producto ?? null;
     }
 }
