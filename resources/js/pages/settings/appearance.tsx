@@ -1,30 +1,38 @@
 import { Head } from '@inertiajs/react';
-
+import { useAppModeText } from '@/hooks/useAppModeText';
+import DashboardLayout from '@/layouts/DashboardLayout';
+import SettingsLayout from '@/layouts/settings/layout';
 import AppearanceTabs from '@/components/appearance-tabs';
 import HeadingSmall from '@/components/heading-small';
-import { type BreadcrumbItem } from '@/types';
-
-import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Appearance settings',
-        href: '/settings/appearance',
-    },
-];
 
 export default function Appearance() {
+    const { getTextByMode } = useAppModeText();
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Appearance settings" />
+        <DashboardLayout>
+            <Head title={getTextByMode({
+                niños: '🎨 Configuración de Apariencia',
+                jóvenes: '🎨 Appearance Settings',
+                adultos: 'Configuración de Apariencia'
+            })} />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
+                    <HeadingSmall 
+                        title={getTextByMode({
+                            niños: '🎨 ¡Personaliza tu App!',
+                            jóvenes: '🎨 Personalización',
+                            adultos: 'Configuración de Apariencia'
+                        })} 
+                        description={getTextByMode({
+                            niños: '¡Cambia los colores y fuentes para que la app se vea súper genial!',
+                            jóvenes: 'Personaliza la apariencia de tu interfaz',
+                            adultos: 'Configura la apariencia y el tema de la aplicación'
+                        })} 
+                    />
                     <AppearanceTabs />
                 </div>
             </SettingsLayout>
-        </AppLayout>
+        </DashboardLayout>
     );
 }

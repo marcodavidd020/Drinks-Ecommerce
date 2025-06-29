@@ -1,26 +1,20 @@
 import InputError from '@/components/input-error';
-import AppLayout from '@/layouts/app-layout';
+import DashboardLayout from '@/layouts/DashboardLayout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
+import { useAppModeText } from '@/hooks/useAppModeText';
 
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Password settings',
-        href: '/settings/password',
-    },
-];
-
 export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
+    const { getTextByMode } = useAppModeText();
 
     const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
         current_password: '',
@@ -49,16 +43,37 @@ export default function Password() {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Profile settings" />
+        <DashboardLayout>
+            <Head title={getTextByMode({
+                niños: '🔐 Cambiar Contraseña',
+                jóvenes: '🔐 Password Settings',
+                adultos: 'Configuración de Contraseña'
+            })} />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                    <HeadingSmall 
+                        title={getTextByMode({
+                            niños: '🔐 Cambiar tu Contraseña Secreta',
+                            jóvenes: '🔐 Actualizar Contraseña',
+                            adultos: 'Actualizar Contraseña'
+                        })} 
+                        description={getTextByMode({
+                            niños: '¡Asegúrate de usar una contraseña súper segura y difícil de adivinar!',
+                            jóvenes: 'Asegúrate de usar una contraseña larga y segura',
+                            adultos: 'Asegúrese de que su cuenta utilice una contraseña larga y aleatoria para mantenerse segura'
+                        })} 
+                    />
 
                     <form onSubmit={updatePassword} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="current_password">Current password</Label>
+                            <Label htmlFor="current_password">
+                                {getTextByMode({
+                                    niños: '🔑 Tu Contraseña Actual',
+                                    jóvenes: '🔑 Contraseña Actual',
+                                    adultos: 'Contraseña Actual'
+                                })}
+                            </Label>
 
                             <Input
                                 id="current_password"
@@ -68,14 +83,24 @@ export default function Password() {
                                 type="password"
                                 className="mt-1 block w-full"
                                 autoComplete="current-password"
-                                placeholder="Current password"
+                                placeholder={getTextByMode({
+                                    niños: 'Tu contraseña de ahora',
+                                    jóvenes: 'Contraseña actual',
+                                    adultos: 'Contraseña actual'
+                                })}
                             />
 
                             <InputError message={errors.current_password} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password">New password</Label>
+                            <Label htmlFor="password">
+                                {getTextByMode({
+                                    niños: '🆕 Nueva Contraseña Súper Segura',
+                                    jóvenes: '🆕 Nueva Contraseña',
+                                    adultos: 'Nueva Contraseña'
+                                })}
+                            </Label>
 
                             <Input
                                 id="password"
@@ -85,14 +110,24 @@ export default function Password() {
                                 type="password"
                                 className="mt-1 block w-full"
                                 autoComplete="new-password"
-                                placeholder="New password"
+                                placeholder={getTextByMode({
+                                    niños: 'Inventa una contraseña nueva',
+                                    jóvenes: 'Nueva contraseña',
+                                    adultos: 'Nueva contraseña'
+                                })}
                             />
 
                             <InputError message={errors.password} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">Confirm password</Label>
+                            <Label htmlFor="password_confirmation">
+                                {getTextByMode({
+                                    niños: '🔄 Repite tu Nueva Contraseña',
+                                    jóvenes: '🔄 Confirmar Contraseña',
+                                    adultos: 'Confirmar Nueva Contraseña'
+                                })}
+                            </Label>
 
                             <Input
                                 id="password_confirmation"
@@ -101,14 +136,24 @@ export default function Password() {
                                 type="password"
                                 className="mt-1 block w-full"
                                 autoComplete="new-password"
-                                placeholder="Confirm password"
+                                placeholder={getTextByMode({
+                                    niños: 'Escribe la misma contraseña otra vez',
+                                    jóvenes: 'Confirmar nueva contraseña',
+                                    adultos: 'Confirmar nueva contraseña'
+                                })}
                             />
 
                             <InputError message={errors.password_confirmation} />
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Save password</Button>
+                            <Button disabled={processing}>
+                                {getTextByMode({
+                                    niños: '💾 ¡Guardar Nueva Contraseña!',
+                                    jóvenes: '💾 Guardar Contraseña',
+                                    adultos: 'Guardar Contraseña'
+                                })}
+                            </Button>
 
                             <Transition
                                 show={recentlySuccessful}
@@ -117,12 +162,18 @@ export default function Password() {
                                 leave="transition ease-in-out"
                                 leaveTo="opacity-0"
                             >
-                                <p className="text-sm text-neutral-600">Saved</p>
+                                <p className="text-sm text-green-600">
+                                    {getTextByMode({
+                                        niños: '✅ ¡Contraseña cambiada!',
+                                        jóvenes: '✅ Contraseña actualizada',
+                                        adultos: '✅ Contraseña guardada exitosamente'
+                                    })}
+                                </p>
                             </Transition>
                         </div>
                     </form>
                 </div>
             </SettingsLayout>
-        </AppLayout>
+        </DashboardLayout>
     );
 }

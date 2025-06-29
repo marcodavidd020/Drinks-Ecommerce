@@ -5,26 +5,41 @@ import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
-
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: '/settings/profile',
-        icon: null,
-    },
-    {
-        title: 'Password',
-        href: '/settings/password',
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: '/settings/appearance',
-        icon: null,
-    },
-];
+import { useAppModeText } from '@/hooks/useAppModeText';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
+    const { getTextByMode } = useAppModeText();
+
+    const sidebarNavItems: NavItem[] = [
+        {
+            title: getTextByMode({
+                niños: '👤 Mi Perfil',
+                jóvenes: '👤 Perfil',
+                adultos: 'Perfil'
+            }),
+            href: '/settings/profile',
+            icon: null,
+        },
+        {
+            title: getTextByMode({
+                niños: '🔐 Contraseña',
+                jóvenes: '🔐 Contraseña',
+                adultos: 'Contraseña'
+            }),
+            href: '/settings/password',
+            icon: null,
+        },
+        {
+            title: getTextByMode({
+                niños: '🎨 Apariencia',
+                jóvenes: '🎨 Apariencia',
+                adultos: 'Apariencia'
+            }),
+            href: '/settings/appearance',
+            icon: null,
+        },
+    ];
+
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
         return null;
@@ -34,7 +49,18 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="px-4 py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
+            <Heading 
+                title={getTextByMode({
+                    niños: '⚙️ Configuración',
+                    jóvenes: '⚙️ Configuración',
+                    adultos: 'Configuración'
+                })} 
+                description={getTextByMode({
+                    niños: 'Cambia tu perfil y configuración de la cuenta',
+                    jóvenes: 'Administra tu perfil y configuración de cuenta',
+                    adultos: 'Administre su perfil y configuración de cuenta'
+                })} 
+            />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
@@ -45,9 +71,13 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 size="sm"
                                 variant="ghost"
                                 asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.href,
-                                })}
+                                className={cn(
+                                    'w-full justify-start transition-colors duration-200',
+                                    {
+                                        'bg-primary/10 text-primary font-medium': currentPath === item.href,
+                                        'hover:bg-muted/60': currentPath !== item.href,
+                                    }
+                                )}
                             >
                                 <Link href={item.href} prefetch>
                                     {item.title}
