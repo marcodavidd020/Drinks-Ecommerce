@@ -1,5 +1,3 @@
-
-
 interface InfoField {
     label: string;
     value: string | number | React.ReactNode;
@@ -13,9 +11,10 @@ interface InfoCardProps {
     columns?: 1 | 2 | 3;
     className?: string;
     children?: React.ReactNode;
+    actions?: React.ReactNode;
 }
 
-export default function InfoCard({ title, fields, columns = 2, className = '', children }: InfoCardProps) {
+export default function InfoCard({ title, fields, columns = 2, className = '', children, actions }: InfoCardProps) {
 
     const getGridClasses = () => {
         switch (columns) {
@@ -37,9 +36,16 @@ export default function InfoCard({ title, fields, columns = 2, className = '', c
 
     return (
         <div className={`rounded-lg bg-white p-6 shadow dark:bg-gray-800 ${className}`}>
-            <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {title}
-            </h2>
+            <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    {title}
+                </h2>
+                {actions && (
+                    <div className="flex items-center space-x-2">
+                        {actions}
+                    </div>
+                )}
+            </div>
 
             {children ? (
                 children

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Helpers\AuthHelper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,9 +32,50 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Verificar si el usuario está activo
+        if (!$user->estaActivo()) {
+            Auth::logout();
+            
+            return back()->withErrors([
+                'email' => 'Tu cuenta está inactiva. Contacta al administrador.',
+            ]);
+        }
+
+        // Sincronizar roles entre ambos sistemas
+        $user->sincronizarRoles();
+
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Redirigir según el rol del usuario
+        return $this->redirectByRole($user);
+    }
+
+    /**
+     * Redirigir según el rol del usuario
+     */
+    private function redirectByRole($user): RedirectResponse
+    {
+        $intended = request()->session()->get('url.intended');
+        
+        // Si hay una URL prevista, ir ahí
+        if ($intended) {
+            return redirect($intended);
+        }
+
+        // Verificar si puede acceder al dashboard
+        if (AuthHelper::canAccessDashboard() || AuthHelper::isAdmin() || AuthHelper::isGestion()) {
+            return redirect()->route('dashboard');
+        }
+
+        // Si es cliente, redirigir al home
+        if (AuthHelper::isCliente()) {
+            return redirect()->route('home');
+        }
+
+        // Por defecto al dashboard
+        return redirect()->route('dashboard');
     }
 
     /**

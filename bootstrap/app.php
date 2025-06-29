@@ -21,6 +21,17 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // Middleware personalizados para autorizaciones
+        $middleware->alias([
+            'admin.only' => \App\Http\Middleware\AdminOnly::class,
+            'can.manage.users' => \App\Http\Middleware\CanManageUsers::class,
+            'can.manage.products' => \App\Http\Middleware\CanManageProducts::class,
+            'can.manage.sales' => \App\Http\Middleware\CanManageSales::class,
+            'can.manage.promotions' => \App\Http\Middleware\CanManagePromotions::class,
+            'has.gestion.role' => \App\Http\Middleware\HasGestionRole::class,
+            'has.roles' => \App\Http\Middleware\HasRoles::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
