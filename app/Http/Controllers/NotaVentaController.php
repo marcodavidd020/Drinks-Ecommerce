@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\NotaVenta;
 use App\Models\DetalleVenta;
 use App\Models\Producto;
-use App\Models\ProductoInventario;
+use App\Models\ProductoAlmacen;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -97,13 +97,13 @@ class NotaVentaController extends Controller
     {
         // Obtener productos con stock disponible
         $productos = Producto::with(['categoria'])
-            ->whereHas('inventarios', function ($query) {
+            ->whereHas('productoAlmacenes', function ($query) {
                 $query->where('stock', '>', 0);
             })
             ->get()
             ->map(function ($producto) {
                 // Calcular stock total disponible entre todos los almacenes
-                $stockTotal = $producto->inventarios->sum('stock');
+                $stockTotal = $producto->productoAlmacenes->sum('stock');
                 
                 return [
                     'id' => $producto->id,
@@ -256,7 +256,7 @@ class NotaVentaController extends Controller
     private function reducirStock($productoId, $cantidad)
     {
         // Obtener los inventarios del producto ordenados por mayor stock primero
-        $inventarios = ProductoInventario::where('producto_id', $productoId)
+        $inventarios = ProductoAlmacen::where('producto_id', $productoId)
             ->where('stock', '>', 0)
             ->orderBy('stock', 'desc')
             ->get();
