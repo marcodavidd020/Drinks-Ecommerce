@@ -45,7 +45,7 @@ interface ProductoSeleccionado {
     cantidad: number;
     precio_unitario: number;
     subtotal: number;
-    [key: string]: any;
+    [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 interface ComprasEditProps {

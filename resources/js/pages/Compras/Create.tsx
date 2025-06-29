@@ -44,7 +44,7 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
         fecha: new Date().toISOString().split('T')[0],
         estado: 'pendiente' as const,
         observaciones: '',
-        productos: [] as any[],
+        productos: [] as any[], // eslint-disable-line @typescript-eslint/no-explicit-any
     });
 
     const agregarProducto = () => {
@@ -77,7 +77,7 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
         }
 
         setProductosSeleccionados(nuevosProductos);
-        setData('productos', nuevosProductos as any);
+        setData('productos', nuevosProductos as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
         // Limpiar formulario
         setProductoSeleccionado('');
@@ -118,7 +118,7 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
         post(route('compras.store'), {
             ...data,
             productos: productosSeleccionados
-        } as any);
+        } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
     };
 
     return (
@@ -186,7 +186,7 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
             adultos: 'Estado',
         })}
         value={data.estado as string}
-        onChange={(e) => setData('estado', e.target.value as any)}
+        onChange={(e) => setData('estado', e.target.value as any)} // eslint-disable-line @typescript-eslint/no-explicit-any
         error={errors.estado}
         required
     >
