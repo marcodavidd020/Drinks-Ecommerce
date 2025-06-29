@@ -7,7 +7,6 @@ import { FormEventHandler } from 'react';
 interface Permission {
     id: number;
     name: string;
-    label: string;
     guard_name: string;
 }
 
@@ -37,18 +36,18 @@ export default function PermissionEdit({ permission, groupedPermissions }: Permi
     return (
         <DashboardLayout
             title={getTextByMode({
-                niños: `🛡️ ¡Editar Permiso ${permission.label}!`,
-                jóvenes: `🛡️ Editar Permiso: ${permission.label}`,
-                adultos: `Editar Permiso: ${permission.label}`,
+                niños: `🛡️ ¡Editar Permiso ${permission.name}!`,
+                jóvenes: `🛡️ Editar Permiso: ${permission.name}`,
+                adultos: `Editar Permiso: ${permission.name}`,
             })}
         >
             <Head title={`Editar Permiso: ${permission.name}`} />
 
             <FormPage
                 title={getTextByMode({
-                    niños: `🛡️ ¡Editar Permiso ${permission.label}!`,
-                    jóvenes: `🛡️ Editar Permiso: ${permission.label}`,
-                    adultos: `Editar Permiso: ${permission.label}`,
+                    niños: `🛡️ ¡Editar Permiso ${permission.name}!`,
+                    jóvenes: `🛡️ Editar Permiso: ${permission.name}`,
+                    adultos: `Editar Permiso: ${permission.name}`,
                 })}
                 description={getTextByMode({
                     niños: isSystemPermission ? '¡Este súper poder es del sistema y no se puede cambiar!' : '¡Vamos a cambiar este súper poder!',
@@ -86,7 +85,6 @@ export default function PermissionEdit({ permission, groupedPermissions }: Permi
                                 </h3>
                                 <div className="mt-2 text-sm text-blue-700 dark:text-blue-300 space-y-1">
                                     <p><strong>Nombre actual:</strong> {permission.name}</p>
-                                    <p><strong>Etiqueta:</strong> {permission.label}</p>
                                     <p><strong>Guard:</strong> {permission.guard_name}</p>
                                 </div>
                             </div>

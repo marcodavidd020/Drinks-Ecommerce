@@ -45,70 +45,70 @@ export default function RoleShow({ role }: RoleShowProps) {
 
             <div className="space-y-6">
                 <ShowHeader
-                    title={{
+                    title={getTextByMode({
                         niños: `🎭 ${role.name}`,
                         jóvenes: `Rol: ${role.name}`,
                         adultos: `Detalles del Rol: ${role.name}`,
-                    }}
-                    description={{
+                    })}
+                    description={getTextByMode({
                         niños: '¡Aquí puedes ver todos los súper poderes de este rol!',
                         jóvenes: 'Información detallada del rol y sus permisos',
                         adultos: 'Información completa del rol del sistema y sus permisos asociados',
-                    }}
-                    editUrl={`/admin/roles/${role.id}/edit`}
-                    backUrl="/admin/roles"
-                    editText={{
+                    })}
+                    editHref={`/admin/roles/${role.id}/edit`}
+                    backHref="/admin/roles"
+                    editText={getTextByMode({
                         niños: '✏️ ¡Editar Rol!',
                         jóvenes: 'Editar Rol',
                         adultos: 'Editar Rol',
-                    }}
-                    backText={{
+                    })}
+                    backText={getTextByMode({
                         niños: '⬅️ Volver a Roles',
                         jóvenes: 'Volver a Roles',
                         adultos: 'Volver a Roles',
-                    }}
+                    })}
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Información básica */}
                     <div className="lg:col-span-1">
                         <InfoCard
-                            title={{
+                            title={getTextByMode({
                                 niños: '📋 Info del Rol',
                                 jóvenes: 'Información del Rol',
                                 adultos: 'Información del Rol',
-                            }}
-                            items={[
+                            })}
+                            fields={[
                                 {
-                                    label: {
+                                    label: getTextByMode({
                                         niños: '🎭 Nombre',
                                         jóvenes: 'Nombre',
                                         adultos: 'Nombre',
-                                    },
+                                    }),
                                     value: role.name,
                                 },
                                 {
-                                    label: {
+                                    label: getTextByMode({
                                         niños: '🛡️ Guardia',
                                         jóvenes: 'Guard Name',
                                         adultos: 'Guard Name',
-                                    },
+                                    }),
                                     value: role.guard_name,
                                 },
                                 {
-                                    label: {
+                                    label: getTextByMode({
                                         niños: '🔢 Total Permisos',
                                         jóvenes: 'Total de Permisos',
                                         adultos: 'Total de Permisos',
-                                    },
+                                    }),
                                     value: `${role.permissions.length} ${role.permissions.length === 1 ? 'permiso' : 'permisos'}`,
                                 },
                                 {
-                                    label: {
+                                    label: getTextByMode({
                                         niños: '📅 Creado',
                                         jóvenes: 'Fecha de Creación',
                                         adultos: 'Fecha de Creación',
-                                    },
+                                    }),
                                     value: new Date(role.created_at).toLocaleDateString('es-CO', {
                                         year: 'numeric',
                                         month: 'long',
@@ -118,11 +118,11 @@ export default function RoleShow({ role }: RoleShowProps) {
                                     }),
                                 },
                                 {
-                                    label: {
+                                    label: getTextByMode({
                                         niños: '📝 Actualizado',
                                         jóvenes: 'Última Actualización',
                                         adultos: 'Última Actualización',
-                                    },
+                                    }),
                                     value: new Date(role.updated_at).toLocaleDateString('es-CO', {
                                         year: 'numeric',
                                         month: 'long',
@@ -132,6 +132,7 @@ export default function RoleShow({ role }: RoleShowProps) {
                                     }),
                                 },
                             ]}
+                            columns={1}
                         />
                     </div>
 
