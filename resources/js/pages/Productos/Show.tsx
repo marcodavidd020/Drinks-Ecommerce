@@ -1,6 +1,6 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ShowHeader, InfoCard } from '@/components/Show';
 
 interface Producto {

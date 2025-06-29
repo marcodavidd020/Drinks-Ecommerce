@@ -170,7 +170,7 @@ export default function UsersIndex({ users, allRoles, filters }: UsersIndexProps
             type: 'select' as const,
             key: 'role',
             value: filters.role,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [
@@ -196,7 +196,7 @@ export default function UsersIndex({ users, allRoles, filters }: UsersIndexProps
             type: 'select' as const,
             key: 'estado',
             value: filters.estado,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [

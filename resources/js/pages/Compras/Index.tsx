@@ -1,5 +1,4 @@
 import { BaseIndex } from '@/components/DataTable';
-import { Head } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/currency';
 
 interface Proveedor {

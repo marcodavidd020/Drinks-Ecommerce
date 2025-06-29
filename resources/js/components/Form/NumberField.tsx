@@ -10,7 +10,6 @@ interface NumberFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputEleme
     containerClassName?: string;
     allowDecimals?: boolean;
     allowNegative?: boolean;
-    integerOnly?: boolean;
 }
 
 const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
@@ -21,7 +20,6 @@ const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
         containerClassName, 
         allowDecimals = false,
         allowNegative = false,
-        integerOnly,
         id, 
         step,
         min,

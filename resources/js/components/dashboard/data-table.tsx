@@ -1,4 +1,4 @@
-import { formatCurrency } from '@/lib/currency';
+
 
 interface Column {
     key: string;
@@ -14,7 +14,7 @@ interface Badge {
 interface DataTableProps {
     title: string;
     columns: Column[];
-    data: any[];
+    data: Record<string, unknown>[];
     emptyMessage: string;
     badge?: Badge;
 }
@@ -28,7 +28,7 @@ export default function DataTable({
 }: DataTableProps) {
     const validData = Array.isArray(data) ? data : [];
 
-    const formatValue = (value: any, format?: string) => {
+    const formatValue = (value: unknown, format?: string) => {
         if (!value) return '-';
         
         switch (format) {
@@ -42,7 +42,7 @@ export default function DataTable({
                 }).format(value);
             case 'number':
                 return new Intl.NumberFormat('es-CO').format(value);
-            case 'badge':
+            case 'badge': {
                 const badgeClass = value === 'completada' || value === 'resuelto' 
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                     : value === 'pendiente'
@@ -54,6 +54,7 @@ export default function DataTable({
                         {value}
                     </span>
                 );
+            }
             default:
                 return value;
         }

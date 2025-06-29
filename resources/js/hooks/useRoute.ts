@@ -29,7 +29,7 @@ export function useRoute() {
         return '#';
     }, []);
 
-    const current = useCallback((name?: string, params?: any) => {
+    const current = useCallback((name?: string) => {
         // Para dashboard, usar comparación simple con window.location
         return window.location.pathname.includes(name || '');
     }, []);
@@ -72,8 +72,8 @@ export function useTypedRoute() {
         return route(name, params, absolute);
     }, [route]);
 
-    const isCurrent = useCallback((name: RouteNames, params?: any) => {
-        return current(name, params);
+    const isCurrent = useCallback((name: RouteNames) => {
+        return current(name);
     }, [current]);
 
     const hasRoute = useCallback((name: RouteNames) => {

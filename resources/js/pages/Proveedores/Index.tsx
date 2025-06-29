@@ -148,7 +148,7 @@ export default function ProveedoresIndex({ proveedores, filters }: ProveedoresIn
         {
             type: 'select' as const,
             value: filters.tipo,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [
@@ -181,7 +181,7 @@ export default function ProveedoresIndex({ proveedores, filters }: ProveedoresIn
         {
             type: 'select' as const,
             value: filters.estado,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [

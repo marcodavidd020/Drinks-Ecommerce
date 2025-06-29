@@ -1,7 +1,6 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import { Link } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/currency';
-import { Button } from '@/components/ui/button';
 
 interface Producto {
     id: number;
@@ -26,7 +25,7 @@ interface ProductsFeaturedProps {
     subtitle?: string;
 }
 
-export default function ProductsFeatured({ productos, title, subtitle }: ProductsFeaturedProps) {
+export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
     const { settings } = useAppMode();
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {

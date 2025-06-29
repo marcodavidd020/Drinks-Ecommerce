@@ -34,7 +34,7 @@ interface VentasIndexProps {
     };
 }
 
-export default function VentasIndex({ ventas, estadisticas, filters }: VentasIndexProps) {
+export default function VentasIndex({ ventas, filters }: VentasIndexProps) {
     const formatDate = (dateString: string) => {
         if (!dateString) return 'Fecha no disponible';
         const date = new Date(dateString);
@@ -171,7 +171,7 @@ export default function VentasIndex({ ventas, estadisticas, filters }: VentasInd
             type: 'select' as const,
             key: 'estado',
             value: filters.estado,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [

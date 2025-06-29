@@ -196,7 +196,7 @@ export default function PromocionesIndex({ promociones, filters }: PromocionesIn
         {
             type: 'select' as const,
             value: filters.estado,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [

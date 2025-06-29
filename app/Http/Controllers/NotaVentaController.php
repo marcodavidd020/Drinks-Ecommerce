@@ -136,7 +136,6 @@ class NotaVentaController extends Controller
             'detalles' => 'required|array|min:1',
             'detalles.*.producto_id' => 'required|exists:productos,id',
             'detalles.*.cantidad' => 'required|integer|min:1',
-            'detalles.*.precio_unitario' => 'required|numeric|min:0',
             'detalles.*.total' => 'required|numeric|min:0',
         ]);
 
@@ -155,11 +154,28 @@ class NotaVentaController extends Controller
             
             // Crear los detalles de la venta
             foreach ($validated['detalles'] as $detalle) {
+                // Encontrar el ProductoAlmacen con stock disponible para este producto
+                $productoAlmacen = ProductoAlmacen::where('producto_id', $detalle['producto_id'])
+                    ->where('stock', '>=', $detalle['cantidad'])
+                    ->orderBy('stock', 'desc')
+                    ->first();
+                
+                if (!$productoAlmacen) {
+                    // Si no hay stock suficiente en un solo almacén, buscar el que tenga mayor stock
+                    $productoAlmacen = ProductoAlmacen::where('producto_id', $detalle['producto_id'])
+                        ->where('stock', '>', 0)
+                        ->orderBy('stock', 'desc')
+                        ->first();
+                }
+                
+                if (!$productoAlmacen) {
+                    throw new \Exception("No hay stock disponible para el producto ID: {$detalle['producto_id']}");
+                }
+                
                 DetalleVenta::create([
                     'nota_venta_id' => $notaVenta->id,
-                    'producto_id' => $detalle['producto_id'],
+                    'producto_almacen_id' => $productoAlmacen->id,
                     'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $detalle['precio_unitario'],
                     'total' => $detalle['total'],
                 ]);
                 
@@ -186,7 +202,7 @@ class NotaVentaController extends Controller
     public function show(NotaVenta $venta)
     {
         // Cargar las relaciones necesarias
-        $venta->load(['detalles.producto.categoria']);
+        $venta->load(['detalles.productoAlmacen.producto.categoria']);
         
         // Calcular totales adicionales
         $venta->setAttribute('total_productos', $venta->detalles->sum('cantidad'));
@@ -196,16 +212,15 @@ class NotaVentaController extends Controller
             return [
                 'id' => $detalle->id,
                 'producto' => [
-                    'id' => $detalle->producto->id,
-                    'nombre' => $detalle->producto->nombre,
-                    'cod_producto' => $detalle->producto->cod_producto,
-                    'categoria' => $detalle->producto->categoria ? [
-                        'id' => $detalle->producto->categoria->id,
-                        'nombre' => $detalle->producto->categoria->nombre,
+                    'id' => $detalle->productoAlmacen->producto->id,
+                    'nombre' => $detalle->productoAlmacen->producto->nombre,
+                    'cod_producto' => $detalle->productoAlmacen->producto->cod_producto,
+                    'categoria' => $detalle->productoAlmacen->producto->categoria ? [
+                        'id' => $detalle->productoAlmacen->producto->categoria->id,
+                        'nombre' => $detalle->productoAlmacen->producto->categoria->nombre,
                     ] : null,
                 ],
                 'cantidad' => $detalle->cantidad,
-                'precio_unitario' => $detalle->precio_unitario,
                 'total' => $detalle->total,
             ];
         });

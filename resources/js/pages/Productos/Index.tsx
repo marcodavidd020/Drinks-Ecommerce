@@ -168,7 +168,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
             type: 'select' as const,
             key: 'categoria',
             value: filters.categoria,
-            onChange: (value: string) => {
+            onChange: () => {
                 // Esta lógica se manejará en BaseIndex
             },
             options: [
