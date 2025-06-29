@@ -7,6 +7,9 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Categoria;
 use App\Models\Promocion;
+use App\Models\Carrito;
+use App\Models\DetalleCarrito;
+use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -14,6 +17,7 @@ use Inertia\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ProductoController extends Controller
 {
@@ -245,5 +249,289 @@ class ProductoController extends Controller
 
         return redirect()->route('productos.show', $producto)
             ->with('success', "Stock actualizado exitosamente. Stock anterior: {$stockAnterior}, Stock actual: {$nuevoStock}");
+    }
+
+    /**
+     * Mostrar producto para vista pública (sin autenticación)
+     */
+    public function showPublic(Producto $producto): Response
+    {
+        $producto->load(['categoria', 'productoAlmacenes.almacen']);
+
+        // Calcular stock total
+        $producto->stock_total = $producto->productoAlmacenes->sum('stock');
+
+        // Obtener promociones activas del producto
+        $promociones = Promocion::where('producto_id', $producto->id)
+            ->where('fecha_inicio', '<=', now())
+            ->where('fecha_fin', '>=', now())
+            ->get();
+
+        // Productos relacionados de la misma categoría
+        $productosRelacionados = Producto::where('categoria_id', $producto->categoria_id)
+            ->where('id', '!=', $producto->id)
+            ->with(['categoria', 'productoAlmacenes'])
+            ->limit(4)
+            ->get()
+            ->map(function ($prod) {
+                $prod->stock_total = $prod->productoAlmacenes->sum('stock');
+                return $prod;
+            });
+
+        return Inertia::render('ProductDetail', [
+            'producto' => $producto,
+            'promociones' => $promociones,
+            'productosRelacionados' => $productosRelacionados,
+            'isAuthenticated' => Auth::check(),
+            'carritoCount' => Auth::check() ? $this->getCarritoCount() : 0,
+        ]);
+    }
+
+    /**
+     * Mostrar carrito del usuario
+     */
+    public function carritoIndex(): Response
+    {
+        $cliente = $this->getCurrentCliente();
+        
+        if (!$cliente) {
+            return redirect()->route('home')->with('error', 'Debe completar su perfil de cliente para usar el carrito.');
+        }
+
+        $carrito = Carrito::where('cliente_id', $cliente->id)
+            ->where('estado', 'activo')
+            ->with(['detalles.producto.categoria'])
+            ->first();
+
+        $detalles = $carrito ? $carrito->detalles : collect();
+        $total = $carrito ? $carrito->calcularTotal() : 0;
+
+        return Inertia::render('Carrito/Index', [
+            'carrito' => $carrito,
+            'detalles' => $detalles,
+            'total' => $total,
+        ]);
+    }
+
+    /**
+     * Agregar producto al carrito
+     */
+    public function agregarAlCarrito(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'producto_id' => 'required|exists:producto,id',
+            'cantidad' => 'required|integer|min:1',
+        ]);
+
+        $cliente = $this->getCurrentCliente();
+        
+        if (!$cliente) {
+            return back()->with('error', 'Debe completar su perfil de cliente para agregar productos al carrito.');
+        }
+
+        $producto = Producto::findOrFail($validated['producto_id']);
+        
+        // Verificar stock disponible
+        $stockTotal = $producto->productoAlmacenes->sum('stock');
+        if ($stockTotal < $validated['cantidad']) {
+            return back()->with('error', 'No hay suficiente stock disponible.');
+        }
+
+        // Obtener o crear carrito activo
+        $carrito = Carrito::firstOrCreate(
+            [
+                'cliente_id' => $cliente->id,
+                'estado' => 'activo',
+            ],
+            [
+                'fecha' => now(),
+                'total' => 0,
+            ]
+        );
+
+        // Verificar si el producto ya está en el carrito
+        $detalleExistente = DetalleCarrito::where('carrito_id', $carrito->id)
+            ->where('producto_id', $producto->id)
+            ->first();
+
+        if ($detalleExistente) {
+            // Actualizar cantidad
+            $nuevaCantidad = $detalleExistente->cantidad + $validated['cantidad'];
+            
+            if ($stockTotal < $nuevaCantidad) {
+                return back()->with('error', 'No hay suficiente stock para la cantidad solicitada.');
+            }
+            
+            $detalleExistente->update([
+                'cantidad' => $nuevaCantidad,
+                'precio_unitario' => $producto->precio_venta,
+            ]);
+        } else {
+            // Crear nuevo detalle
+            DetalleCarrito::create([
+                'carrito_id' => $carrito->id,
+                'producto_id' => $producto->id,
+                'cantidad' => $validated['cantidad'],
+                'precio_unitario' => $producto->precio_venta,
+                'subtotal' => $validated['cantidad'] * $producto->precio_venta,
+            ]);
+        }
+
+        // Actualizar total del carrito
+        $carrito->update(['total' => $carrito->calcularTotal()]);
+
+        return back()->with('success', 'Producto agregado al carrito exitosamente.');
+    }
+
+    /**
+     * Actualizar cantidad en el carrito
+     */
+    public function actualizarCarrito(Request $request, DetalleCarrito $detalleCarrito): RedirectResponse
+    {
+        $validated = $request->validate([
+            'cantidad' => 'required|integer|min:1',
+        ]);
+
+        $cliente = $this->getCurrentCliente();
+        
+        if (!$cliente || $detalleCarrito->carrito->cliente_id !== $cliente->id) {
+            return back()->with('error', 'No autorizado.');
+        }
+
+        // Verificar stock disponible
+        $stockTotal = $detalleCarrito->producto->productoAlmacenes->sum('stock');
+        if ($stockTotal < $validated['cantidad']) {
+            return back()->with('error', 'No hay suficiente stock disponible.');
+        }
+
+        $detalleCarrito->update([
+            'cantidad' => $validated['cantidad'],
+            'precio_unitario' => $detalleCarrito->producto->precio_venta,
+        ]);
+
+        // Actualizar total del carrito
+        $detalleCarrito->carrito->update(['total' => $detalleCarrito->carrito->calcularTotal()]);
+
+        return back()->with('success', 'Carrito actualizado exitosamente.');
+    }
+
+    /**
+     * Eliminar producto del carrito
+     */
+    public function eliminarDelCarrito(DetalleCarrito $detalleCarrito): RedirectResponse
+    {
+        $cliente = $this->getCurrentCliente();
+        
+        if (!$cliente || $detalleCarrito->carrito->cliente_id !== $cliente->id) {
+            return back()->with('error', 'No autorizado.');
+        }
+
+        $carrito = $detalleCarrito->carrito;
+        $detalleCarrito->delete();
+
+        // Actualizar total del carrito
+        $carrito->update(['total' => $carrito->calcularTotal()]);
+
+        return back()->with('success', 'Producto eliminado del carrito.');
+    }
+
+    /**
+     * Procesar checkout del carrito
+     */
+    public function checkout(Request $request): RedirectResponse
+    {
+        $cliente = $this->getCurrentCliente();
+        
+        if (!$cliente) {
+            return back()->with('error', 'Debe completar su perfil de cliente.');
+        }
+
+        $carrito = Carrito::where('cliente_id', $cliente->id)
+            ->where('estado', 'activo')
+            ->with('detalles.producto')
+            ->first();
+
+        if (!$carrito || $carrito->detalles->count() === 0) {
+            return back()->with('error', 'El carrito está vacío.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Crear nota de venta desde el carrito
+            $notaVenta = \App\Models\NotaVenta::create([
+                'cliente_id' => $cliente->id,
+                'fecha' => now(),
+                'total' => $carrito->total,
+                'estado' => 'pendiente',
+            ]);
+
+            // Crear detalles de venta
+            foreach ($carrito->detalles as $detalle) {
+                // Encontrar ProductoAlmacen con stock suficiente
+                $productoAlmacen = $detalle->producto->productoAlmacenes()
+                    ->where('stock', '>=', $detalle->cantidad)
+                    ->first();
+
+                if (!$productoAlmacen) {
+                    throw new \Exception("Sin stock suficiente para: {$detalle->producto->nombre}");
+                }
+
+                \App\Models\DetalleVenta::create([
+                    'nota_venta_id' => $notaVenta->id,
+                    'producto_almacen_id' => $productoAlmacen->id,
+                    'cantidad' => $detalle->cantidad,
+                    'subtotal' => $detalle->subtotal,
+                ]);
+
+                // Actualizar stock
+                $productoAlmacen->decrement('stock', $detalle->cantidad);
+            }
+
+            // Marcar carrito como completado
+            $carrito->update([
+                'estado' => 'completado',
+                'pedido_id' => $notaVenta->id,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('home')->with('success', 'Pedido realizado exitosamente. Su número de pedido es: ' . $notaVenta->id);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error en checkout: ' . $e->getMessage());
+            return back()->with('error', 'Error al procesar el pedido: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Obtener cliente actual del usuario autenticado
+     */
+    private function getCurrentCliente()
+    {
+        if (!Auth::check()) {
+            return null;
+        }
+
+        return Cliente::where('user_id', Auth::id())->first();
+    }
+
+    /**
+     * Obtener count de productos en carrito activo
+     */
+    private function getCarritoCount(): int
+    {
+        $cliente = $this->getCurrentCliente();
+        
+        if (!$cliente) {
+            return 0;
+        }
+
+        $carrito = Carrito::where('cliente_id', $cliente->id)
+            ->where('estado', 'activo')
+            ->first();
+
+        return $carrito ? $carrito->total_productos : 0;
     }
 }

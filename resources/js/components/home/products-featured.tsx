@@ -155,7 +155,7 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                     return (
                         <Link
                             key={producto.id}
-                            href={`/productos/${producto.id}`}
+                            href={`/product/${producto.id}`}
                             className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden transition-all duration-300 ${getHoverEffect()}`}
                         >
                             {/* Imagen del producto */}

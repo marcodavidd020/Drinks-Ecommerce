@@ -26,6 +26,9 @@ Route::get('/modes-demo', function () {
     return Inertia::render('ModesDemo');
 })->name('modes.demo');
 
+// Rutas públicas para productos (sin autenticación requerida)
+Route::get('/product/{producto}', [ProductoController::class, 'showPublic'])->name('product.show');
+
 // Dashboard - verificar permisos de manera flexible
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -33,6 +36,15 @@ Route::get('dashboard', [DashboardController::class, 'index'])
 
 // Rutas protegidas con autenticación
 Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Rutas de carrito para clientes autenticados
+    Route::prefix('carrito')->name('carrito.')->group(function () {
+        Route::get('/', [ProductoController::class, 'carritoIndex'])->name('index');
+        Route::post('/agregar', [ProductoController::class, 'agregarAlCarrito'])->name('agregar');
+        Route::patch('/actualizar/{detalleCarrito}', [ProductoController::class, 'actualizarCarrito'])->name('actualizar');
+        Route::delete('/eliminar/{detalleCarrito}', [ProductoController::class, 'eliminarDelCarrito'])->name('eliminar');
+        Route::post('/checkout', [ProductoController::class, 'checkout'])->name('checkout');
+    });
     
     // Gestión de usuarios - solo para admin y usuarios con permisos específicos
     Route::middleware(['can.manage.users'])->group(function () {
