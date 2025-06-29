@@ -72,50 +72,14 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         // Crear roles solo si no existen
-        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $clienteRole = Role::firstOrCreate(['name' => 'cliente']);
         $empleadoRole = Role::firstOrCreate(['name' => 'empleado']);
         $vendedorRole = Role::firstOrCreate(['name' => 'vendedor']);
         $almacenistaRole = Role::firstOrCreate(['name' => 'almacenista']);
 
-        // Asignar todos los permisos al super-admin
-        $superAdminRole->givePermissionTo(Permission::all());
-
-        // Asignar permisos al admin
-        $adminRole->givePermissionTo([
-            'crear-usuarios',
-            'editar-usuarios',
-            'ver-usuarios',
-            'crear-clientes',
-            'editar-clientes',
-            'ver-clientes',
-            'crear-administrativos',
-            'editar-administrativos',
-            'ver-administrativos',
-            'crear-productos',
-            'editar-productos',
-            'ver-productos',
-            'gestionar-inventario',
-            'crear-categorias',
-            'editar-categorias',
-            'ver-categorias',
-            'crear-proveedores',
-            'editar-proveedores',
-            'ver-proveedores',
-            'ver-ventas',
-            'ver-compras',
-            'responder-pqrs',
-            'ver-pqrs',
-            'crear-promociones',
-            'editar-promociones',
-            'ver-promociones',
-            'aprobar-ajustes-inventario',
-            'ver-ajustes-inventario',
-            'acceso-dashboard',
-            'ver-reportes',
-            'acceso-ecommerce',
-        ]);
+        // Asignar todos los permisos al admin
+        $adminRole->givePermissionTo(Permission::all());
 
         // Asignar permisos al cliente
         $clienteRole->givePermissionTo([

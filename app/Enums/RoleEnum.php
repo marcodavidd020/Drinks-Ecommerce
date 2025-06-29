@@ -131,6 +131,16 @@ enum RoleEnum: string
     }
 
     /**
+     * Obtiene los roles con acceso al dashboard
+     *
+     * @return array<RoleEnum>
+     */
+    public static function dashboardAccess(): array
+    {
+        return [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::CLIENTE];
+    }
+
+    /**
      * Obtiene los roles operativos
      *
      * @return array<RoleEnum>
