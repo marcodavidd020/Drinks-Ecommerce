@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Almacen;
 use App\Models\Producto;
-use App\Models\ProductoInventario;
+use App\Models\ProductoAlmacen;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -44,11 +44,11 @@ class InventarioController extends Controller
         $perPage = $request->get('per_page', 10);
 
         // Construir la consulta
-        $query = ProductoInventario::query()
+        $query = ProductoAlmacen::query()
             ->with(['producto.categoria', 'almacen'])
-            ->join('productos', 'producto_inventarios.producto_id', '=', 'productos.id')
-            ->join('almacenes', 'producto_inventarios.almacen_id', '=', 'almacenes.id')
-            ->select('producto_inventarios.*');
+            ->join('producto', 'producto_almacen.producto_id', '=', 'producto.id')
+            ->join('almacen', 'producto_almacen.almacen_id', '=', 'almacen.id')
+            ->select('producto_almacen.*');
         
         // Aplicar filtros de búsqueda
         if ($search) {
@@ -79,11 +79,11 @@ class InventarioController extends Controller
         
         // Aplicar ordenamiento
         if ($sortBy === 'producto.nombre') {
-            $query->orderBy('productos.nombre', $sortOrder);
+            $query->orderBy('producto.nombre', $sortOrder);
         } elseif ($sortBy === 'almacen.nombre') {
-            $query->orderBy('almacenes.nombre', $sortOrder);
+            $query->orderBy('almacen.nombre', $sortOrder);
         } else {
-            $query->orderBy("producto_inventarios.{$sortBy}", $sortOrder);
+            $query->orderBy("producto_almacen.{$sortBy}", $sortOrder);
         }
         
         // Ejecutar la consulta con paginación
@@ -129,13 +129,13 @@ class InventarioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'producto_id' => 'required|exists:productos,id',
-            'almacen_id' => 'required|exists:almacenes,id',
+            'producto_id' => 'required|exists:producto,id',
+            'almacen_id' => 'required|exists:almacen,id',
             'stock' => 'required|integer|min:0',
         ]);
         
         // Verificar si ya existe el registro
-        $inventario = ProductoInventario::where('producto_id', $validated['producto_id'])
+        $inventario = ProductoAlmacen::where('producto_id', $validated['producto_id'])
             ->where('almacen_id', $validated['almacen_id'])
             ->first();
             
@@ -146,7 +146,7 @@ class InventarioController extends Controller
             $mensaje = 'Stock actualizado exitosamente.';
         } else {
             // Crear nuevo registro
-            ProductoInventario::create($validated);
+            ProductoAlmacen::create($validated);
             $mensaje = 'Producto agregado al inventario exitosamente.';
         }
         
@@ -157,7 +157,7 @@ class InventarioController extends Controller
     /**
      * Mostrar la información de un registro de inventario específico.
      */
-    public function show(ProductoInventario $inventario)
+    public function show(ProductoAlmacen $inventario)
     {
         // Cargar las relaciones
         $inventario->load(['producto.categoria', 'almacen']);
@@ -202,7 +202,7 @@ class InventarioController extends Controller
     /**
      * Mostrar el formulario para editar un registro de inventario.
      */
-    public function edit(ProductoInventario $inventario)
+    public function edit(ProductoAlmacen $inventario)
     {
         // Cargar las relaciones
         $inventario->load(['producto', 'almacen']);
@@ -221,7 +221,7 @@ class InventarioController extends Controller
     /**
      * Actualizar la información de un registro de inventario.
      */
-    public function update(Request $request, ProductoInventario $inventario)
+    public function update(Request $request, ProductoAlmacen $inventario)
     {
         $validated = $request->validate([
             'stock' => 'required|integer|min:0',
@@ -236,7 +236,7 @@ class InventarioController extends Controller
     /**
      * Eliminar un registro de inventario.
      */
-    public function destroy(ProductoInventario $inventario)
+    public function destroy(ProductoAlmacen $inventario)
     {
         $inventario->delete();
         
@@ -247,70 +247,63 @@ class InventarioController extends Controller
     /**
      * Actualizar el stock de un producto en un almacén específico.
      */
-    public function updateStock(Request $request, ProductoInventario $inventario)
+    public function updateStock(Request $request, ProductoAlmacen $inventario)
     {
         $validated = $request->validate([
             'stock' => 'required|integer|min:0',
         ]);
-        
-        $inventario->stock = $validated['stock'];
-        $inventario->save();
-        
-        return back()->with('success', 'Stock actualizado exitosamente.');
+
+        $inventario->update(['stock' => $validated['stock']]);
+
+        return redirect()->back()
+            ->with('success', 'Stock actualizado correctamente.');
     }
     
     /**
-     * Transferir productos entre almacenes.
+     * Gestionar la transferencia de stock entre almacenes.
      */
     public function transferencia(Request $request)
     {
         $validated = $request->validate([
-            'producto_id' => 'required|exists:productos,id',
-            'almacen_origen_id' => 'required|exists:almacenes,id',
-            'almacen_destino_id' => 'required|exists:almacenes,id|different:almacen_origen_id',
+            'producto_id' => 'required|exists:producto,id',
+            'almacen_origen_id' => 'required|exists:almacen,id',
+            'almacen_destino_id' => 'required|exists:almacen,id|different:almacen_origen_id',
             'cantidad' => 'required|integer|min:1',
         ]);
-        
-        // Obtener inventario de origen
-        $origen = ProductoInventario::where('producto_id', $validated['producto_id'])
-            ->where('almacen_id', $validated['almacen_origen_id'])
-            ->first();
+
+        $productoId = $validated['producto_id'];
+        $origenId = $validated['almacen_origen_id'];
+        $destinoId = $validated['almacen_destino_id'];
+        $cantidad = $validated['cantidad'];
+
+        DB::transaction(function () use ($productoId, $origenId, $destinoId, $cantidad) {
+            // Verificar stock en origen
+            $inventarioOrigen = ProductoAlmacen::where('producto_id', $productoId)
+                ->where('almacen_id', $origenId)->lockForUpdate()->first();
+
+            if (!$inventarioOrigen || $inventarioOrigen->stock < $cantidad) {
+                throw new \Exception('Stock insuficiente en el almacén de origen.');
+            }
+
+            // Disminuir stock en origen
+            $inventarioOrigen->decrement('stock', $cantidad);
+
+            // Aumentar stock en destino
+            $inventarioDestino = ProductoAlmacen::where('producto_id', $productoId)
+                ->where('almacen_id', $destinoId)->first();
             
-        if (!$origen || $origen->stock < $validated['cantidad']) {
-            return back()->with('error', 'No hay suficiente stock en el almacén de origen.');
-        }
+            if ($inventarioDestino) {
+                $inventarioDestino->increment('stock', $cantidad);
+            } else {
+                ProductoAlmacen::create([
+                    'producto_id' => $productoId,
+                    'almacen_id' => $destinoId,
+                    'stock' => $cantidad,
+                ]);
+            }
+        });
         
-        // Obtener o crear inventario de destino
-        $destino = ProductoInventario::firstOrNew([
-            'producto_id' => $validated['producto_id'],
-            'almacen_id' => $validated['almacen_destino_id'],
-        ]);
-        
-        if (!$destino->exists) {
-            $destino->stock = 0;
-        }
-        
-        // Iniciar transacción
-        DB::beginTransaction();
-        
-        try {
-            // Restar del origen
-            $origen->stock -= $validated['cantidad'];
-            $origen->save();
-            
-            // Sumar al destino
-            $destino->stock += $validated['cantidad'];
-            $destino->save();
-            
-            DB::commit();
-            
-            return redirect()->route('inventarios.index')
-                ->with('success', 'Transferencia de productos realizada exitosamente.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error en transferencia de inventario: ' . $e->getMessage());
-            
-            return back()->with('error', 'Ocurrió un error al realizar la transferencia.');
-        }
+        return redirect()->route('inventarios.index')
+            ->with('success', 'Transferencia de stock realizada con éxito.');
     }
 } 
