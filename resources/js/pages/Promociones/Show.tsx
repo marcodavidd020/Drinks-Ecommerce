@@ -14,10 +14,6 @@ interface Producto {
     cod_producto: string;
     precio_venta: number;
     categoria?: Categoria;
-    pivot: {
-        descuento_porcentaje?: number;
-        descuento_fijo?: number;
-    };
 }
 
 interface Promocion {
@@ -25,10 +21,11 @@ interface Promocion {
     nombre: string;
     fecha_inicio: string;
     fecha_fin: string;
+    descuento: string;
+    descuento_porcentaje: number;
     estado: 'activa' | 'inactiva';
-    estado_calculado: 'activa' | 'inactiva' | 'pendiente' | 'vencida';
-    productos: Producto[];
-    productos_count: number;
+    estado_calculado?: 'activa' | 'inactiva' | 'pendiente' | 'vencida';
+    producto: Producto;
     created_at: string;
     updated_at: string;
 }
@@ -113,17 +110,15 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
         );
     };
 
-    const calcularPrecioConDescuento = (producto: Producto) => {
-        if (producto.pivot.descuento_porcentaje && producto.pivot.descuento_porcentaje > 0) {
-            return producto.precio_venta * (1 - producto.pivot.descuento_porcentaje / 100);
-        } else if (producto.pivot.descuento_fijo && producto.pivot.descuento_fijo > 0) {
-            return Math.max(0, producto.precio_venta - producto.pivot.descuento_fijo);
+    const calcularPrecioConDescuento = () => {
+        if (promocion.descuento_porcentaje && promocion.descuento_porcentaje > 0) {
+            return promocion.producto.precio_venta * (1 - promocion.descuento_porcentaje / 100);
         }
-        return producto.precio_venta;
+        return promocion.producto.precio_venta;
     };
 
-    const calcularAhorro = (producto: Producto) => {
-        return producto.precio_venta - calcularPrecioConDescuento(producto);
+    const calcularAhorro = () => {
+        return promocion.producto.precio_venta - calcularPrecioConDescuento();
     };
 
     return (
@@ -149,9 +144,9 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {getTextByMode({
-                                    niños: `¡Esta promoción tiene ${promocion.productos_count} productos con descuentos especiales!`,
-                                    jóvenes: `Promoción con ${promocion.productos_count} productos incluidos`,
-                                    adultos: `Promoción que incluye ${promocion.productos_count} productos con descuentos especiales`,
+                                    niños: `¡Esta promoción tiene un descuento del ${promocion.descuento_porcentaje}% para ${promocion.producto.nombre}!`,
+                                    jóvenes: `Promoción con ${promocion.descuento_porcentaje}% de descuento`,
+                                    adultos: `Promoción que incluye ${promocion.descuento_porcentaje}% de descuento para ${promocion.producto.nombre}`,
                                 })}
                             </p>
                         </div>
@@ -239,111 +234,90 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                         <div>
                             <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
                                 {getTextByMode({
-                                    niños: '📊 Productos incluidos',
-                                    jóvenes: 'Productos incluidos',
-                                    adultos: 'Productos Incluidos',
+                                    niños: '💰 Descuento',
+                                    jóvenes: 'Descuento',
+                                    adultos: 'Porcentaje de Descuento',
                                 })}
                             </dt>
                             <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                {promocion.productos_count} {promocion.productos_count === 1 ? 'producto' : 'productos'}
+                                {promocion.descuento_porcentaje}%
                             </dd>
                         </div>
                     </div>
                 </div>
 
-                {/* Lista de Productos */}
+                {/* Producto en Promoción */}
                 <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                     <h2 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
                         {getTextByMode({
-                            niños: '🛍️ Productos en Promoción',
-                            jóvenes: 'Productos Incluidos',
-                            adultos: 'Productos Incluidos en la Promoción',
+                            niños: '🛍️ Producto en Promoción',
+                            jóvenes: 'Producto Incluido',
+                            adultos: 'Producto Incluido en la Promoción',
                         })}
                     </h2>
 
-                    {promocion.productos.length > 0 ? (
-                        <div className="space-y-4">
-                            {promocion.productos.map((producto) => (
-                                <div key={producto.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                                                {producto.nombre}
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {producto.cod_producto}
-                                                {producto.categoria && ` | ${producto.categoria.nombre}`}
-                                            </p>
-                                        </div>
-                                        <div className="ml-4 text-right">
-                                            <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-                                                {formatCurrency(calcularPrecioConDescuento(producto))}
-                                            </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                                                {formatCurrency(producto.precio_venta)}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                        <div>
-                                            <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                                {getTextByMode({
-                                                    niños: '💰 Precio original',
-                                                    jóvenes: 'Precio original',
-                                                    adultos: 'Precio Original',
-                                                })}
-                                            </dt>
-                                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                                {formatCurrency(producto.precio_venta)}
-                                            </dd>
-                                        </div>
-
-                                        <div>
-                                            <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                                {getTextByMode({
-                                                    niños: '🎯 Descuento aplicado',
-                                                    jóvenes: 'Descuento aplicado',
-                                                    adultos: 'Descuento Aplicado',
-                                                })}
-                                            </dt>
-                                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                                {producto.pivot.descuento_porcentaje
-                                                    ? `${producto.pivot.descuento_porcentaje}%`
-                                                    : formatCurrency(producto.pivot.descuento_fijo || 0)}
-                                            </dd>
-                                        </div>
-
-                                        <div>
-                                            <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                                {getTextByMode({
-                                                    niños: '💸 Ahorro total',
-                                                    jóvenes: 'Ahorro total',
-                                                    adultos: 'Ahorro Total',
-                                                })}
-                                            </dt>
-                                            <dd className="mt-1 text-sm font-semibold text-green-600 dark:text-green-400">
-                                                {formatCurrency(calcularAhorro(producto))}
-                                            </dd>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-8">
-                            <div className="text-4xl mb-2">
-                                {settings.ageMode === 'niños' ? '😔' : '🛍️'}
+                    <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                                    {promocion.producto.nombre}
+                                </h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {promocion.producto.cod_producto}
+                                    {promocion.producto.categoria && ` | ${promocion.producto.categoria.nombre}`}
+                                </p>
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400">
-                                {getTextByMode({
-                                    niños: '¡Esta promoción no tiene productos todavía!',
-                                    jóvenes: 'No hay productos en esta promoción',
-                                    adultos: 'Esta promoción no tiene productos asociados',
-                                })}
-                            </p>
+                            <div className="ml-4 text-right">
+                                <div className="text-lg font-semibold text-green-600 dark:text-green-400">
+                                    {formatCurrency(calcularPrecioConDescuento())}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                                    {formatCurrency(promocion.producto.precio_venta)}
+                                </div>
+                            </div>
                         </div>
-                    )}
+
+                        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div>
+                                <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                    {getTextByMode({
+                                        niños: '💰 Precio original',
+                                        jóvenes: 'Precio original',
+                                        adultos: 'Precio Original',
+                                    })}
+                                </dt>
+                                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {formatCurrency(promocion.producto.precio_venta)}
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                    {getTextByMode({
+                                        niños: '🎯 Descuento aplicado',
+                                        jóvenes: 'Descuento aplicado',
+                                        adultos: 'Descuento Aplicado',
+                                    })}
+                                </dt>
+                                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {promocion.descuento_porcentaje}%
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                    {getTextByMode({
+                                        niños: '💸 Ahorro total',
+                                        jóvenes: 'Ahorro total',
+                                        adultos: 'Ahorro Total',
+                                    })}
+                                </dt>
+                                <dd className="mt-1 text-sm font-semibold text-green-600 dark:text-green-400">
+                                    {formatCurrency(calcularAhorro())}
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Información de Auditoría */}

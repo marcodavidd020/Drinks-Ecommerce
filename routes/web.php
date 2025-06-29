@@ -12,6 +12,8 @@ use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\NotaVentaController;
 use App\Http\Controllers\NotaCompraController;
 use App\Http\Controllers\PromocionController;
+use App\Http\Controllers\RolController;
+use App\Http\Controllers\PermisoController;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -120,13 +122,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Rutas administrativas - solo para admin
     Route::middleware(['admin.only'])->group(function () {
-        Route::get('/admin/roles', function () {
-            return Inertia::render('Admin/Roles');
-        })->name('admin.roles');
+        Route::get('/admin/roles', [RolController::class, 'index'])->name('admin.roles.index');
+        Route::get('/admin/roles/create', [RolController::class, 'create'])->name('admin.roles.create');
+        Route::post('/admin/roles', [RolController::class, 'store'])->name('admin.roles.store');
+        Route::get('/admin/roles/{role}', [RolController::class, 'show'])->name('admin.roles.show');
+        Route::get('/admin/roles/{role}/edit', [RolController::class, 'edit'])->name('admin.roles.edit');
+        Route::put('/admin/roles/{role}', [RolController::class, 'update'])->name('admin.roles.update');
+        Route::patch('/admin/roles/{role}', [RolController::class, 'update']);
+        Route::delete('/admin/roles/{role}', [RolController::class, 'destroy'])->name('admin.roles.destroy');
 
-        Route::get('/admin/permissions', function () {
-            return Inertia::render('Admin/Permissions');
-        })->name('admin.permissions');
+        Route::get('/admin/permissions', [PermisoController::class, 'index'])->name('admin.permissions.index');
+        Route::get('/admin/permissions/create', [PermisoController::class, 'create'])->name('admin.permissions.create');
+        Route::post('/admin/permissions', [PermisoController::class, 'store'])->name('admin.permissions.store');
+        Route::get('/admin/permissions/{permission}', [PermisoController::class, 'show'])->name('admin.permissions.show');
+        Route::get('/admin/permissions/{permission}/edit', [PermisoController::class, 'edit'])->name('admin.permissions.edit');
+        Route::put('/admin/permissions/{permission}', [PermisoController::class, 'update'])->name('admin.permissions.update');
+        Route::patch('/admin/permissions/{permission}', [PermisoController::class, 'update']);
+        Route::delete('/admin/permissions/{permission}', [PermisoController::class, 'destroy'])->name('admin.permissions.destroy');
+        Route::post('/admin/permissions/sync', [PermisoController::class, 'syncPermissions'])->name('admin.permissions.sync');
+
+        // Mantener rutas legacy para compatibilidad
+        Route::get('/admin/roles', [RolController::class, 'index'])->name('admin.roles');
+        Route::get('/admin/permissions', [PermisoController::class, 'index'])->name('admin.permissions');
     });
 
     // Rutas para reportes - acceso para admin y organizador

@@ -1,4 +1,4 @@
-import { FormButtons, FormPage, InputField, SelectField, TextareaField, PriceField } from '@/components/Form';
+import { FormButtons, FormPage, InputField, SelectField, TextareaField, NumberField } from '@/components/Form';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
@@ -153,7 +153,7 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                     required
                                 />
 
-                                <PriceField
+                                <NumberField
                                     label={getTextByMode({
                                         niños: '💰 Descuento (%)',
                                         jóvenes: '💰 Porcentaje de Descuento',
@@ -163,6 +163,9 @@ export default function PromocionEdit({ promocion, productos }: PromocionEditPro
                                     onChange={(e) => setData('descuento', e.target.value)}
                                     placeholder="10"
                                     error={errors.descuento}
+                                    allowDecimals={true}
+                                    min="0"
+                                    max="100"
                                     required
                                 />
                             </div>

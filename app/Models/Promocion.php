@@ -59,4 +59,14 @@ class Promocion extends Model
         $hoy = now()->toDateString();
         return $hoy >= $this->fecha_inicio && $hoy <= $this->fecha_fin;
     }
+
+    /**
+     * Obtiene el porcentaje de descuento como número
+     */
+    public function getDescuentoPorcentajeAttribute(): float
+    {
+        // Extraer número del texto del descuento
+        preg_match('/(\d+(?:\.\d+)?)/', $this->descuento, $matches);
+        return isset($matches[1]) ? (float) $matches[1] : 0;
+    }
 }
