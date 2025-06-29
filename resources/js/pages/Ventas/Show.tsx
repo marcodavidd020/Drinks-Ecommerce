@@ -3,6 +3,7 @@ import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Categoria {
     id: number;
@@ -58,14 +59,6 @@ export default function VentaShow({ venta }: VentaShowProps) {
             default:
                 return 'font-classic text-adaptive-adult';
         }
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
     };
 
     const formatDate = (dateString: string) => {

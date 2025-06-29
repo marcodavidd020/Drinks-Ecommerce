@@ -1,4 +1,6 @@
 import { BaseIndex } from '@/components/DataTable';
+import { Head } from '@inertiajs/react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Proveedor {
     id: number;
@@ -46,14 +48,6 @@ interface ComprasIndexProps {
 }
 
 export default function ComprasIndex({ compras, proveedores, filters }: ComprasIndexProps) {
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };
-
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('es-CO', {
             year: 'numeric',
@@ -99,7 +93,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'ID',
                 adultos: 'ID',
             },
-            render: (id: number) => `#${id}`,
+            render: (value: any) => `#${value}`,
             sortable: true,
         },
         {
@@ -109,7 +103,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Fecha',
                 adultos: 'Fecha',
             },
-            render: (value: string) => formatDate(value),
+            render: (value: any) => formatDate(value),
             sortable: true,
         },
         {
@@ -119,14 +113,14 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Proveedor',
                 adultos: 'Proveedor',
             },
-            render: (proveedor: unknown, compra: Compra) => (
+            render: (_: any, item: any) => (
                 <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">
-                        {compra.proveedor.nombre}
+                        {(item as Compra).proveedor.nombre}
                     </div>
-                    {compra.proveedor.email && (
+                    {(item as Compra).proveedor.email && (
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {compra.proveedor.email}
+                            {(item as Compra).proveedor.email}
                         </div>
                     )}
                 </div>
@@ -140,7 +134,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Productos',
                 adultos: 'Productos',
             },
-            render: (count: number) => `${count} ${count === 1 ? 'producto' : 'productos'}`,
+            render: (value: any) => `${value} ${value === 1 ? 'producto' : 'productos'}`,
             sortable: true,
         },
         {
@@ -150,7 +144,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Total',
                 adultos: 'Total',
             },
-            render: (total: number) => formatCurrency(total),
+            render: (value: any) => formatCurrency(value),
             sortable: true,
         },
         {
@@ -160,7 +154,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Estado',
                 adultos: 'Estado',
             },
-            render: (estado: string) => getEstadoBadge(estado),
+            render: (value: any) => getEstadoBadge(value),
             sortable: true,
         },
         {
@@ -170,7 +164,7 @@ export default function ComprasIndex({ compras, proveedores, filters }: ComprasI
                 jóvenes: 'Fecha Creación',
                 adultos: 'Fecha de Creación',
             },
-            render: (value: string) => new Date(value).toLocaleDateString(),
+            render: (value: any) => new Date(value).toLocaleDateString(),
             sortable: true,
         },
     ];

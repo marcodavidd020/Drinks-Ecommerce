@@ -2,6 +2,7 @@ import { InfoCard, ShowHeader } from '@/components/Show';
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, Link } from '@inertiajs/react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Producto {
     id: number;
@@ -41,14 +42,6 @@ export default function CategoriaShow({ categoria }: CategoriaShowProps) {
             default:
                 return 'font-classic text-adaptive-adult';
         }
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
     };
 
     const formatDate = (dateString: string) => {

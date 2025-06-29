@@ -1,4 +1,5 @@
 import { BaseIndex } from '@/components/DataTable';
+import { formatCurrency } from '@/lib/currency';
 
 interface Venta {
     id: number;
@@ -34,14 +35,6 @@ interface VentasIndexProps {
 }
 
 export default function VentasIndex({ ventas, estadisticas, filters }: VentasIndexProps) {
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };
-
     const formatDate = (dateString: string) => {
         if (!dateString) return 'Fecha no disponible';
         const date = new Date(dateString);

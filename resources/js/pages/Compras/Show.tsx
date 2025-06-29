@@ -2,6 +2,7 @@ import { InfoCard, ShowHeader } from '@/components/Show';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head } from '@inertiajs/react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Producto {
     id: number;
@@ -46,14 +47,6 @@ interface ComprasShowProps {
 
 export default function ComprasShow({ compra }: ComprasShowProps) {
     const { getTextByMode } = useAppModeText();
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('es-CO', {

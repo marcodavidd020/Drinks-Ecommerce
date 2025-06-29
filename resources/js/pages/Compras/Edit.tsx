@@ -3,6 +3,7 @@ import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Proveedor {
     id: number;
@@ -86,18 +87,6 @@ export default function ComprasEdit({ compra, proveedores, productos }: ComprasE
         }));
         setProductosSeleccionados(productosIniciales);
     }, [compra.detalles]);
-
-    const formatCurrency = (amount: number) => {
-        // Verificar que amount es un número válido
-        if (isNaN(amount) || amount === null || amount === undefined) {
-            return '$0';
-        }
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(Number(amount));
-    };
 
     const agregarProducto = () => {
         if (!productoSeleccionado || cantidad <= 0 || precioUnitario <= 0) {

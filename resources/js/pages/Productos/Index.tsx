@@ -1,4 +1,5 @@
 import { BaseIndex } from '@/components/DataTable';
+import { formatCurrency } from '@/lib/currency';
 
 interface Categoria {
     id: number;
@@ -9,8 +10,8 @@ interface Producto {
     id: number;
     cod_producto: string;
     nombre: string;
-    precio_compra: number;
-    precio_venta: number;
+    precio_compra: number | string;
+    precio_venta: number | string;
     imagen?: string;
     descripcion?: string;
     categoria: Categoria;
@@ -43,14 +44,6 @@ interface ProductosIndexProps {
 }
 
 export default function ProductosIndex({ productos, categorias, filters }: ProductosIndexProps) {
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };
-
     const columns = [
         {
             key: 'imagen',
@@ -105,7 +98,7 @@ export default function ProductosIndex({ productos, categorias, filters }: Produ
                 jóvenes: 'Precio Venta',
                 adultos: 'Precio de Venta',
             },
-            render: (precio: number) => (
+            render: (precio: number | string) => (
                 <span className="font-semibold text-green-600 dark:text-green-400">
                     {formatCurrency(precio)}
                 </span>

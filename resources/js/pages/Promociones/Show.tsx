@@ -1,6 +1,7 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head } from '@inertiajs/react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Categoria {
     id: number;
@@ -52,14 +53,6 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
             default:
                 return 'font-classic text-adaptive-adult';
         }
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
     };
 
     const formatDate = (dateString: string) => {

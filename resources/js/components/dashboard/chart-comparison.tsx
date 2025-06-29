@@ -13,6 +13,7 @@ import {
     Filler
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { formatCurrency } from '@/lib/currency';
 
 ChartJS.register(
     CategoryScale,
@@ -130,6 +131,36 @@ export default function ChartComparison({
                 return <Line data={data} options={options} />;
         }
     };
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="rounded-lg border bg-background p-2 shadow-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                {label}
+                            </span>
+                            <span className="font-bold text-muted-foreground">
+                                {formatCurrency(payload[0].value)}
+                            </span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Promedio
+                            </span>
+                            <span className="font-bold text-muted-foreground">
+                                {formatCurrency(payload[1].value)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    const yAxisTickFormatter = (value: number) => formatCurrency(value);
 
     return (
         <div className="card card-adaptive p-6">

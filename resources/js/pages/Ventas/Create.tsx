@@ -4,6 +4,7 @@ import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEvent, useEffect, useState } from 'react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Categoria {
     id: number;
@@ -89,14 +90,6 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
 
         setData('detalles', detallesFormateados);
     }, [detalles]);
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };
 
     const agregarDetalle = () => {
         if (productoSeleccionado === '') {

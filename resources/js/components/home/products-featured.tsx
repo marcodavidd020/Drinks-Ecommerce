@@ -1,5 +1,7 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import { Link } from '@inertiajs/react';
+import { formatCurrency } from '@/lib/currency';
+import { Button } from '@/components/ui/button';
 
 interface Producto {
     id: number;
@@ -15,14 +17,16 @@ interface Producto {
     };
     stock_total: number;
     total_vendido?: number;
+    descuento?: number;
 }
 
 interface ProductsFeaturedProps {
     productos: Producto[];
     title: string;
+    subtitle?: string;
 }
 
-export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
+export default function ProductsFeatured({ productos, title, subtitle }: ProductsFeaturedProps) {
     const { settings } = useAppMode();
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
@@ -244,21 +248,11 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-col">
                                         <span className={`text-lg font-bold text-blue-600 dark:text-blue-400 ${getModeClasses()}`}>
-                                            {new Intl.NumberFormat('es-CO', {
-                                                style: 'currency',
-                                                currency: 'COP',
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0
-                                            }).format(producto.precio_venta)}
+                                            {formatCurrency(producto.precio_venta)}
                                         </span>
                                         {discount > 0 && (
                                             <span className={`text-xs text-gray-500 dark:text-gray-400 line-through ${getModeClasses()}`}>
-                                                {new Intl.NumberFormat('es-CO', {
-                                                    style: 'currency',
-                                                    currency: 'COP',
-                                                    minimumFractionDigits: 0,
-                                                    maximumFractionDigits: 0
-                                                }).format(producto.precio_compra)}
+                                                {formatCurrency(producto.precio_compra)}
                                             </span>
                                         )}
                                     </div>

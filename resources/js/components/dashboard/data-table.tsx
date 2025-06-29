@@ -1,3 +1,5 @@
+import { formatCurrency } from '@/lib/currency';
+
 interface Column {
     key: string;
     label: string;

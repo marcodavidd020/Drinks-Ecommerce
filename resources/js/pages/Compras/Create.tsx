@@ -3,6 +3,7 @@ import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
+import { formatCurrency } from '@/lib/currency';
 
 interface Proveedor {
     id: number;
@@ -31,8 +32,6 @@ interface ComprasCreateProps {
     productos: Producto[];
 }
 
-
-
 export default function ComprasCreate({ proveedores, productos }: ComprasCreateProps) {
     const { getTextByMode } = useAppModeText();
     const [productosSeleccionados, setProductosSeleccionados] = useState<ProductoSeleccionado[]>([]);
@@ -47,14 +46,6 @@ export default function ComprasCreate({ proveedores, productos }: ComprasCreateP
         observaciones: '',
         productos: [] as any[],
     });
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };
 
     const agregarProducto = () => {
         if (!productoSeleccionado || cantidad <= 0 || precioUnitario <= 0) {
