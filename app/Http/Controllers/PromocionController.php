@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Models\Promocion;
 use App\Models\Producto;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -18,7 +17,7 @@ class PromocionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Promocion::with(['productos.categoria']);
+        $query = Promocion::with('producto.categoria');
 
         // Filtros
         if ($request->filled('search')) {
@@ -52,7 +51,6 @@ class PromocionController extends Controller
 
         // Agregar datos computados
         $promociones->getCollection()->transform(function ($promocion) {
-            $promocion->productos_count = $promocion->productos->count();
             $promocion->estado_calculado = $this->calcularEstado($promocion);
             return $promocion;
         });
@@ -68,10 +66,7 @@ class PromocionController extends Controller
      */
     public function create()
     {
-        $productos = Producto::with('categoria')
-            ->orderBy('nombre')
-            ->get();
-
+        $productos = Producto::orderBy('nombre')->get();
         return Inertia::render('Promociones/Create', [
             'productos' => $productos,
         ]);
@@ -82,55 +77,19 @@ class PromocionController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'fecha_inicio' => 'required|date|after_or_equal:today',
             'fecha_fin' => 'required|date|after:fecha_inicio',
+            'descuento' => 'required|string|max:255',
+            'producto_id' => 'required|exists:producto,id',
             'estado' => 'required|in:activa,inactiva',
-            'productos' => 'required|array|min:1',
-            'productos.*.id' => 'required|exists:productos,id',
-            'productos.*.descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
-            'productos.*.descuento_fijo' => 'nullable|numeric|min:0',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        Promocion::create($validated);
 
-        // Validar que cada producto tenga al menos un tipo de descuento
-        foreach ($request->productos as $producto) {
-            if (empty($producto['descuento_porcentaje']) && empty($producto['descuento_fijo'])) {
-                return redirect()->back()
-                    ->withErrors(['productos' => 'Cada producto debe tener al menos un tipo de descuento.'])
-                    ->withInput();
-            }
-        }
-
-        try {
-            $promocion = Promocion::create([
-                'nombre' => $request->nombre,
-                'fecha_inicio' => $request->fecha_inicio,
-                'fecha_fin' => $request->fecha_fin,
-                'estado' => $request->estado,
-            ]);
-
-            // Asociar productos con sus descuentos
-            foreach ($request->productos as $producto) {
-                $promocion->productos()->attach($producto['id'], [
-                    'descuento_porcentaje' => $producto['descuento_porcentaje'] ?? null,
-                    'descuento_fijo' => $producto['descuento_fijo'] ?? null,
-                ]);
-            }
-
-            return redirect()->route('promociones.index')
-                ->with('success', 'Promoción creada exitosamente.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'Error al crear la promoción: ' . $e->getMessage()])
-                ->withInput();
-        }
+        return redirect()->route('promociones.index')
+            ->with('success', 'Promoción creada exitosamente.');
     }
 
     /**
@@ -138,9 +97,8 @@ class PromocionController extends Controller
      */
     public function show(Promocion $promocion)
     {
-        $promocion->load(['productos.categoria']);
+        $promocion->load('producto.categoria');
         $promocion->estado_calculado = $this->calcularEstado($promocion);
-        $promocion->productos_count = $promocion->productos->count();
 
         return Inertia::render('Promociones/Show', [
             'promocion' => $promocion,
@@ -152,26 +110,11 @@ class PromocionController extends Controller
      */
     public function edit(Promocion $promocion)
     {
-        $promocion->load(['productos.categoria']);
+        $promocion->load('producto');
+        $productos = Producto::orderBy('nombre')->get();
         
-        $productos = Producto::with('categoria')
-            ->orderBy('nombre')
-            ->get();
-
-        // Preparar los datos de la promoción con fechas formateadas
-        $promocionData = [
-            'id' => $promocion->id,
-            'nombre' => $promocion->nombre,
-            'fecha_inicio' => $promocion->fecha_inicio->format('Y-m-d'),
-            'fecha_fin' => $promocion->fecha_fin->format('Y-m-d'),
-            'estado' => $promocion->estado,
-            'productos' => $promocion->productos,
-            'created_at' => $promocion->created_at,
-            'updated_at' => $promocion->updated_at,
-        ];
-
         return Inertia::render('Promociones/Edit', [
-            'promocion' => $promocionData,
+            'promocion' => $promocion,
             'productos' => $productos,
         ]);
     }
@@ -181,58 +124,19 @@ class PromocionController extends Controller
      */
     public function update(Request $request, Promocion $promocion)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after:fecha_inicio',
+            'descuento' => 'required|string|max:255',
+            'producto_id' => 'required|exists:producto,id',
             'estado' => 'required|in:activa,inactiva',
-            'productos' => 'required|array|min:1',
-            'productos.*.id' => 'required|exists:productos,id',
-            'productos.*.descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
-            'productos.*.descuento_fijo' => 'nullable|numeric|min:0',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        $promocion->update($validated);
 
-        // Validar que cada producto tenga al menos un tipo de descuento
-        foreach ($request->productos as $producto) {
-            if (empty($producto['descuento_porcentaje']) && empty($producto['descuento_fijo'])) {
-                return redirect()->back()
-                    ->withErrors(['productos' => 'Cada producto debe tener al menos un tipo de descuento.'])
-                    ->withInput();
-            }
-        }
-
-        try {
-            $promocion->update([
-                'nombre' => $request->nombre,
-                'fecha_inicio' => $request->fecha_inicio,
-                'fecha_fin' => $request->fecha_fin,
-                'estado' => $request->estado,
-            ]);
-
-            // Sincronizar productos con sus descuentos
-            $productosSync = [];
-            foreach ($request->productos as $producto) {
-                $productosSync[$producto['id']] = [
-                    'descuento_porcentaje' => $producto['descuento_porcentaje'] ?? null,
-                    'descuento_fijo' => $producto['descuento_fijo'] ?? null,
-                ];
-            }
-            
-            $promocion->productos()->sync($productosSync);
-
-            return redirect()->route('promociones.index')
-                ->with('success', 'Promoción actualizada exitosamente.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'Error al actualizar la promoción: ' . $e->getMessage()])
-                ->withInput();
-        }
+        return redirect()->route('promociones.index')
+            ->with('success', 'Promoción actualizada exitosamente.');
     }
 
     /**
@@ -240,34 +144,33 @@ class PromocionController extends Controller
      */
     public function destroy(Promocion $promocion)
     {
-        try {
-            $promocion->delete();
-            
-            return redirect()->route('promociones.index')
-                ->with('success', 'Promoción eliminada exitosamente.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'Error al eliminar la promoción: ' . $e->getMessage()]);
-        }
+        $promocion->delete();
+        
+        return redirect()->route('promociones.index')
+            ->with('success', 'Promoción eliminada exitosamente.');
     }
 
     /**
-     * Calcular el estado real de una promoción
+     * Calcula el estado de una promoción.
      */
-    private function calcularEstado(promocion $promocion): string
+    private function calcularEstado(Promocion $promocion): string
     {
+        $hoy = now();
+        $inicio = Carbon::parse($promocion->fecha_inicio);
+        $fin = Carbon::parse($promocion->fecha_fin);
+
         if ($promocion->estado === 'inactiva') {
             return 'inactiva';
         }
 
-        $hoy = now()->toDateString();
-        
-        if ($hoy < $promocion->fecha_inicio) {
+        if ($hoy->lt($inicio)) {
             return 'pendiente';
-        } elseif ($hoy > $promocion->fecha_fin) {
-            return 'vencida';
-        } else {
-            return 'activa';
         }
+
+        if ($hoy->gt($fin)) {
+            return 'vencida';
+        }
+
+        return 'activa';
     }
 } 

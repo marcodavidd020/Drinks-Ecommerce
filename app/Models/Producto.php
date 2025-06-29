@@ -75,11 +75,9 @@ class Producto extends Model
     /**
      * Relación con Promociones
      */
-    public function promociones(): BelongsToMany
+    public function promociones(): HasMany
     {
-        return $this->belongsToMany(Promocion::class, 'promocion_productos')
-            ->withPivot('descuento_porcentaje', 'descuento_fijo')
-            ->withTimestamps();
+        return $this->hasMany(Promocion::class);
     }
 
     /**

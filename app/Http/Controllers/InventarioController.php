@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Almacen;
+use App\Models\Categoria;
 use App\Models\Producto;
 use App\Models\ProductoAlmacen;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class InventarioController extends Controller
 {
@@ -91,7 +92,7 @@ class InventarioController extends Controller
         
         // Obtener listado de almacenes y categorías para los filtros
         $almacenes = Almacen::select('id', 'nombre')->orderBy('nombre')->get();
-        $categorias = DB::table('categorias')->select('id', 'nombre')->orderBy('nombre')->get();
+        $categorias = Categoria::select('id', 'nombre')->orderBy('nombre')->get();
         
         // Renderizar la vista
         return Inertia::render('Inventarios/Index', [
@@ -252,9 +253,9 @@ class InventarioController extends Controller
         $validated = $request->validate([
             'stock' => 'required|integer|min:0',
         ]);
-
+        
         $inventario->update(['stock' => $validated['stock']]);
-
+        
         return redirect()->back()
             ->with('success', 'Stock actualizado correctamente.');
     }
@@ -270,7 +271,7 @@ class InventarioController extends Controller
             'almacen_destino_id' => 'required|exists:almacen,id|different:almacen_origen_id',
             'cantidad' => 'required|integer|min:1',
         ]);
-
+        
         $productoId = $validated['producto_id'];
         $origenId = $validated['almacen_origen_id'];
         $destinoId = $validated['almacen_destino_id'];
@@ -281,7 +282,7 @@ class InventarioController extends Controller
             $inventarioOrigen = ProductoAlmacen::where('producto_id', $productoId)
                 ->where('almacen_id', $origenId)->lockForUpdate()->first();
 
-            if (!$inventarioOrigen || $inventarioOrigen->stock < $cantidad) {
+            if (! $inventarioOrigen || $inventarioOrigen->stock < $cantidad) {
                 throw new \Exception('Stock insuficiente en el almacén de origen.');
             }
 
@@ -291,7 +292,7 @@ class InventarioController extends Controller
             // Aumentar stock en destino
             $inventarioDestino = ProductoAlmacen::where('producto_id', $productoId)
                 ->where('almacen_id', $destinoId)->first();
-            
+
             if ($inventarioDestino) {
                 $inventarioDestino->increment('stock', $cantidad);
             } else {
@@ -302,7 +303,7 @@ class InventarioController extends Controller
                 ]);
             }
         });
-        
+
         return redirect()->route('inventarios.index')
             ->with('success', 'Transferencia de stock realizada con éxito.');
     }

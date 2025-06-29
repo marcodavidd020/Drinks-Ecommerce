@@ -6,7 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Promocion extends Model
 {
@@ -44,13 +44,11 @@ class Promocion extends Model
     ];
 
     /**
-     * Relación con Productos
+     * Relación con Producto
      */
-    public function productos(): BelongsToMany
+    public function producto(): BelongsTo
     {
-        return $this->belongsToMany(Producto::class, 'promocion_productos')
-            ->withPivot('descuento_porcentaje', 'descuento_fijo')
-            ->withTimestamps();
+        return $this->belongsTo(Producto::class);
     }
 
     /**
