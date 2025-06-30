@@ -38,12 +38,13 @@ class HomeController extends Controller
     {
         try {
             return [
-                'totalProductos' => DB::table('productos')->count(),
-                'totalCategorias' => DB::table('categorias')->count(),
-                'totalClientes' => DB::table('clientes')->count(),
-                'totalVentas' => DB::table('notas_venta')
+                'totalProductos' => DB::table('producto')->count(),
+                'totalCategorias' => DB::table('categoria')->count(),
+                'totalClientes' => DB::table('cliente')->count(),
+                'totalVentas' => DB::table('nota_venta')
                     ->where('estado', 'completada')
                     ->count(),
+                'totalPromociones' => DB::table('promocion')->count(),
             ];
         } catch (\Exception $e) {
             // Si hay error en las consultas, devolver valores por defecto
@@ -52,6 +53,7 @@ class HomeController extends Controller
                 'totalCategorias' => 0,
                 'totalClientes' => 0,
                 'totalVentas' => 0,
+                'totalPromociones' => 0,
             ];
         }
     }
@@ -59,24 +61,24 @@ class HomeController extends Controller
     private function getCategorias()
     {
         try {
-            return DB::table('categorias')
-                ->leftJoin('productos', 'categorias.id', '=', 'productos.categoria_id')
+            return DB::table('categoria')
+                ->leftJoin('producto', 'categoria.id', '=', 'producto.categoria_id')
                 ->select(
-                    'categorias.id',
-                    'categorias.nombre',
-                    'categorias.descripcion',
-                    DB::raw('COUNT(productos.id) as productos_count')
+                    'categoria.id',
+                    'categoria.nombre',
+                    'categoria.descripcion',
+                    DB::raw('COUNT(producto.id) as productos_count')
                 )
-                ->groupBy('categorias.id', 'categorias.nombre', 'categorias.descripcion')
-                ->orderBy('categorias.nombre')
+                ->groupBy('categoria.id', 'categoria.nombre', 'categoria.descripcion')
+                ->orderBy('categoria.nombre')
                 ->get()
                 ->toArray();
         } catch (\Exception $e) {
             return [
                 [
                     'id' => 1,
-                    'nombre' => 'Productos Generales',
-                    'descripcion' => 'Categoría general de productos',
+                    'nombre' => 'Bebidas Refrescantes',
+                    'descripcion' => 'Jugos, sodas y bebidas refrescantes',
                     'productos_count' => 0
                 ]
             ];
@@ -86,27 +88,27 @@ class HomeController extends Controller
     private function getProductosDestacados()
     {
         try {
-            return DB::table('productos')
-                ->leftJoin('categorias', 'productos.categoria_id', '=', 'categorias.id')
+            return DB::table('producto')
+                ->leftJoin('categoria', 'producto.categoria_id', '=', 'categoria.id')
                 ->leftJoin(
-                    DB::raw('(SELECT producto_id, SUM(stock) as stock_total FROM producto_inventarios GROUP BY producto_id) as inventario'),
-                    'productos.id',
+                    DB::raw('(SELECT producto_id, SUM(stock) as stock_total FROM producto_almacen GROUP BY producto_id) as inventario'),
+                    'producto.id',
                     '=',
                     'inventario.producto_id'
                 )
                 ->select(
-                    'productos.id',
-                    'productos.cod_producto',
-                    'productos.nombre',
-                    'productos.precio_compra',
-                    'productos.precio_venta',
-                    'productos.imagen',
-                    'productos.descripcion',
-                    'categorias.id as categoria_id',
-                    'categorias.nombre as categoria_nombre',
+                    'producto.id',
+                    'producto.cod_producto',
+                    'producto.nombre',
+                    'producto.precio_compra',
+                    'producto.precio_venta',
+                    'producto.imagen',
+                    'producto.descripcion',
+                    'categoria.id as categoria_id',
+                    'categoria.nombre as categoria_nombre',
                     DB::raw('COALESCE(inventario.stock_total, 0) as stock_total')
                 )
-                ->orderBy('productos.created_at', 'desc')
+                ->orderBy('producto.created_at', 'desc')
                 ->limit(8)
                 ->get()
                 ->map(function ($producto) {
@@ -133,39 +135,58 @@ class HomeController extends Controller
 
     private function getPromocionesActivas()
     {
-        return [];
+        try {
+            return DB::table('promocion')
+                ->leftJoin('producto', 'promocion.producto_id', '=', 'producto.id')
+                ->select(
+                    'promocion.id',
+                    'promocion.nombre',
+                    'promocion.fecha_inicio',
+                    'promocion.fecha_fin',
+                    'promocion.descuento',
+                    'producto.nombre as producto_nombre'
+                )
+                ->where('promocion.fecha_inicio', '<=', now())
+                ->where('promocion.fecha_fin', '>=', now())
+                ->limit(5)
+                ->get()
+                ->toArray();
+        } catch (\Exception $e) {
+            return [];
+        }
     }
 
     private function getProductosMasVendidos()
     {
         try {
-            return DB::table('productos')
-                ->leftJoin('categorias', 'productos.categoria_id', '=', 'categorias.id')
+            return DB::table('producto')
+                ->leftJoin('categoria', 'producto.categoria_id', '=', 'categoria.id')
                 ->leftJoin(
-                    DB::raw('(SELECT producto_id, SUM(stock) as stock_total FROM producto_inventarios GROUP BY producto_id) as inventario'),
-                    'productos.id',
+                    DB::raw('(SELECT producto_almacen_id, SUM(cantidad) as total_vendido FROM detalle_venta GROUP BY producto_almacen_id) as ventas'),
+                    'producto.id',
+                    '=',
+                    'ventas.producto_almacen_id'
+                )
+                ->leftJoin(
+                    DB::raw('(SELECT producto_id, SUM(stock) as stock_total FROM producto_almacen GROUP BY producto_id) as inventario'),
+                    'producto.id',
                     '=',
                     'inventario.producto_id'
                 )
-                ->leftJoin(
-                    DB::raw('(SELECT producto_id, SUM(cantidad) as total_vendido FROM detalle_ventas GROUP BY producto_id) as ventas'),
-                    'productos.id',
-                    '=',
-                    'ventas.producto_id'
-                )
                 ->select(
-                    'productos.id',
-                    'productos.cod_producto',
-                    'productos.nombre',
-                    'productos.precio_compra',
-                    'productos.precio_venta',
-                    'productos.imagen',
-                    'productos.descripcion',
-                    'categorias.id as categoria_id',
-                    'categorias.nombre as categoria_nombre',
+                    'producto.id',
+                    'producto.cod_producto',
+                    'producto.nombre',
+                    'producto.precio_compra',
+                    'producto.precio_venta',
+                    'producto.imagen',
+                    'producto.descripcion',
+                    'categoria.id as categoria_id',
+                    'categoria.nombre as categoria_nombre',
                     DB::raw('COALESCE(inventario.stock_total, 0) as stock_total'),
                     DB::raw('COALESCE(ventas.total_vendido, 0) as total_vendido')
                 )
+                ->having('total_vendido', '>', 0)
                 ->orderBy('total_vendido', 'desc')
                 ->limit(8)
                 ->get()
@@ -198,29 +219,29 @@ class HomeController extends Controller
         return [
             [
                 'id' => 1,
-                'cod_producto' => 'DEMO001',
-                'nombre' => 'Producto Demo 1',
+                'cod_producto' => 'BEB001',
+                'nombre' => 'Jugo de Naranja Natural 1L',
                 'precio_compra' => 15000,
                 'precio_venta' => 25000,
                 'imagen' => null,
-                'descripcion' => 'Este es un producto de demostración',
+                'descripcion' => 'Jugo natural de naranja recién exprimido',
                 'categoria' => [
                     'id' => 1,
-                    'nombre' => 'Demo'
+                    'nombre' => 'Jugos Naturales'
                 ],
                 'stock_total' => 50
             ],
             [
                 'id' => 2,
-                'cod_producto' => 'DEMO002',
-                'nombre' => 'Producto Demo 2',
-                'precio_compra' => 20000,
-                'precio_venta' => 35000,
+                'cod_producto' => 'BEB002',
+                'nombre' => 'Agua Mineral 500ml',
+                'precio_compra' => 8000,
+                'precio_venta' => 12000,
                 'imagen' => null,
-                'descripcion' => 'Otro producto de demostración',
+                'descripcion' => 'Agua mineral natural purificada',
                 'categoria' => [
-                    'id' => 1,
-                    'nombre' => 'Demo'
+                    'id' => 2,
+                    'nombre' => 'Aguas'
                 ],
                 'stock_total' => 25
             ]

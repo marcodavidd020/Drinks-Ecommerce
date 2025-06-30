@@ -31,16 +31,32 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'BebiFresh') }}</title>
+        <meta name="description" content="BebiFresh - Tu tienda de bebidas no alcohólicas favorita. Jugos naturales, sodas, aguas saborizadas y más bebidas refrescantes.">
+        <meta name="keywords" content="bebidas, jugos, sodas, agua, refrescos, no alcohólicas, naturales, BebiFresh">
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="BebiFresh - Tu Tienda de Bebidas Favorita">
+        <meta property="og:description" content="Descubre nuestra amplia selección de bebidas refrescantes: jugos naturales, sodas artesanales, aguas saborizadas y más.">
+        <meta property="og:image" content="{{ asset('images/bebifresh-og.jpg') }}">
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:title" content="BebiFresh - Tu Tienda de Bebidas Favorita">
+        <meta property="twitter:description" content="Bebidas refrescantes y deliciosas para todos los momentos.">
 
+        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Favicon -->
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
 
         @routes
+        @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @inertiaHead
     </head>
