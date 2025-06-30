@@ -7,7 +7,9 @@ namespace Database\Seeders;
 use App\Models\Administrativo;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class AdministrativoSeeder extends Seeder
 {
@@ -16,128 +18,105 @@ class AdministrativoSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuarios que serán administrativos
-        $administrativosData = [
+        $this->command->info('👨‍💼 Poblando Administrativos...');
+
+        // Crear usuarios administrativos específicos
+        $administrativos = [
             [
-                'nombre' => 'Roberto Sánchez',
-                'email' => 'roberto.sanchez@empresa.com',
-                'celular' => '+1234567800',
+                'nombre' => 'Juan Carlos Administrador',
+                'email' => 'admin@empresa.com',
+                'password' => Hash::make('admin123'),
+                'celular' => '+591 70123456',
                 'genero' => 'masculino',
-                'salario' => 3500.00,
-                'cargo' => 'Gerente General'
+                'estado' => 'activo',
+                'email_verified_at' => now(),
+                'admin_data' => [
+                    'cargo' => 'Administrador General',
+                    'salario' => 8500.00,
+                ],
+                'role' => 'admin'
             ],
             [
-                'nombre' => 'Carmen Jiménez',
-                'email' => 'carmen.jimenez@empresa.com',
-                'celular' => '+1234567801',
+                'nombre' => 'María Elena Gestora',
+                'email' => 'empleado1@empresa.com',
+                'password' => Hash::make('empleado123'),
+                'celular' => '+591 70234567',
                 'genero' => 'femenino',
-                'salario' => 3000.00,
-                'cargo' => 'Gerente de Ventas'
+                'estado' => 'activo',
+                'email_verified_at' => now(),
+                'admin_data' => [
+                    'cargo' => 'Jefe de Operaciones',
+                    'salario' => 6500.00,
+                ],
+                'role' => 'empleado'
             ],
             [
-                'nombre' => 'Diego Morales',
-                'email' => 'diego.morales@empresa.com',
-                'celular' => '+1234567802',
+                'nombre' => 'Carlos Organización',
+                'email' => 'organizador@empresa.com',
+                'password' => Hash::make('organizador123'),
+                'celular' => '+591 70345678',
                 'genero' => 'masculino',
-                'salario' => 2800.00,
-                'cargo' => 'Supervisor de Inventario'
-            ],
-            [
-                'nombre' => 'Patricia Ruiz',
-                'email' => 'patricia.ruiz@empresa.com',
-                'celular' => '+1234567803',
-                'genero' => 'femenino',
-                'salario' => 2500.00,
-                'cargo' => 'Coordinadora de Atención al Cliente'
-            ],
-            [
-                'nombre' => 'Miguel Torres',
-                'email' => 'miguel.torres@empresa.com',
-                'celular' => '+1234567804',
-                'genero' => 'masculino',
-                'salario' => 2200.00,
-                'cargo' => 'Asistente Administrativo'
+                'estado' => 'activo',
+                'email_verified_at' => now(),
+                'admin_data' => [
+                    'cargo' => 'Coordinador de Eventos',
+                    'salario' => 5500.00,
+                ],
+                'role' => 'organizador'
             ]
         ];
 
-        $empleadoRole = DB::table('rol')->where('nombre', 'empleado')->first();
-        $adminRole = DB::table('rol')->where('nombre', 'admin')->first();
-
-        foreach ($administrativosData as $administrativoData) {
+        foreach ($administrativos as $adminData) {
             // Verificar si el usuario ya existe
-            if (User::where('email', $administrativoData['email'])->exists()) {
-                continue;
-            }
-
-            // Crear el usuario
-            $user = User::create([
-                'nombre' => $administrativoData['nombre'],
-                'email' => $administrativoData['email'],
-                'celular' => $administrativoData['celular'],
-                'genero' => $administrativoData['genero'],
-                'password' => bcrypt('admin123'),
-                'estado' => 'activo',
-                'email_verified_at' => now(),
-            ]);
-
-            // Asignar rol apropiado
-            $roleToAssign = $empleadoRole;
-            if (str_contains(strtolower($administrativoData['cargo']), 'gerente')) {
-                $roleToAssign = $adminRole;
-            }
-
-            if ($roleToAssign) {
-                DB::table('user_rol')->insert([
+            $existingUser = User::where('email', $adminData['email'])->first();
+            
+            if (!$existingUser) {
+                // Crear usuario
+                $userData = $adminData;
+                unset($userData['admin_data'], $userData['role']);
+                
+                $user = User::create($userData);
+                
+                // Crear registro administrativo
+                Administrativo::create([
                     'user_id' => $user->id,
-                    'rol_id' => $roleToAssign->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'cargo' => $adminData['admin_data']['cargo'],
+                    'salario' => $adminData['admin_data']['salario'],
                 ]);
+                
+                // Asignar rol usando Spatie
+                $user->assignRole($adminData['role']);
+                
+                $this->command->info("   • Administrativo creado: {$user->nombre} ({$adminData['role']})");
+            } else {
+                $this->command->info("   • Usuario ya existe: {$adminData['email']}");
             }
+        }
 
-            // Crear el registro de administrativo
-            Administrativo::create([
-                'user_id' => $user->id,
-                'salario' => $administrativoData['salario'],
-                'cargo' => $administrativoData['cargo'],
+        // Crear administrativos adicionales con Factory
+        $roles = ['empleado', 'organizador'];
+        $cargos = [
+            'empleado' => ['Supervisor de Ventas', 'Jefe de Almacén', 'Contador', 'Asistente Administrativo'],
+            'organizador' => ['Coordinador de Marketing', 'Gestor de Eventos', 'Especialista en Promociones']
+        ];
+
+        for ($i = 0; $i < 8; $i++) {
+            $role = $roles[array_rand($roles)];
+            $cargo = $cargos[$role][array_rand($cargos[$role])];
+            
+            $user = User::factory()->create([
+                'estado' => 'activo'
             ]);
+            
+            Administrativo::factory()->create([
+                'user_id' => $user->id,
+                'cargo' => $cargo,
+            ]);
+            
+            // Asignar rol usando Spatie
+            $user->assignRole($role);
         }
 
-        // Crear algunos administrativos adicionales con factory (solo si no hay suficientes)
-        $totalAdministrativos = Administrativo::count();
-        $administrativosQueCrear = max(0, 12 - $totalAdministrativos); // Objetivo: 12 administrativos en total
-        
-        if ($administrativosQueCrear > 0) {
-            $cargos = [
-                'Analista de Sistemas',
-                'Contador',
-                'Auxiliar Contable',
-                'Recepcionista',
-                'Coordinador de Logística',
-                'Especialista en Marketing',
-                'Analista de Recursos Humanos'
-            ];
-
-            User::factory()
-                ->count($administrativosQueCrear)
-                ->create()
-                ->each(function (User $user, int $index) use ($cargos, $empleadoRole) {
-                    // Asignar rol de empleado
-                    if ($empleadoRole) {
-                        DB::table('user_rol')->insert([
-                            'user_id' => $user->id,
-                            'rol_id' => $empleadoRole->id,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-                    
-                    Administrativo::create([
-                        'user_id' => $user->id,
-                        'salario' => fake()->randomFloat(2, 1500, 4000),
-                        'cargo' => $cargos[$index] ?? 'Empleado General',
-                    ]);
-                });
-        }
+        $this->command->info('   ✅ Administrativos poblados correctamente');
     }
 }

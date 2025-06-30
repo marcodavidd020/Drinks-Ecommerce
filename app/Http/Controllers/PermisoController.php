@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Enums\PermissionEnum;
 
@@ -37,27 +38,21 @@ class PermisoController extends Controller
 
         // Transformar datos para incluir información adicional
         $permissions->getCollection()->transform(function ($permission) {
-            // Intentar obtener la etiqueta del enum si existe
-            $permissionEnum = PermissionEnum::tryFrom($permission->name);
-            $label = $permissionEnum ? $permissionEnum->label() : ucfirst(str_replace('-', ' ', $permission->name));
-            
             return [
                 'id' => $permission->id,
+                'nombre' => $permission->name, // Mapear name a nombre para consistencia
                 'name' => $permission->name,
-                'label' => $label,
                 'roles_count' => $permission->roles_count ?? 0,
                 'created_at' => $permission->created_at->toISOString(),
                 'updated_at' => $permission->updated_at->toISOString(),
                 'guard_name' => $permission->guard_name,
+                'category' => $this->getPermissionCategory($permission->name),
+                'is_system_permission' => $this->isSystemPermission($permission->name),
             ];
         });
 
-        // Obtener permisos agrupados para mostrar categorías
-        $groupedPermissions = PermissionEnum::groupedPermissions();
-
         return Inertia::render('Admin/Permissions', [
             'permissions' => $permissions,
-            'groupedPermissions' => $groupedPermissions,
             'filters' => [
                 'search' => $search,
                 'sort_by' => $sortBy,
@@ -72,11 +67,7 @@ class PermisoController extends Controller
      */
     public function create(): Response
     {
-        $groupedPermissions = PermissionEnum::groupedPermissions();
-
-        return Inertia::render('Admin/Permissions/Create', [
-            'groupedPermissions' => $groupedPermissions,
-        ]);
+        return Inertia::render('Admin/Permissions/Create');
     }
 
     /**
@@ -89,7 +80,6 @@ class PermisoController extends Controller
         ]);
 
         try {
-            // Crear el permiso
             Permission::create([
                 'name' => $validated['name'],
                 'guard_name' => 'web',
@@ -109,22 +99,21 @@ class PermisoController extends Controller
     {
         $permission->load('roles');
 
-        // Intentar obtener la etiqueta del enum si existe
-        $permissionEnum = PermissionEnum::tryFrom($permission->name);
-        $label = $permissionEnum ? $permissionEnum->label() : ucfirst(str_replace('-', ' ', $permission->name));
-
         return Inertia::render('Admin/Permissions/Show', [
             'permission' => [
                 'id' => $permission->id,
+                'nombre' => $permission->name, // Mapear para consistencia
                 'name' => $permission->name,
-                'label' => $label,
                 'guard_name' => $permission->guard_name,
                 'created_at' => $permission->created_at->toISOString(),
                 'updated_at' => $permission->updated_at->toISOString(),
+                'category' => $this->getPermissionCategory($permission->name),
+                'is_system_permission' => $this->isSystemPermission($permission->name),
                 'roles' => $permission->roles->map(function ($role) {
                     return [
                         'id' => $role->id,
                         'name' => $role->name,
+                        'nombre' => $role->name,
                         'guard_name' => $role->guard_name,
                     ];
                 }),
@@ -137,20 +126,14 @@ class PermisoController extends Controller
      */
     public function edit(Permission $permission): Response
     {
-        // Intentar obtener la etiqueta del enum si existe
-        $permissionEnum = PermissionEnum::tryFrom($permission->name);
-        $label = $permissionEnum ? $permissionEnum->label() : ucfirst(str_replace('-', ' ', $permission->name));
-
-        $groupedPermissions = PermissionEnum::groupedPermissions();
-
         return Inertia::render('Admin/Permissions/Edit', [
             'permission' => [
                 'id' => $permission->id,
+                'nombre' => $permission->name,
                 'name' => $permission->name,
-                'label' => $label,
                 'guard_name' => $permission->guard_name,
+                'is_system_permission' => $this->isSystemPermission($permission->name),
             ],
-            'groupedPermissions' => $groupedPermissions,
         ]);
     }
 
@@ -164,13 +147,18 @@ class PermisoController extends Controller
         ]);
 
         try {
-            // Actualizar el permiso
-            $permission->update([
-                'name' => $validated['name'],
-            ]);
+            // Solo permitir actualizar permisos que no son del sistema
+            if (!$this->isSystemPermission($permission->name)) {
+                $permission->update([
+                    'name' => $validated['name'],
+                ]);
 
-            return redirect()->route('admin.permissions.index')
-                ->with('success', 'Permiso actualizado exitosamente.');
+                return redirect()->route('admin.permissions.index')
+                    ->with('success', 'Permiso actualizado exitosamente.');
+            } else {
+                return redirect()->route('admin.permissions.index')
+                    ->with('error', 'No se pueden modificar los permisos del sistema.');
+            }
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al actualizar el permiso: ' . $e->getMessage()]);
         }
@@ -181,26 +169,35 @@ class PermisoController extends Controller
      */
     public function destroy(Permission $permission): RedirectResponse
     {
-        // Verificar que no sea uno de los permisos del sistema
-        $systemPermissions = PermissionEnum::values();
-        
-        if (in_array($permission->name, $systemPermissions)) {
+        // Verificar que no sea un permiso del sistema
+        if ($this->isSystemPermission($permission->name)) {
             return redirect()->route('admin.permissions.index')
                 ->with('error', 'No se pueden eliminar los permisos del sistema.');
         }
 
         try {
+            DB::beginTransaction();
+
+            // Verificar que no esté asignado a ningún rol
+            if ($permission->roles()->count() > 0) {
+                return redirect()->route('admin.permissions.index')
+                    ->with('error', 'No se puede eliminar un permiso que está asignado a roles.');
+            }
+
             $permission->delete();
+
+            DB::commit();
 
             return redirect()->route('admin.permissions.index')
                 ->with('success', 'Permiso eliminado exitosamente.');
         } catch (\Exception $e) {
+            DB::rollBack();
             return back()->withErrors(['error' => 'Error al eliminar el permiso: ' . $e->getMessage()]);
         }
     }
 
     /**
-     * Synchronize permissions with enum values
+     * Sincronizar permisos del enum con la base de datos
      */
     public function syncPermissions(): RedirectResponse
     {
@@ -210,9 +207,9 @@ class PermisoController extends Controller
             $enumPermissions = PermissionEnum::values();
             $existingPermissions = Permission::pluck('name')->toArray();
 
-            // Crear permisos que faltan
-            $missingPermissions = array_diff($enumPermissions, $existingPermissions);
-            foreach ($missingPermissions as $permissionName) {
+            // Crear permisos que no existen
+            $newPermissions = array_diff($enumPermissions, $existingPermissions);
+            foreach ($newPermissions as $permissionName) {
                 Permission::create([
                     'name' => $permissionName,
                     'guard_name' => 'web',
@@ -221,10 +218,10 @@ class PermisoController extends Controller
 
             DB::commit();
 
-            $createdCount = count($missingPermissions);
-            $message = $createdCount > 0 
-                ? "Se crearon {$createdCount} permisos faltantes." 
-                : "Todos los permisos están sincronizados.";
+            $count = count($newPermissions);
+            $message = $count > 0 
+                ? "Se sincronizaron {$count} permisos nuevos exitosamente."
+                : "Todos los permisos ya están sincronizados.";
 
             return redirect()->route('admin.permissions.index')
                 ->with('success', $message);
@@ -232,5 +229,35 @@ class PermisoController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al sincronizar permisos: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Categorizar permisos para mejor organización
+     */
+    private function getPermissionCategory(string $permission): string
+    {
+        if (str_contains($permission, 'usuario')) return 'Usuarios';
+        if (str_contains($permission, 'cliente')) return 'Clientes';
+        if (str_contains($permission, 'producto')) return 'Productos';
+        if (str_contains($permission, 'categoria')) return 'Categorías';
+        if (str_contains($permission, 'proveedor')) return 'Proveedores';
+        if (str_contains($permission, 'venta')) return 'Ventas';
+        if (str_contains($permission, 'compra')) return 'Compras';
+        if (str_contains($permission, 'promocion')) return 'Promociones';
+        if (str_contains($permission, 'inventario')) return 'Inventario';
+        if (str_contains($permission, 'rol') || str_contains($permission, 'permiso')) return 'Sistema';
+        if (str_contains($permission, 'carrito')) return 'Carrito';
+        if (str_contains($permission, 'pqrs')) return 'PQRS';
+        if (str_contains($permission, 'ajuste')) return 'Ajustes';
+        if (str_contains($permission, 'dashboard') || str_contains($permission, 'reporte') || str_contains($permission, 'ecommerce')) return 'General';
+        return 'Otros';
+    }
+
+    /**
+     * Verificar si es un permiso del sistema
+     */
+    private function isSystemPermission(string $permission): bool
+    {
+        return in_array($permission, PermissionEnum::values());
     }
 } 

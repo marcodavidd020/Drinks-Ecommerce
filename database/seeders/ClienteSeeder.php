@@ -7,7 +7,8 @@ namespace Database\Seeders;
 use App\Models\Cliente;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class ClienteSeeder extends Seeder
 {
@@ -16,106 +17,105 @@ class ClienteSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuarios que serán clientes
-        $clientesData = [
+        $this->command->info('👥 Poblando Clientes...');
+
+        // Crear usuarios clientes específicos
+        $clientes = [
             [
-                'nombre' => 'Juan Pérez',
-                'email' => 'juan.perez@example.com',
-                'celular' => '+1234567890',
+                'nombre' => 'Juan Pérez Cliente',
+                'email' => 'cliente1@example.com',
+                'password' => Hash::make('cliente123'),
+                'celular' => '+591 70987654',
                 'genero' => 'masculino',
+                'estado' => 'activo',
+                'email_verified_at' => now(),
                 'nit' => '12345678-9'
             ],
             [
-                'nombre' => 'María González',
-                'email' => 'maria.gonzalez@example.com',
-                'celular' => '+1234567891',
+                'nombre' => 'María González VIP',
+                'email' => 'cliente2@example.com',
+                'password' => Hash::make('cliente123'),
+                'celular' => '+591 70876543',
                 'genero' => 'femenino',
+                'estado' => 'activo',
+                'email_verified_at' => now(),
                 'nit' => '98765432-1'
             ],
             [
-                'nombre' => 'Carlos Rodríguez',
-                'email' => 'carlos.rodriguez@example.com',
-                'celular' => '+1234567892',
+                'nombre' => 'Carlos Rodríguez Empresa',
+                'email' => 'cliente3@example.com',
+                'password' => Hash::make('cliente123'),
+                'celular' => '+591 70765432',
                 'genero' => 'masculino',
+                'estado' => 'activo',
+                'email_verified_at' => now(),
                 'nit' => '11111111-1'
             ],
             [
-                'nombre' => 'Ana Martínez',
-                'email' => 'ana.martinez@example.com',
-                'celular' => '+1234567893',
+                'nombre' => 'Ana Martínez Frecuente',
+                'email' => 'cliente4@example.com',
+                'password' => Hash::make('cliente123'),
+                'celular' => '+591 70654321',
                 'genero' => 'femenino',
+                'estado' => 'activo',
+                'email_verified_at' => now(),
                 'nit' => '22222222-2'
             ],
             [
-                'nombre' => 'Luis López',
-                'email' => 'luis.lopez@example.com',
-                'celular' => '+1234567894',
+                'nombre' => 'Luis López Regular',
+                'email' => 'cliente5@example.com',
+                'password' => Hash::make('cliente123'),
+                'celular' => '+591 70543210',
                 'genero' => 'masculino',
+                'estado' => 'activo',
+                'email_verified_at' => now(),
                 'nit' => '33333333-3'
             ]
         ];
 
-        foreach ($clientesData as $clienteData) {
+        foreach ($clientes as $clienteData) {
             // Verificar si el usuario ya existe
-            if (User::where('email', $clienteData['email'])->exists()) {
-                continue;
-            }
-
-            // Crear el usuario
-            $user = User::create([
-                'nombre' => $clienteData['nombre'],
-                'email' => $clienteData['email'],
-                'celular' => $clienteData['celular'],
-                'genero' => $clienteData['genero'],
-                'password' => bcrypt('password123'),
-                'estado' => 'activo',
-                'email_verified_at' => now(),
-            ]);
-
-            // Asignar rol de cliente usando nuestro sistema user_rol
-            $clienteRole = DB::table('rol')->where('nombre', 'cliente')->first();
-            if ($clienteRole) {
-                DB::table('user_rol')->insert([
-                    'user_id' => $user->id,
-                    'rol_id' => $clienteRole->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            // Crear el registro de cliente
-            Cliente::create([
-                'user_id' => $user->id,
-                'nit' => $clienteData['nit'],
-            ]);
-        }
-
-        // Crear algunos clientes adicionales con factory (solo si no hay suficientes)
-        $totalClientes = Cliente::count();
-        $clientesQueCrear = max(0, 15 - $totalClientes); // Objetivo: 15 clientes en total
-        
-        if ($clientesQueCrear > 0) {
-            $clienteRole = DB::table('rol')->where('nombre', 'cliente')->first();
+            $existingUser = User::where('email', $clienteData['email'])->first();
             
-            User::factory()
-                ->count($clientesQueCrear)
-                ->create()
-                ->each(function (User $user) use ($clienteRole) {
-                    // Asignar rol de cliente
-                    if ($clienteRole) {
-                        DB::table('user_rol')->insert([
-                            'user_id' => $user->id,
-                            'rol_id' => $clienteRole->id,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-                    
-                    Cliente::create([
-                        'user_id' => $user->id,
-                        'nit' => fake()->unique()->numerify('########-#'),
-                    ]);
-                });
+            if (!$existingUser) {
+                // Crear usuario
+                $userData = $clienteData;
+                $nit = $userData['nit'];
+                unset($userData['nit']);
+                
+                $user = User::create($userData);
+                
+                // Crear registro de cliente
+                Cliente::create([
+                    'user_id' => $user->id,
+                    'nit' => $nit,
+                ]);
+                
+                // Asignar rol usando Spatie
+                $user->assignRole('cliente');
+                
+                $this->command->info("   • Cliente creado: {$user->nombre}");
+            } else {
+                $this->command->info("   • Usuario ya existe: {$clienteData['email']}");
+            }
         }
+
+        // Crear clientes adicionales con Factory
+        $clientesAdicionales = 15; // Total de clientes adicionales
+        
+        for ($i = 0; $i < $clientesAdicionales; $i++) {
+            $user = User::factory()->create([
+                'estado' => 'activo'
+            ]);
+            
+            Cliente::factory()->create([
+                'user_id' => $user->id,
+            ]);
+            
+            // Asignar rol usando Spatie
+            $user->assignRole('cliente');
+        }
+
+        $this->command->info('   ✅ Clientes poblados correctamente');
     }
 }

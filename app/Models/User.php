@@ -7,9 +7,10 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\RoleEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -27,15 +28,16 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'nombre',
-        'celular',
         'email',
-        'genero',
         'password',
+        'celular',
+        'genero',
         'estado',
+        'email_verified_at',
     ];
 
     /**
@@ -66,7 +68,7 @@ class User extends Authenticatable
      */
     public function cliente(): HasOne
     {
-        return $this->hasOne(Cliente::class);
+        return $this->hasOne(Cliente::class, 'user_id');
     }
 
     /**
@@ -74,86 +76,23 @@ class User extends Authenticatable
      */
     public function administrativo(): HasOne
     {
-        return $this->hasOne(Administrativo::class);
+        return $this->hasOne(Administrativo::class, 'user_id');
     }
 
     /**
-     * Verifica si el usuario es un cliente
+     * Relación con Carrito
      */
-    public function esCliente(): bool
+    public function carrito(): HasMany
     {
-        return $this->hasRole(RoleEnum::CLIENTE->value);
+        return $this->hasMany(Carrito::class, 'user_id');
     }
 
     /**
-     * Verifica si el usuario es un administrativo
+     * Relación con DetalleCarrito
      */
-    public function esAdministrativo(): bool
+    public function detalleCarritos(): HasMany
     {
-        return $this->hasRole(RoleEnum::ADMIN->value);
-    }
-
-    /**
-     * Verifica si el usuario es empleado
-     */
-    public function esEmpleado(): bool
-    {
-        return $this->hasRole(RoleEnum::EMPLEADO->value);
-    }
-
-    /**
-     * Verifica si el usuario es organizador
-     */
-    public function esOrganizador(): bool
-    {
-        return $this->hasRole(RoleEnum::ORGANIZADOR->value);
-    }
-
-    /**
-     * Verifica si el usuario tiene un rol específico usando el enum
-     */
-    public function tieneRol(RoleEnum $role): bool
-    {
-        return $this->hasRole($role->value);
-    }
-
-    /**
-     * Verifica si el usuario tiene alguno de los roles especificados
-     */
-    public function tieneAlgunRol(array $roles): bool
-    {
-        $roleNames = array_map(fn($role) => $role->value, $roles);
-        return $this->hasAnyRole($roleNames);
-    }
-
-    /**
-     * Asigna un rol usando el enum (a ambos sistemas)
-     */
-    public function asignarRol(RoleEnum $role): self
-    {
-        $this->assignRole($role->value);
-        return $this;
-    }
-
-    /**
-     * Remueve un rol usando el enum (de ambos sistemas)
-     */
-    public function removerRol(RoleEnum $role): self
-    {
-        $this->removeRole($role->value);
-        return $this;
-    }
-
-    /**
-     * Obtiene el rol principal del usuario
-     */
-    public function getRolPrincipal(): ?RoleEnum
-    {
-        $primerRol = $this->roles->first();
-        if ($primerRol) {
-            return RoleEnum::tryFrom($primerRol->name);
-        }
-        return null;
+        return $this->hasMany(DetalleCarrito::class, 'user_id');
     }
 
     /**
@@ -165,10 +104,153 @@ class User extends Authenticatable
     }
 
     /**
-     * Obtiene todos los permisos del usuario (ambos sistemas)
+     * Obtiene el rol principal del usuario (el primero asignado)
+     */
+    public function getRolPrincipal(): ?string
+    {
+        return $this->roles->first()?->name;
+    }
+
+    /**
+     * Verifica si el usuario tiene un rol específico usando el enum
+     * (Método de compatibilidad, se recomienda usar hasRole directamente)
+     */
+    public function tieneRol(RoleEnum $role): bool
+    {
+        return $this->hasRole($role->value);
+    }
+
+    /**
+     * Verifica si el usuario tiene alguno de los roles especificados usando enums
+     * (Método de compatibilidad, se recomienda usar hasAnyRole directamente)
+     */
+    public function tieneAlgunRol(array $roles): bool
+    {
+        $roleNames = array_map(fn($role) => $role->value, $roles);
+        return $this->hasAnyRole($roleNames);
+    }
+
+    /**
+     * Asigna un rol usando el enum
+     * (Método de compatibilidad, se recomienda usar assignRole directamente)
+     */
+    public function asignarRol(RoleEnum $role): self
+    {
+        $this->assignRole($role->value);
+        return $this;
+    }
+
+    /**
+     * Remueve un rol usando el enum
+     * (Método de compatibilidad, se recomienda usar removeRole directamente)
+     */
+    public function removerRol(RoleEnum $role): self
+    {
+        $this->removeRole($role->value);
+        return $this;
+    }
+
+    /**
+     * Obtiene todos los permisos del usuario (tanto directos como a través de roles)
      */
     public function getTodosLosPermisos(): array
     {
         return $this->getAllPermissions()->pluck('name')->toArray();
+    }
+
+    /**
+     * Verifica si el usuario tiene acceso al dashboard basado en permisos
+     * (Genérico - no asume roles específicos)
+     */
+    public function tieneAccesoDashboard(): bool
+    {
+        return $this->can('ver dashboard') || 
+               $this->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+    }
+
+    /**
+     * Métodos de conveniencia basados en permisos (no en roles específicos)
+     */
+    
+    /**
+     * Verifica si puede gestionar usuarios basado en permisos
+     */
+    public function puedeGestionarUsuarios(): bool
+    {
+        return $this->can('gestionar usuarios');
+    }
+
+    /**
+     * Verifica si puede gestionar productos basado en permisos
+     */
+    public function puedeGestionarProductos(): bool
+    {
+        return $this->can('gestionar productos');
+    }
+
+    /**
+     * Verifica si puede gestionar ventas basado en permisos
+     */
+    public function puedeGestionarVentas(): bool
+    {
+        return $this->can('gestionar ventas');
+    }
+
+    /**
+     * Verifica si puede gestionar compras basado en permisos
+     */
+    public function puedeGestionarCompras(): bool
+    {
+        return $this->can('gestionar compras');
+    }
+
+    /**
+     * Verifica si puede gestionar promociones basado en permisos
+     */
+    public function puedeGestionarPromociones(): bool
+    {
+        return $this->can('gestionar promociones');
+    }
+
+    /**
+     * Verifica si puede gestionar inventario basado en permisos
+     */
+    public function puedeGestionarInventario(): bool
+    {
+        return $this->can('gestionar inventario');
+    }
+
+    /**
+     * Verifica si puede gestionar roles y permisos (acceso admin)
+     */
+    public function puedeGestionarSistema(): bool
+    {
+        return $this->can('gestionar roles') || $this->can('gestionar permisos');
+    }
+
+    // Métodos de conveniencia para roles comunes (pero genéricos)
+    
+    /**
+     * Verifica si es cliente (genérico)
+     */
+    public function esCliente(): bool
+    {
+        return $this->hasRole('cliente');
+    }
+
+    /**
+     * Verifica si es admin (genérico)
+     */
+    public function esAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Verifica si es empleado (genérico)
+     */
+    public function esEmpleado(): bool
+    {
+        return $this->hasRole('empleado');
     }
 }

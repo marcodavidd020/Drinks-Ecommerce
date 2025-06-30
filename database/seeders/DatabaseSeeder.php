@@ -18,63 +18,38 @@ class DatabaseSeeder extends Seeder
     {
         $this->command->info('🌱 Iniciando la siembra de datos...');
 
-        // 1. Seeder de Spatie para roles y permisos
-        $this->call(RoleAndPermissionSeeder::class);
-        
-        // Crear usuario super admin
-        $this->createSuperAdmin();
-
-        // 2. Seeders de entidades base
         $this->call([
+            // Sistema base
+            SpatieRolePermissionSeeder::class, // Primero roles y permisos con Spatie
             CategoriaSeeder::class,
-            ProveedorSeeder::class,
-        ]);
-
-        // 3. Seeders de productos y almacenes
-        $this->call([
-            ProductoSeeder::class,
-            InventarioSeeder::class,
-            PromocionSeeder::class,
-        ]);
-
-        // 4. Seeders de clientes y administrativos
-        $this->call([
+            
+            // Usuarios y relaciones
+            PqrsSeeder::class,
             AdministrativoSeeder::class,
             ClienteSeeder::class,
-        ]);
-
-        // 5. Seeders de operaciones y transacciones
-        $this->call([
-            VentasSeeder::class,
+            
+            // Productos y almacenes  
+            ProductoSeeder::class,
+            InventarioSeeder::class,
+            
+            // Transacciones
+            ProveedorSeeder::class,
             NotaCompraSeeder::class,
-            AjusteInventarioSeeder::class,
-            CarritoSeeder::class,
-        ]);
-
-        // 6. Seeders de detalles (después de las operaciones principales)
-        $this->call([
             DetalleCompraSeeder::class,
-            DetalleCarritoSeeder::class,
+            VentasSeeder::class,
+            PromocionSeeder::class,
+            
+            // Ajustes y carritos
+            AjusteInventarioSeeder::class,
             DetalleAjusteSeeder::class,
-        ]);
-
-        // 7. Seeders específicos para datos de demostración
-        $this->call([
+            CarritoSeeder::class,
+            DetalleCarritoSeeder::class,
+            
+            // Datos específicos para home
             HomeDataSeeder::class,
-            TiendaBebidasSeeder::class,
         ]);
-
-        $this->command->info('✅ ¡Siembra de datos completada exitosamente!');
-        $this->command->info('📊 Datos disponibles para pruebas:');
-        $this->command->info('   • Usuarios y roles configurados');
-        $this->command->info('   • Productos con inventarios');
-        $this->command->info('   • Promociones con descuentos (activas, pendientes, vencidas)');
-        $this->command->info('   • Clientes y proveedores (personas y empresas)');
-        $this->command->info('   • Ventas y notas de venta con detalles (6 meses)');
-        $this->command->info('   • Notas de compra con detalles (4 meses)');
-        $this->command->info('   • Carritos con detalles de productos (30 días)');
-        $this->command->info('   • Ajustes de inventario con detalles');
-        $this->command->info('   • Datos específicos para home y tienda');
+        
+        $this->command->info('🎉 Siembra de datos completada exitosamente!');
     }
 
     /**
@@ -82,7 +57,7 @@ class DatabaseSeeder extends Seeder
      */
     private function createSuperAdmin(): void
     {
-        // Usar Eloquent y Spatie para crear y asignar rol
+        // Crear el usuario super admin
         $superAdmin = User::firstOrCreate(
             ['email' => 'super@admin.com'],
             [
@@ -95,13 +70,9 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Asignar rol de admin
-        if (!$superAdmin->hasRole('admin')) {
-            $superAdmin->assignRole('admin');
-        }
-
         $this->command->info('✅ Usuario Super Administrador creado/verificado exitosamente');
         $this->command->info('   Email: super@admin.com');
         $this->command->info('   Password: password');
+        $this->command->info('   Rol será asignado por RBACSystemSeeder');
     }
 }

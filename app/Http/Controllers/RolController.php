@@ -25,7 +25,7 @@ class RolController extends Controller
         $perPage = (int) $request->get('per_page', 10);
 
         $query = Role::query()
-            ->withCount('permissions')
+            ->withCount(['permissions', 'users'])
             ->when($search, function ($query) use ($search) {
                 return $query->where('name', 'like', "%{$search}%");
             });
@@ -39,11 +39,15 @@ class RolController extends Controller
         $roles->getCollection()->transform(function ($role) {
             return [
                 'id' => $role->id,
+                'nombre' => $role->name, // Mapear name a nombre para consistencia
                 'name' => $role->name,
+                'display_name' => $role->display_name,
+                'description' => $role->description,
                 'permissions_count' => $role->permissions_count ?? 0,
+                'users_count' => $role->users_count ?? 0,
                 'created_at' => $role->created_at->toISOString(),
                 'updated_at' => $role->updated_at->toISOString(),
-                'guard_name' => $role->guard_name,
+                'is_system_role' => $role->is_system,
             ];
         });
 
@@ -67,7 +71,9 @@ class RolController extends Controller
             return [
                 'id' => $permission->id,
                 'name' => $permission->name,
+                'nombre' => $permission->name, // Mapear para consistencia
                 'guard_name' => $permission->guard_name,
+                'category' => $this->getPermissionCategory($permission->name),
             ];
         });
 
@@ -83,6 +89,8 @@ class RolController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
+            'display_name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'permissions' => ['array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ]);
@@ -93,13 +101,15 @@ class RolController extends Controller
             // Crear el rol
             $role = Role::create([
                 'name' => $validated['name'],
-                'guard_name' => 'web',
+                'display_name' => $validated['display_name'],
+                'description' => $validated['description'] ?? null,
+                'is_system' => false, // Los roles creados manualmente no son del sistema
             ]);
 
             // Asignar permisos si se proporcionaron
             if (!empty($validated['permissions'])) {
                 $permissions = Permission::whereIn('id', $validated['permissions'])->get();
-                $role->syncPermissions($permissions);
+                $role->syncPermissions($permissions->pluck('name')->toArray());
             }
 
             DB::commit();
@@ -117,22 +127,34 @@ class RolController extends Controller
      */
     public function show(Role $role): Response
     {
-        $role->load('permissions');
+        $role->load(['permissions', 'users']);
 
         return Inertia::render('Admin/Roles/Show', [
             'role' => [
                 'id' => $role->id,
+                'nombre' => $role->name, // Mapear para consistencia
                 'name' => $role->name,
                 'guard_name' => $role->guard_name,
                 'created_at' => $role->created_at->toISOString(),
                 'updated_at' => $role->updated_at->toISOString(),
+                'users_count' => $role->users->count(),
                 'permissions' => $role->permissions->map(function ($permission) {
                     return [
                         'id' => $permission->id,
                         'name' => $permission->name,
+                        'nombre' => $permission->name,
                         'guard_name' => $permission->guard_name,
+                        'category' => $this->getPermissionCategory($permission->name),
                     ];
                 }),
+                'users' => $role->users->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'nombre' => $user->nombre,
+                        'email' => $user->email,
+                    ];
+                }),
+                'is_system_role' => in_array($role->name, ['admin', 'cliente', 'empleado', 'organizador']),
             ]
         ]);
     }
@@ -148,16 +170,20 @@ class RolController extends Controller
             return [
                 'id' => $permission->id,
                 'name' => $permission->name,
+                'nombre' => $permission->name,
                 'guard_name' => $permission->guard_name,
+                'category' => $this->getPermissionCategory($permission->name),
             ];
         });
 
         return Inertia::render('Admin/Roles/Edit', [
             'role' => [
                 'id' => $role->id,
+                'nombre' => $role->name,
                 'name' => $role->name,
                 'guard_name' => $role->guard_name,
                 'permissions' => $role->permissions->pluck('id')->toArray(),
+                'is_system_role' => in_array($role->name, ['admin', 'cliente', 'empleado', 'organizador']),
             ],
             'permissions' => $permissions,
         ]);
@@ -177,10 +203,12 @@ class RolController extends Controller
         try {
             DB::beginTransaction();
 
-            // Actualizar el rol
-            $role->update([
-                'name' => $validated['name'],
-            ]);
+            // Actualizar el rol (solo si no es del sistema)
+            if (!in_array($role->name, ['admin', 'cliente', 'empleado', 'organizador'])) {
+                $role->update([
+                    'name' => $validated['name'],
+                ]);
+            }
 
             // Sincronizar permisos
             if (isset($validated['permissions'])) {
@@ -232,5 +260,23 @@ class RolController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al eliminar el rol: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Categorizar permisos para mejor organización
+     */
+    private function getPermissionCategory(string $permission): string
+    {
+        if (str_contains($permission, 'usuario')) return 'Usuarios';
+        if (str_contains($permission, 'cliente')) return 'Clientes';
+        if (str_contains($permission, 'producto')) return 'Productos';
+        if (str_contains($permission, 'categoria')) return 'Categorías';
+        if (str_contains($permission, 'proveedor')) return 'Proveedores';
+        if (str_contains($permission, 'venta')) return 'Ventas';
+        if (str_contains($permission, 'compra')) return 'Compras';
+        if (str_contains($permission, 'promocion')) return 'Promociones';
+        if (str_contains($permission, 'inventario')) return 'Inventario';
+        if (str_contains($permission, 'rol') || str_contains($permission, 'permiso')) return 'Sistema';
+        return 'General';
     }
 } 

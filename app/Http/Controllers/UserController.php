@@ -6,13 +6,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\PermissionEnum;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -110,7 +110,7 @@ class UserController extends Controller
             'email_verified_at' => now(), // Auto-verificar para usuarios creados por admin
         ]);
 
-        // Asignar rol usando Spatie
+        // Asignar rol usando nuestro sistema personalizado
         $user->assignRole($validated['role']);
 
         return redirect()->route('users.index')
@@ -174,7 +174,7 @@ class UserController extends Controller
 
         $user->update($updateData);
 
-        // Actualizar rol usando Spatie - eliminar roles anteriores y asignar el nuevo
+        // Actualizar rol usando nuestro sistema personalizado - eliminar roles anteriores y asignar el nuevo
         $user->syncRoles([$validated['role']]);
 
         return redirect()->route('users.index')

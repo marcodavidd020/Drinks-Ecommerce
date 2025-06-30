@@ -75,6 +75,7 @@ class RoleAndPermissionSeeder extends Seeder
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $clienteRole = Role::firstOrCreate(['name' => 'cliente']);
         $empleadoRole = Role::firstOrCreate(['name' => 'empleado']);
+        $organizadorRole = Role::firstOrCreate(['name' => 'organizador']);
         $vendedorRole = Role::firstOrCreate(['name' => 'vendedor']);
         $almacenistaRole = Role::firstOrCreate(['name' => 'almacenista']);
 
@@ -110,6 +111,22 @@ class RoleAndPermissionSeeder extends Seeder
             'ver-ventas',
             'gestionar-carrito',
             'ver-promociones',
+            'acceso-dashboard',
+            'acceso-ecommerce',
+        ]);
+
+        // Asignar permisos al organizador
+        $organizadorRole->givePermissionTo([
+            'ver-productos',
+            'ver-categorias',
+            'ver-promociones',
+            'crear-promociones',
+            'editar-promociones',
+            'ver-clientes',
+            'crear-clientes',
+            'editar-clientes',
+            'ver-ventas',
+            'crear-ventas',
             'acceso-dashboard',
             'acceso-ecommerce',
         ]);
