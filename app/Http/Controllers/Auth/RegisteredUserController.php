@@ -32,21 +32,25 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255',
+            'celular' => 'nullable|string|max:20',
             'email' => 'required|string|lowercase|email|max:255|unique:user,email',
+            'genero' => 'nullable|in:masculino,femenino,otro',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'terms' => 'required|accepted',
         ]);
 
         $user = User::create([
-            'nombre' => $request->name,
+            'nombre' => $request->nombre,
+            'celular' => $request->celular,
             'email' => $request->email,
+            'genero' => $request->genero,
             'password' => Hash::make($request->password),
             'estado' => 'activo', // Por defecto activo
         ]);
 
-        // Asignar rol por defecto (cliente) en ambos sistemas
-        $user->asignarRol(RoleEnum::CLIENTE);
+        // Asignar rol por defecto (cliente) usando Spatie
+        $user->assignRole('cliente');
 
         // Crear registro de cliente automáticamente
         $user->cliente()->create([

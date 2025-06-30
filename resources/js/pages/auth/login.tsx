@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle, ShoppingBag, Users, TrendingUp } from 'lucide-react';
+import { LoaderCircle, Droplets, Zap, Star } from 'lucide-react';
 import { FormEventHandler } from 'react';
 import { useAppModeText } from '@/hooks/useAppModeText';
 
@@ -39,23 +39,23 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     const title = getTextByMode({
-        niños: '🎪 ¡Bienvenido de vuelta!',
-        jóvenes: '🔥 Accede a tu cuenta',
-        adultos: 'Iniciar Sesión'
+        niños: '🧃 ¡Bienvenido a BebiFresh!',
+        jóvenes: '💧 Accede a BebiFresh',
+        adultos: 'Iniciar Sesión en BebiFresh'
     });
 
     const description = getTextByMode({
-        niños: '¡Vamos a explorar productos geniales juntos! 🌟',
-        jóvenes: 'Accede para descubrir las mejores ofertas y productos',
-        adultos: 'Ingresa tu email y contraseña para acceder a tu cuenta'
+        niños: '¡Vamos a explorar bebidas súper refrescantes juntos! 🌟',
+        jóvenes: 'Accede para descubrir las mejores bebidas y ofertas',
+        adultos: 'Ingresa tu email y contraseña para acceder a tu cuenta de BebiFresh'
     });
 
     return (
         <AuthLayout title={title} description={description}>
             <Head title={getTextByMode({
-                niños: 'Entrar',
-                jóvenes: 'Login',
-                adultos: 'Iniciar Sesión'
+                niños: 'Entrar - BebiFresh',
+                jóvenes: 'Login - BebiFresh',
+                adultos: 'Iniciar Sesión - BebiFresh'
             })} />
 
             {/* Status de éxito */}
@@ -68,35 +68,35 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
             )}
 
-            {/* Beneficios rápidos */}
+            {/* Beneficios de BebiFresh */}
             <div className="mb-6 grid grid-cols-3 gap-4">
-                <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                    <ShoppingBag className="h-6 w-6 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
-                    <p className="text-xs font-medium text-blue-800 dark:text-blue-200 text-adaptive">
+                <div className="text-center p-3 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800">
+                    <Droplets className="h-6 w-6 mx-auto mb-2 text-cyan-600 dark:text-cyan-400" />
+                    <p className="text-xs font-medium text-cyan-800 dark:text-cyan-200 text-adaptive">
                         {getTextByMode({
-                            niños: '🛒 Comprar',
-                            jóvenes: 'Shopping',
-                            adultos: 'Compras'
+                            niños: '🧃 Bebidas',
+                            jóvenes: 'Frescura',
+                            adultos: 'Hidratación'
                         })}
                     </p>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                    <TrendingUp className="h-6 w-6 mx-auto mb-2 text-green-600 dark:text-green-400" />
+                    <Zap className="h-6 w-6 mx-auto mb-2 text-green-600 dark:text-green-400" />
                     <p className="text-xs font-medium text-green-800 dark:text-green-200 text-adaptive">
                         {getTextByMode({
-                            niños: '💸 Ofertas',
+                            niños: '⚡ Energía',
                             jóvenes: 'Ofertas',
                             adultos: 'Promociones'
                         })}
                     </p>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-                    <Users className="h-6 w-6 mx-auto mb-2 text-purple-600 dark:text-purple-400" />
-                    <p className="text-xs font-medium text-purple-800 dark:text-purple-200 text-adaptive">
+                <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                    <Star className="h-6 w-6 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                    <p className="text-xs font-medium text-blue-800 dark:text-blue-200 text-adaptive">
                         {getTextByMode({
-                            niños: '👥 Amigos',
-                            jóvenes: 'Social',
-                            adultos: 'Comunidad'
+                            niños: '⭐ Premium',
+                            jóvenes: 'Calidad',
+                            adultos: 'Experiencia'
                         })}
                     </p>
                 </div>
@@ -107,7 +107,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <div className="grid gap-2">
                         <Label htmlFor="email" className="text-adaptive">
                             {getTextByMode({
-                                niños: '📧 Tu email',
+                                niños: '📧 Tu email de BebiFresh',
                                 jóvenes: 'Email',
                                 adultos: 'Correo Electrónico'
                             })}
@@ -126,7 +126,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 jóvenes: 'tu.email@ejemplo.com',
                                 adultos: 'correo@ejemplo.com'
                             })}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-adaptive text-adaptive border-adaptive"
+                            className="transition-all duration-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-adaptive text-adaptive border-adaptive"
                         />
                         <InputError message={errors.email} />
                     </div>
@@ -143,7 +143,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             {canResetPassword && (
                                 <TextLink 
                                     href={route('password.request')} 
-                                    className="ml-auto text-sm link-adaptive transition-colors" 
+                                    className="ml-auto text-sm text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors" 
                                     tabIndex={5}
                                 >
                                     {getTextByMode({
@@ -167,7 +167,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 jóvenes: 'Tu contraseña',
                                 adultos: 'Ingresa tu contraseña'
                             })}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-adaptive text-adaptive border-adaptive"
+                            className="transition-all duration-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-adaptive text-adaptive border-adaptive"
                         />
                         <InputError message={errors.password} />
                     </div>
@@ -182,7 +182,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         />
                         <Label htmlFor="remember" className="text-sm text-adaptive">
                             {getTextByMode({
-                                niños: '🧠 ¡Recuérdame!',
+                                niños: '🧠 ¡Recuérdame en BebiFresh!',
                                 jóvenes: 'Recordarme',
                                 adultos: 'Mantener sesión iniciada'
                             })}
@@ -191,21 +191,21 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                     <Button 
                         type="submit" 
-                        className="mt-4 w-full h-12 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] btn-adaptive"
+                        className="mt-4 w-full h-12 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
                         tabIndex={4} 
                         disabled={processing}
                     >
                         {processing && <LoaderCircle className="h-5 w-5 animate-spin mr-2" />}
                         {processing ? (
                             getTextByMode({
-                                niños: '🔄 Entrando...',
+                                niños: '🔄 Entrando a BebiFresh...',
                                 jóvenes: 'Accediendo...',
                                 adultos: 'Iniciando sesión...'
                             })
                         ) : (
                             getTextByMode({
-                                niños: '🚀 ¡Entrar!',
-                                jóvenes: '🔥 Acceder',
+                                niños: '🧃 ¡Entrar a BebiFresh!',
+                                jóvenes: '💧 Acceder',
                                 adultos: 'Iniciar Sesión'
                             })
                         )}
@@ -219,8 +219,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-adaptive px-2 text-adaptive-secondary">
                             {getTextByMode({
-                                niños: '¿Primera vez aquí?',
-                                jóvenes: '¿Nuevo usuario?',
+                                niños: '¿Primera vez en BebiFresh?',
+                                jóvenes: '¿Nuevo en BebiFresh?',
                                 adultos: 'o'
                             })}
                         </span>
@@ -230,20 +230,20 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 <div className="text-center">
                     <p className="text-sm text-adaptive-secondary mb-3">
                         {getTextByMode({
-                            niños: '¿Aún no tienes una cuenta? ¡Créala ahora! 🎉',
-                            jóvenes: '¿No tienes cuenta? ¡Únete ahora!',
-                            adultos: '¿No tienes una cuenta?'
+                            niños: '¿Aún no tienes una cuenta en BebiFresh? ¡Créala ahora y disfruta bebidas increíbles! 🌿',
+                            jóvenes: '¿No tienes cuenta? ¡Únete a BebiFresh ahora!',
+                            adultos: '¿No tienes una cuenta en BebiFresh?'
                         })}
                     </p>
                     <TextLink 
                         href={route('register')} 
                         tabIndex={6}
-                        className="inline-flex items-center justify-center w-full px-4 py-3 btn-adaptive-secondary rounded-md shadow-sm text-sm font-medium transition-all duration-200 hover:scale-[1.02]"
+                        className="inline-flex items-center justify-center w-full px-4 py-3 border border-cyan-200 dark:border-cyan-700 rounded-md shadow-sm text-sm font-medium text-cyan-700 dark:text-cyan-300 bg-white dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all duration-200 hover:scale-[1.02]"
                     >
                         {getTextByMode({
-                            niños: '🌟 ¡Crear mi cuenta!',
-                            jóvenes: '✨ Registrarse',
-                            adultos: 'Crear Cuenta Nueva'
+                            niños: '🌟 ¡Unirme a BebiFresh!',
+                            jóvenes: '✨ Registrarse en BebiFresh',
+                            adultos: 'Crear Cuenta en BebiFresh'
                         })}
                     </TextLink>
                 </div>
