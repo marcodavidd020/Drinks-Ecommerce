@@ -164,122 +164,122 @@ export default function DashboardSidebar() {
             ]
         },
         {
-            group: 'GESTIÓN',
-            condition: () => hasPermission('gestionar usuarios') || hasAnyRole(['admin', 'empleado', 'organizador']),
+            group: 'USUARIOS',
+            condition: () => hasAnyRole(['admin', 'empleado', 'organizador']) || hasPermission('ver usuarios') || hasPermission('ver clientes'),
             items: [
                 { 
                     name: 'Usuarios', 
                     href: '/users', 
                     icon: '👥',
-                    condition: () => hasPermission('gestionar usuarios')
+                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador']) || hasPermission('ver usuarios') || hasPermission('gestionar usuarios')
                 },
                 { 
                     name: 'Clientes', 
                     href: '/clientes', 
                     icon: '👨‍💼',
-                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador'])
+                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador']) || hasPermission('ver clientes') || hasPermission('gestionar clientes')
                 },
-                { 
-                    name: 'Proveedores', 
-                    href: '/proveedores', 
-                    icon: '🏭',
-                    condition: () => hasAnyRole(['admin', 'empleado'])
-                },
-            ]
-        },
-        {
-            group: 'INVENTARIO',
-            condition: () => hasPermission('gestionar productos') || hasAnyRole(['admin', 'empleado', 'almacenista']),
-            items: [
-                { 
-                    name: 'Productos', 
-                    href: '/productos', 
-                    icon: '🧃',
-                    condition: () => hasPermission('gestionar productos')
-                },
-                { 
-                    name: 'Categorías', 
-                    href: '/categorias', 
-                    icon: '📋',
-                    condition: () => hasAnyRole(['admin', 'empleado'])
-                },
-                { 
-                    name: 'Almacenes', 
-                    href: '/almacenes', 
-                    icon: '🏪',
-                    condition: () => hasAnyRole(['admin', 'empleado', 'almacenista'])
-                },
-                { 
-                    name: 'Inventarios', 
-                    href: '/inventarios', 
-                    icon: '📊',
-                    condition: () => hasAnyRole(['admin', 'empleado', 'almacenista'])
-                },
-            ]
-        },
-        {
-            group: 'VENTAS',
-            condition: () => hasPermission('gestionar ventas') || hasPermission('gestionar promociones') || hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor']),
-            items: [
-                { 
-                    name: 'Ventas', 
-                    href: '/ventas', 
-                    icon: '💰',
-                    condition: () => hasPermission('gestionar ventas')
-                },
-                { 
-                    name: 'Promociones', 
-                    href: '/promociones', 
-                    icon: '🎉',
-                    condition: () => hasPermission('gestionar promociones')
-                },
-            ]
-        },
-        {
-            group: 'COMPRAS',
-            condition: () => hasAnyRole(['admin', 'empleado']),
-            items: [
-                { 
-                    name: 'Compras', 
-                    href: '/compras', 
-                    icon: '📋',
-                    condition: () => hasAnyRole(['admin', 'empleado'])
-                },
-            ]
-        },
-        {
-            group: 'REPORTES',
-            condition: () => hasAnyRole(['admin', 'organizador']),
-            items: [
-                { 
-                    name: 'Reportes', 
-                    href: '/reports', 
-                    icon: '📈',
-                    condition: () => hasAnyRole(['admin', 'organizador'])
-                },
-            ]
-        },
-        {
-            group: 'CONFIGURACIÓN',
-            condition: () => hasRole('admin'),
-            items: [
                 { 
                     name: 'Roles', 
                     href: '/admin/roles', 
                     icon: '🔐',
-                    condition: () => hasRole('admin')
+                    condition: () => hasRole('admin') || hasPermission('gestionar roles')
                 },
                 { 
                     name: 'Permisos', 
                     href: '/admin/permissions', 
                     icon: '🗝️',
-                    condition: () => hasRole('admin')
+                    condition: () => hasRole('admin') || hasPermission('gestionar permisos')
                 },
+            ]
+        },
+        {
+            group: 'INVENTARIO',
+            condition: () => hasAnyRole(['admin', 'empleado', 'almacenista', 'organizador']) || hasPermission('ver productos') || hasPermission('ver inventario'),
+            items: [
+                { 
+                    name: 'Productos', 
+                    href: '/productos', 
+                    icon: '🧃',
+                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador', 'almacenista']) || hasPermission('ver productos') || hasPermission('gestionar productos')
+                },
+                { 
+                    name: 'Categorías', 
+                    href: '/categorias', 
+                    icon: '📋',
+                    condition: () => hasAnyRole(['admin', 'empleado']) || hasPermission('ver categorias') || hasPermission('gestionar categorias')
+                },
+                { 
+                    name: 'Almacenes', 
+                    href: '/almacenes', 
+                    icon: '🏪',
+                    condition: () => hasAnyRole(['admin', 'empleado', 'almacenista']) || hasPermission('ver inventario') || hasPermission('gestionar inventario')
+                },
+                { 
+                    name: 'Inventarios', 
+                    href: '/inventarios', 
+                    icon: '📊',
+                    condition: () => hasAnyRole(['admin', 'empleado', 'almacenista']) || hasPermission('ver inventario') || hasPermission('gestionar inventario')
+                },
+            ]
+        },
+        {
+            group: 'VENTAS',
+            condition: () => hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor']) || hasPermission('ver ventas') || hasPermission('ver promociones'),
+            items: [
+                { 
+                    name: 'Ventas', 
+                    href: '/ventas', 
+                    icon: '💰',
+                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor']) || hasPermission('ver ventas') || hasPermission('gestionar ventas')
+                },
+                { 
+                    name: 'Promociones', 
+                    href: '/promociones', 
+                    icon: '🎉',
+                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador']) || hasPermission('ver promociones') || hasPermission('gestionar promociones')
+                },
+            ]
+        },
+        {
+            group: 'COMPRAS',
+            condition: () => hasAnyRole(['admin', 'empleado']) || hasPermission('ver compras') || hasPermission('ver proveedores'),
+            items: [
+                { 
+                    name: 'Compras', 
+                    href: '/compras', 
+                    icon: '🛒',
+                    condition: () => hasAnyRole(['admin', 'empleado']) || hasPermission('ver compras') || hasPermission('gestionar compras')
+                },
+                { 
+                    name: 'Proveedores', 
+                    href: '/proveedores', 
+                    icon: '🏭',
+                    condition: () => hasAnyRole(['admin', 'empleado']) || hasPermission('ver proveedores') || hasPermission('gestionar proveedores')
+                },
+            ]
+        },
+        {
+            group: 'REPORTES',
+            condition: () => hasAnyRole(['admin', 'organizador']) || hasPermission('ver reportes'),
+            items: [
+                { 
+                    name: 'Reportes', 
+                    href: '/reports', 
+                    icon: '📈',
+                    condition: () => hasAnyRole(['admin', 'organizador']) || hasPermission('ver reportes')
+                },
+            ]
+        },
+        {
+            group: 'CONFIGURACIÓN',
+            condition: () => hasAnyRole(['admin', 'empleado', 'organizador']) || hasPermission('acceso admin'),
+            items: [
                 { 
                     name: 'Configuración', 
                     href: '/settings', 
                     icon: '⚙️',
-                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador'])
+                    condition: () => hasAnyRole(['admin', 'empleado', 'organizador']) || hasPermission('acceso admin')
                 },
             ]
         }

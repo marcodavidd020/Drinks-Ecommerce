@@ -74,7 +74,7 @@ class Carrito extends Model
      */
     public function calcularTotal(): float
     {
-        $total = $this->detalles()->sum('subtotal');
+        $total = (float) $this->detalles()->sum('subtotal');
         $this->update(['total' => $total]);
         return $total;
     }
