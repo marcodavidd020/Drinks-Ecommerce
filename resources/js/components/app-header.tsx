@@ -117,18 +117,39 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
-                                            {/* Agregar enlace al carrito en mobile */}
-                                            {isCliente && (
-                                                <Link href="/carrito" className="flex items-center space-x-2 font-medium">
-                                                    <ShoppingCart className="h-5 w-5" />
-                                                    <span>Mi Carrito</span>
-                                                    {carritoCount > 0 && (
-                                                        <span className="bg-cyan-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
-                                                            {carritoCount}
-                                                        </span>
-                                                    )}
-                                                </Link>
+                                                                        {/* Navegación especial para clientes en mobile */}
+                            {isCliente && (
+                                <>
+                                    <Link href="/" className="flex items-center space-x-2 font-medium">
+                                        <span className="text-lg">🧃</span>
+                                        <span>Explorar Bebidas</span>
+                                    </Link>
+                                    <Link href="/cliente/dashboard" className="flex items-center space-x-2 font-medium">
+                                        <span className="text-lg">🏠</span>
+                                        <span>Mi Dashboard</span>
+                                    </Link>
+                                    <Link href="/carrito" className="flex items-center space-x-2 font-medium">
+                                        <div className="relative">
+                                            <ShoppingCart className="h-5 w-5" />
+                                            {carritoCount > 0 && (
+                                                <span className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[16px] h-[16px] flex items-center justify-center font-medium text-[10px]">
+                                                    {carritoCount > 99 ? '99+' : carritoCount}
+                                                </span>
                                             )}
+                                        </div>
+                                        <span>Mi Carrito</span>
+                                        {carritoCount > 0 && (
+                                            <span className="bg-cyan-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                                                {carritoCount > 99 ? '99+' : carritoCount}
+                                            </span>
+                                        )}
+                                    </Link>
+                                    <Link href="/cliente/compras" className="flex items-center space-x-2 font-medium">
+                                        <span className="text-lg">📦</span>
+                                        <span>Mis Compras</span>
+                                    </Link>
+                                </>
+                            )}
                                         </div>
 
                                         <div className="flex flex-col space-y-4">

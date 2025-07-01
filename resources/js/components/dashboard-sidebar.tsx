@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface User {
     id: number;
@@ -15,6 +15,7 @@ interface AuthProps {
 
 export default function DashboardSidebar() {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [carritoCount, setCarritoCount] = useState(0);
     const { url, props } = usePage();
     
     // Obtener el usuario de las props de Inertia
@@ -35,8 +36,45 @@ export default function DashboardSidebar() {
         return roles.some(role => hasRole(role));
     };
 
+    // Verificar si es cliente
+    const isCliente = hasRole('cliente') && !hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+
+    // Función para obtener el conteo del carrito
+    const fetchCarritoCount = async () => {
+        if (!isCliente) return;
+        
+        try {
+            const response = await fetch('/api/carrito/count', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setCarritoCount(data.count || 0);
+            }
+        } catch (error) {
+            console.error('Error obteniendo contador del carrito:', error);
+        }
+    };
+
+    // Cargar el conteo del carrito al montar el componente
+    useEffect(() => {
+        fetchCarritoCount();
+    }, [isCliente]);
+
+    // Escuchar eventos de actualización del carrito
+    useEffect(() => {
+        const handleCarritoUpdate = () => {
+            fetchCarritoCount();
+        };
+
+        window.addEventListener('carrito-updated', handleCarritoUpdate);
+        return () => window.removeEventListener('carrito-updated', handleCarritoUpdate);
+    }, []);
+
     // Si es cliente solo, mostrar sidebar especial
-    if (hasRole('cliente') && !hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista'])) {
+    if (isCliente) {
         return (
             <div className={`bg-gradient-to-b from-cyan-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 shadow-lg transition-all duration-300 ${
                 isCollapsed ? 'w-16' : 'w-64'
@@ -93,10 +131,26 @@ export default function DashboardSidebar() {
                                             ? 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300'
                                             : 'text-gray-700 dark:text-gray-300 hover:bg-cyan-50 dark:hover:bg-gray-700 hover:text-cyan-900 dark:hover:text-cyan-100'
                                     }`}
-                                    title={isCollapsed ? 'Mi Carrito' : undefined}
+                                    title={isCollapsed ? `Mi Carrito ${carritoCount > 0 ? `(${carritoCount})` : ''}` : undefined}
                                 >
-                                    <span className="text-lg mr-3 flex-shrink-0">🛒</span>
-                                    {!isCollapsed && <span className="truncate">Mi Carrito</span>}
+                                    <div className="relative flex-shrink-0 mr-3">
+                                        <span className="text-lg">🛒</span>
+                                        {carritoCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex items-center justify-center font-medium text-[10px]">
+                                                {carritoCount > 99 ? '99+' : carritoCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {!isCollapsed && (
+                                        <div className="flex items-center justify-between w-full">
+                                            <span className="truncate">Mi Carrito</span>
+                                            {carritoCount > 0 && (
+                                                <span className="bg-cyan-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center font-medium ml-2">
+                                                    {carritoCount > 99 ? '99+' : carritoCount}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </Link>
 
                                 <Link

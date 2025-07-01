@@ -6,7 +6,7 @@ interface User {
     id: number;
     nombre: string;
     email: string;
-    role?: string;
+    roles?: { name: string }[];
 }
 
 interface NavbarProps {
@@ -16,6 +16,7 @@ interface NavbarProps {
 export default function Navbar({ user }: NavbarProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [carritoCount, setCarritoCount] = useState(0);
     const { url } = usePage();
     const { settings } = useAppMode();
 
@@ -39,6 +40,53 @@ export default function Navbar({ user }: NavbarProps) {
             window.removeEventListener('resize', handleResize);
             document.removeEventListener('click', handleClickOutside);
         };
+    }, []);
+
+    // Verificar roles con Spatie
+    const userRoles = (user?.roles as any[]) || [];
+    const hasRole = (role: string): boolean => {
+        return userRoles.some(r => r.name === role);
+    };
+    const hasAnyRole = (roles: string[]): boolean => {
+        return roles.some(role => hasRole(role));
+    };
+
+    // Verificar tipo de usuario
+    const isCliente = user && hasRole('cliente') && !hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+    const isAdministrativo = user && hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+
+    // Función para obtener el conteo del carrito
+    const fetchCarritoCount = async () => {
+        if (!isCliente) return;
+        
+        try {
+            const response = await fetch('/api/carrito/count', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setCarritoCount(data.count || 0);
+            }
+        } catch (error) {
+            console.error('Error obteniendo contador del carrito:', error);
+        }
+    };
+
+    // Cargar el conteo del carrito al montar el componente
+    useEffect(() => {
+        fetchCarritoCount();
+    }, [isCliente]);
+
+    // Escuchar eventos de actualización del carrito
+    useEffect(() => {
+        const handleCarritoUpdate = () => {
+            fetchCarritoCount();
+        };
+
+        window.addEventListener('carrito-updated', handleCarritoUpdate);
+        return () => window.removeEventListener('carrito-updated', handleCarritoUpdate);
     }, []);
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
@@ -87,111 +135,78 @@ export default function Navbar({ user }: NavbarProps) {
 
     const colors = getModeColors();
 
-    // Verificar si es administrador o superadministrador
-    const isAdmin = user && (user.role === 'administrador' || user.role === 'superadministrador');
-    const isClient = user && user.role === 'cliente';
-
-    // Enlaces públicos para todos los usuarios
-    const publicLinks = [
-        { 
-            href: '/', 
-            label: getTextByMode({
-                niños: '🏠 Inicio',
-                jóvenes: '🏠 Home',
-                adultos: 'Inicio'
-            }),
-            icon: '🏠'
-        },
-        { 
-            href: '/productos', 
-            label: getTextByMode({
-                niños: '🛍️ Cositas',
-                jóvenes: '🛍️ Products',
-                adultos: 'Productos'
-            }),
-            icon: '🛍️'
-        },
-        { 
-            href: '/categorias', 
-            label: getTextByMode({
-                niños: '📦 Tipos',
-                jóvenes: '📦 Categories',
-                adultos: 'Categorías'
-            }),
-            icon: '📦'
-        },
-        { 
-            href: '/promociones', 
-            label: getTextByMode({
-                niños: '🎉 Ofertas',
-                jóvenes: '🎉 Deals',
-                adultos: 'Promociones'
-            }),
-            icon: '🎉'
+    // Enlaces principales
+    const getMainLinks = () => {
+        if (isCliente) {
+            // Enlaces para clientes
+            return [
+                { 
+                    href: '/', 
+                    label: getTextByMode({
+                        niños: '🧃 Explorar Bebidas',
+                        jóvenes: '🧃 Bebidas',
+                        adultos: 'Explorar Bebidas'
+                    }),
+                    icon: '🧃'
+                },
+                { 
+                    href: '/cliente/dashboard', 
+                    label: getTextByMode({
+                        niños: '🏠 Mi Dashboard',
+                        jóvenes: '🏠 Dashboard',
+                        adultos: 'Mi Dashboard'
+                    }),
+                    icon: '🏠'
+                },
+                { 
+                    href: '/cliente/compras', 
+                    label: getTextByMode({
+                        niños: '📦 Mis Compras',
+                        jóvenes: '📦 Compras',
+                        adultos: 'Mis Compras'
+                    }),
+                    icon: '📦'
+                }
+            ];
+        } else if (isAdministrativo) {
+            // Enlaces para administrativos
+            return [
+                { 
+                    href: '/', 
+                    label: getTextByMode({
+                        niños: '🏠 Inicio',
+                        jóvenes: '🏠 Home',
+                        adultos: 'Inicio'
+                    }),
+                    icon: '🏠'
+                },
+                { 
+                    href: '/dashboard', 
+                    label: getTextByMode({
+                        niños: '📊 Dashboard',
+                        jóvenes: '📊 Dashboard',
+                        adultos: 'Dashboard'
+                    }),
+                    icon: '📊'
+                }
+            ];
+        } else {
+            // Enlaces para usuarios no autenticados
+            return [
+                { 
+                    href: '/', 
+                    label: getTextByMode({
+                        niños: '🧃 Bebidas',
+                        jóvenes: '🧃 Bebidas',
+                        adultos: 'Explorar Bebidas'
+                    }),
+                    icon: '🧃'
+                }
+            ];
         }
-    ];
+    };
 
-    // Enlaces para clientes autenticados
-    const clientLinks = [
-        { 
-            href: '/mi-cuenta', 
-            label: getTextByMode({
-                niños: '👤 Mi Perfil',
-                jóvenes: '👤 Mi Cuenta',
-                adultos: 'Mi Cuenta'
-            }),
-            icon: '👤'
-        },
-        { 
-            href: '/mis-pedidos', 
-            label: getTextByMode({
-                niños: '📦 Mis Pedidos',
-                jóvenes: '📦 Pedidos',
-                adultos: 'Mis Pedidos'
-            }),
-            icon: '📦'
-        }
-    ];
-
-    // Enlaces para administradores
-    const adminLinks = [
-        { 
-            href: '/dashboard', 
-            label: getTextByMode({
-                niños: '🎮 Panel Admin',
-                jóvenes: '📊 Dashboard',
-                adultos: 'Dashboard'
-            }),
-            icon: '📊'
-        },
-        { 
-            href: '/usuarios', 
-            label: getTextByMode({
-                niños: '👥 Usuarios',
-                jóvenes: '👥 Users',
-                adultos: 'Usuarios'
-            }),
-            icon: '👥'
-        },
-        { 
-            href: '/clientes', 
-            label: getTextByMode({
-                niños: '😊 Clientes',
-                jóvenes: '👥 Clientes',
-                adultos: 'Clientes'
-            }),
-            icon: '👥'
-        },
-        { 
-            href: '/reportes', 
-            label: getTextByMode({
-                niños: '📊 Reportes',
-                jóvenes: '📊 Reports',
-                adultos: 'Reportes'
-            }),
-            icon: '📊'
-        }
-    ];
+    const mainLinks = getMainLinks();
 
     const isCurrentRoute = (href: string) => {
         if (href === '/') {
@@ -212,19 +227,18 @@ export default function Navbar({ user }: NavbarProps) {
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2">
                         <div className={`text-2xl font-bold ${colors.text}`}>
-                            {settings.ageMode === 'niños' && '🌟 '}
-                            {settings.ageMode === 'jóvenes' && '🔥 '}
+                            <span className="text-3xl mr-2">🧃</span>
                             {getTextByMode({
-                                niños: 'TiendaKids',
-                                jóvenes: 'ShopZone',
-                                adultos: 'Nuestra Tienda'
+                                niños: 'BebiFresh Kids',
+                                jóvenes: 'BebiFresh Zone',
+                                adultos: 'BebiFresh'
                             })}
                         </div>
                     </Link>
 
                     {/* Enlaces principales - Desktop */}
                     <div className="hidden md:flex items-center space-x-1">
-                        {publicLinks.map((link) => (
+                        {mainLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
@@ -236,48 +250,35 @@ export default function Navbar({ user }: NavbarProps) {
                                 {link.label}
                             </Link>
                         ))}
-
-                        {/* Enlaces específicos para clientes */}
-                        {isClient && (
-                            <>
-                                <div className="mx-2 h-6 w-px bg-white/20 dark:bg-gray-600"></div>
-                                {clientLinks.map((link) => (
-                                    <Link
-                                        key={link.href}
-                                        href={link.href}
-                                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${colors.text} ${
-                                            isCurrentRoute(link.href) ? colors.active : colors.hover
-                                        }`}
-                                    >
-                                        <span className="hidden lg:inline">{link.icon} </span>
-                                        {link.label}
-                                    </Link>
-                                ))}
-                            </>
-                        )}
-
-                        {/* Enlaces específicos para administradores */}
-                        {isAdmin && (
-                            <>
-                                <div className="mx-2 h-6 w-px bg-white/20 dark:bg-gray-600"></div>
-                                {adminLinks.map((link) => (
-                                    <Link
-                                        key={link.href}
-                                        href={link.href}
-                                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${colors.text} ${
-                                            isCurrentRoute(link.href) ? colors.active : colors.hover
-                                        }`}
-                                    >
-                                        <span className="hidden lg:inline">{link.icon} </span>
-                                        {link.label}
-                                    </Link>
-                                ))}
-                            </>
-                        )}
                     </div>
 
                     {/* Usuario y botones - Desktop */}
                     <div className="hidden md:flex items-center space-x-4">
+                        {/* Botón del carrito para clientes */}
+                        {isCliente && (
+                            <Link
+                                href="/carrito"
+                                className={`relative flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${colors.text} ${colors.hover}`}
+                            >
+                                <div className="relative">
+                                    <span className="text-lg">🛒</span>
+                                    {carritoCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex items-center justify-center font-medium text-[10px]">
+                                            {carritoCount > 99 ? '99+' : carritoCount}
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="hidden lg:inline">
+                                    {getTextByMode({
+                                        niños: 'Mi Carrito',
+                                        jóvenes: 'Carrito',
+                                        adultos: 'Carrito'
+                                    })}
+                                    {carritoCount > 0 && ` (${carritoCount})`}
+                                </span>
+                            </Link>
+                        )}
+
                         {user ? (
                             <div className="relative">
                                 <button
@@ -304,8 +305,49 @@ export default function Navbar({ user }: NavbarProps) {
                                             <div className="font-medium">{user.nombre}</div>
                                             <div className="text-xs text-gray-500">{user.email}</div>
                                         </div>
+                                        
+                                        {/* Enlaces específicos por tipo de usuario */}
+                                        {isCliente && (
+                                            <>
+                                                <Link
+                                                    href="/cliente/dashboard"
+                                                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                >
+                                                    {getTextByMode({
+                                                        niños: '🏠 Mi Dashboard',
+                                                        jóvenes: '🏠 Dashboard',
+                                                        adultos: 'Mi Dashboard'
+                                                    })}
+                                                </Link>
+                                                <Link
+                                                    href="/carrito"
+                                                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                >
+                                                    {getTextByMode({
+                                                        niños: '🛒 Mi Carrito',
+                                                        jóvenes: '🛒 Carrito',
+                                                        adultos: 'Mi Carrito'
+                                                    })}
+                                                    {carritoCount > 0 && ` (${carritoCount})`}
+                                                </Link>
+                                            </>
+                                        )}
+                                        
+                                        {isAdministrativo && (
+                                            <Link
+                                                href="/dashboard"
+                                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            >
+                                                {getTextByMode({
+                                                    niños: '📊 Dashboard Admin',
+                                                    jóvenes: '📊 Dashboard',
+                                                    adultos: 'Dashboard Admin'
+                                                })}
+                                            </Link>
+                                        )}
+                                        
                                         <Link
-                                            href="/perfil"
+                                            href="/profile"
                                             className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                             {getTextByMode({
@@ -381,7 +423,7 @@ export default function Navbar({ user }: NavbarProps) {
                         <div className="px-2 pt-2 pb-3 space-y-1">
                             {/* Enlaces públicos */}
                             <div className="space-y-1">
-                                {publicLinks.map((link) => (
+                                {mainLinks.map((link) => (
                                     <Link
                                         key={link.href}
                                         href={link.href}
@@ -395,58 +437,38 @@ export default function Navbar({ user }: NavbarProps) {
                                 ))}
                             </div>
 
-                            {/* Enlaces para clientes */}
-                            {isClient && (
-                                <>
-                                    <div className="border-t border-white/20 dark:border-gray-700 my-2 pt-2">
-                                        <div className={`px-3 py-1 text-xs font-medium ${colors.text} opacity-75`}>
-                                            {getTextByMode({
-                                                niños: '👤 Mi Zona',
-                                                jóvenes: 'Mi Cuenta',
-                                                adultos: 'Área Personal'
-                                            })}
+                            {/* Carrito en móvil para clientes */}
+                            {isCliente && (
+                                <div className="border-t border-white/20 dark:border-gray-700 pt-4 pb-2">
+                                    <Link
+                                        href="/carrito"
+                                        className={`flex items-center justify-between px-3 py-3 rounded-md text-base font-medium ${colors.text} ${colors.hover}`}
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        <div className="flex items-center space-x-3">
+                                            <div className="relative">
+                                                <span className="text-xl">🛒</span>
+                                                {carritoCount > 0 && (
+                                                    <span className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[16px] h-[16px] flex items-center justify-center font-medium text-[10px]">
+                                                        {carritoCount > 99 ? '99+' : carritoCount}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span>
+                                                {getTextByMode({
+                                                    niños: 'Mi Carrito de Bebidas',
+                                                    jóvenes: 'Mi Carrito',
+                                                    adultos: 'Mi Carrito'
+                                                })}
+                                            </span>
                                         </div>
-                                        {clientLinks.map((link) => (
-                                            <Link
-                                                key={link.href}
-                                                href={link.href}
-                                                className={`block px-3 py-2 rounded-md text-base font-medium ${colors.text} ${
-                                                    isCurrentRoute(link.href) ? colors.active : colors.hover
-                                                }`}
-                                                onClick={() => setIsMenuOpen(false)}
-                                            >
-                                                {link.icon} {link.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Enlaces para administradores */}
-                            {isAdmin && (
-                                <>
-                                    <div className="border-t border-white/20 dark:border-gray-700 my-2 pt-2">
-                                        <div className={`px-3 py-1 text-xs font-medium ${colors.text} opacity-75`}>
-                                            {getTextByMode({
-                                                niños: '🎮 Panel Admin',
-                                                jóvenes: 'Administración',
-                                                adultos: 'Panel de Administración'
-                                            })}
-                                        </div>
-                                        {adminLinks.map((link) => (
-                                            <Link
-                                                key={link.href}
-                                                href={link.href}
-                                                className={`block px-3 py-2 rounded-md text-base font-medium ${colors.text} ${
-                                                    isCurrentRoute(link.href) ? colors.active : colors.hover
-                                                }`}
-                                                onClick={() => setIsMenuOpen(false)}
-                                            >
-                                                {link.icon} {link.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </>
+                                        {carritoCount > 0 && (
+                                            <span className="bg-cyan-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center font-medium">
+                                                {carritoCount > 99 ? '99+' : carritoCount}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </div>
                             )}
 
                             {/* Usuario/Auth en móvil */}
@@ -457,8 +479,38 @@ export default function Navbar({ user }: NavbarProps) {
                                             <div className="font-medium">👤 {user.nombre}</div>
                                             <div className="text-xs opacity-75">{user.email}</div>
                                         </div>
+                                        
+                                        {/* Enlaces específicos por tipo de usuario en móvil */}
+                                        {isCliente && (
+                                            <Link
+                                                href="/cliente/dashboard"
+                                                className={`block px-3 py-2 rounded-md text-base font-medium ${colors.text} ${colors.hover}`}
+                                                onClick={() => setIsMenuOpen(false)}
+                                            >
+                                                🏠 {getTextByMode({
+                                                    niños: 'Mi Dashboard',
+                                                    jóvenes: 'Dashboard',
+                                                    adultos: 'Mi Dashboard'
+                                                })}
+                                            </Link>
+                                        )}
+                                        
+                                        {isAdministrativo && (
+                                            <Link
+                                                href="/dashboard"
+                                                className={`block px-3 py-2 rounded-md text-base font-medium ${colors.text} ${colors.hover}`}
+                                                onClick={() => setIsMenuOpen(false)}
+                                            >
+                                                📊 {getTextByMode({
+                                                    niños: 'Dashboard Admin',
+                                                    jóvenes: 'Dashboard',
+                                                    adultos: 'Dashboard Admin'
+                                                })}
+                                            </Link>
+                                        )}
+                                        
                                         <Link
-                                            href="/perfil"
+                                            href="/profile"
                                             className={`block px-3 py-2 rounded-md text-base font-medium ${colors.text} ${colors.hover}`}
                                             onClick={() => setIsMenuOpen(false)}
                                         >
