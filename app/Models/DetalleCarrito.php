@@ -26,7 +26,7 @@ class DetalleCarrito extends Model
      */
     protected $fillable = [
         'carrito_id',
-        'producto_id',
+        'producto_almacen_id',
         'cantidad',
         'precio_unitario',
         'subtotal',
@@ -51,11 +51,21 @@ class DetalleCarrito extends Model
     }
 
     /**
-     * Relación con Producto
+     * Relación con ProductoAlmacen
+     */
+    public function productoAlmacen(): BelongsTo
+    {
+        return $this->belongsTo(ProductoAlmacen::class, 'producto_almacen_id');
+    }
+
+    /**
+     * Relación con Producto a través de ProductoAlmacen
      */
     public function producto(): BelongsTo
     {
-        return $this->belongsTo(Producto::class);
+        return $this->belongsTo(Producto::class, 'producto_almacen_id', 'id')
+                   ->join('producto_almacen', 'producto.id', '=', 'producto_almacen.producto_id')
+                   ->where('producto_almacen.id', $this->producto_almacen_id);
     }
 
     /**

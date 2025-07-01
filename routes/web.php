@@ -14,6 +14,8 @@ use App\Http\Controllers\NotaCompraController;
 use App\Http\Controllers\PromocionController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\PermisoController;
+use App\Http\Controllers\CarritoController;
+use App\Http\Controllers\ClienteDashboardController;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,21 +31,60 @@ Route::get('/modes-demo', function () {
 // Rutas públicas para productos (sin autenticación requerida)
 Route::get('/product/{producto}', [ProductoController::class, 'showPublic'])->name('product.show');
 
-// Dashboard - verificar permisos de manera flexible
+// Dashboard admin - verificar permisos de manera flexible (NO para clientes solo)
 Route::get('dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'redirect.cliente'])
     ->name('dashboard');
 
 // Rutas protegidas con autenticación
 Route::middleware(['auth', 'verified'])->group(function () {
     
+    // API routes para funcionalidades dinámicas
+    Route::prefix('api')->name('api.')->group(function () {
+        // Contador del carrito para el header
+        Route::get('/carrito/count', function () {
+            $user = auth()->user();
+            if (!$user || !$user->cliente) {
+                return response()->json(['count' => 0]);
+            }
+            
+            $carrito = \App\Models\Carrito::where('cliente_id', $user->cliente->id)
+                                        ->where('estado', 'activo')
+                                        ->first();
+            
+            $count = $carrito ? $carrito->total_productos : 0;
+            return response()->json(['count' => $count]);
+        })->name('carrito.count');
+
+        // Obtener producto_almacen_id para agregar al carrito
+        Route::get('/producto/{producto}/almacen', function ($productoId) {
+            $productoAlmacen = \App\Models\ProductoAlmacen::where('producto_id', $productoId)
+                                                        ->where('stock', '>', 0)
+                                                        ->first();
+            
+            if (!$productoAlmacen) {
+                return response()->json(['error' => 'Producto no disponible'], 404);
+            }
+            
+            return response()->json(['producto_almacen_id' => $productoAlmacen->id]);
+        })->name('producto.almacen');
+    });
+    
+    // Dashboard especial para clientes
+    Route::middleware(['role:cliente'])->group(function () {
+        Route::get('/cliente/dashboard', [ClienteDashboardController::class, 'index'])->name('cliente.dashboard');
+        Route::get('/cliente/compras', [ClienteDashboardController::class, 'compras'])->name('cliente.compras');
+        Route::get('/cliente/compras/{venta}', [ClienteDashboardController::class, 'verCompra'])->name('cliente.compra.detalle');
+    });
+    
     // Rutas de carrito para clientes autenticados
     Route::prefix('carrito')->name('carrito.')->group(function () {
-        Route::get('/', [ProductoController::class, 'carritoIndex'])->name('index');
-        Route::post('/agregar', [ProductoController::class, 'agregarAlCarrito'])->name('agregar');
-        Route::patch('/actualizar/{detalleCarrito}', [ProductoController::class, 'actualizarCarrito'])->name('actualizar');
-        Route::delete('/eliminar/{detalleCarrito}', [ProductoController::class, 'eliminarDelCarrito'])->name('eliminar');
-        Route::post('/checkout', [ProductoController::class, 'checkout'])->name('checkout');
+        Route::get('/', [CarritoController::class, 'index'])->name('index');
+        Route::post('/agregar', [CarritoController::class, 'agregar'])->name('agregar');
+        Route::patch('/actualizar/{detalleCarrito}', [CarritoController::class, 'actualizar'])->name('actualizar');
+        Route::delete('/eliminar/{detalleCarrito}', [CarritoController::class, 'eliminar'])->name('eliminar');
+        Route::delete('/vaciar', [CarritoController::class, 'vaciar'])->name('vaciar');
+        Route::post('/checkout', [CarritoController::class, 'checkout'])->name('checkout');
     });
     
     // Gestión de usuarios - solo para admin y usuarios con permisos específicos

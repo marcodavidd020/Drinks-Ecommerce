@@ -31,6 +31,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'can.manage.promotions' => \App\Http\Middleware\CanManagePromotions::class,
             'has.gestion.role' => \App\Http\Middleware\HasGestionRole::class,
             'has.roles' => \App\Http\Middleware\HasRoles::class,
+            'check.permission' => \App\Http\Middleware\CheckPermission::class,
+            'redirect.cliente' => \App\Http\Middleware\RedirectClienteToDashboard::class,
+            // Middlewares de Spatie Laravel Permission
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

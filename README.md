@@ -354,5 +354,3 @@ tests/
 Este proyecto es de código abierto bajo la licencia MIT.
 
 ---
-
-**Desarrollado con ❤️ usando Laravel TALL Stack** 

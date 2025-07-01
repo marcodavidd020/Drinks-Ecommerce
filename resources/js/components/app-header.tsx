@@ -11,7 +11,8 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingCart } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -46,6 +47,50 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const [carritoCount, setCarritoCount] = useState(0);
+    
+    // Verificar si el usuario es cliente (tiene rol cliente y está autenticado)
+    const userRoles = (auth.user?.roles as any[]) || [];
+    const isCliente = auth.user && userRoles.some(role => role.name === 'cliente') && 
+                     !userRoles.some(role => ['admin', 'empleado', 'organizador', 'vendedor', 'almacenista'].includes(role.name));
+
+
+
+    // Función para obtener el conteo del carrito
+    const fetchCarritoCount = async () => {
+        if (!isCliente) return;
+        
+        try {
+            const response = await fetch('/api/carrito/count', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setCarritoCount(data.count || 0);
+
+            }
+        } catch (error) {
+            console.error('Error obteniendo contador del carrito:', error);
+        }
+    };
+
+    // Cargar el conteo del carrito al montar el componente
+    useEffect(() => {
+        fetchCarritoCount();
+    }, [isCliente]);
+
+    // Escuchar eventos de actualización del carrito
+    useEffect(() => {
+        const handleCarritoUpdate = () => {
+            fetchCarritoCount();
+        };
+
+        window.addEventListener('carrito-updated', handleCarritoUpdate);
+        return () => window.removeEventListener('carrito-updated', handleCarritoUpdate);
+    }, []);
+
     return (
         <>
             <div className="border-sidebar-border/80 border-b">
@@ -72,6 +117,18 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
+                                            {/* Agregar enlace al carrito en mobile */}
+                                            {isCliente && (
+                                                <Link href="/carrito" className="flex items-center space-x-2 font-medium">
+                                                    <ShoppingCart className="h-5 w-5" />
+                                                    <span>Mi Carrito</span>
+                                                    {carritoCount > 0 && (
+                                                        <span className="bg-cyan-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                                                            {carritoCount}
+                                                        </span>
+                                                    )}
+                                                </Link>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col space-y-4">
@@ -94,7 +151,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/dashboard" prefetch className="flex items-center space-x-2">
+                    <Link href={isCliente ? "/cliente/dashboard" : "/dashboard"} prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
@@ -102,7 +159,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                {mainNavItems.map((item, index) => (
+                                {!isCliente && mainNavItems.map((item, index) => (
                                     <NavigationMenuItem key={index} className="relative flex h-full items-center">
                                         <Link
                                             href={item.href}
@@ -120,17 +177,100 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         )}
                                     </NavigationMenuItem>
                                 ))}
+                                
+                                {/* Navegación especial para clientes */}
+                                {isCliente && (
+                                    <>
+                                        <NavigationMenuItem className="relative flex h-full items-center">
+                                            <Link
+                                                href="/"
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    page.url === '/' && activeItemStyles,
+                                                    'h-9 cursor-pointer px-3',
+                                                )}
+                                            >
+                                                <span className="mr-2">🧃</span>
+                                                Explorar Bebidas
+                                            </Link>
+                                            {page.url === '/' && (
+                                                <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-cyan-500"></div>
+                                            )}
+                                        </NavigationMenuItem>
+                                        
+                                        <NavigationMenuItem className="relative flex h-full items-center">
+                                            <Link
+                                                href="/cliente/dashboard"
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    page.url === '/cliente/dashboard' && activeItemStyles,
+                                                    'h-9 cursor-pointer px-3',
+                                                )}
+                                            >
+                                                <span className="mr-2">🏠</span>
+                                                Mi Dashboard
+                                            </Link>
+                                            {page.url === '/cliente/dashboard' && (
+                                                <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-cyan-500"></div>
+                                            )}
+                                        </NavigationMenuItem>
+                                        
+                                        <NavigationMenuItem className="relative flex h-full items-center">
+                                            <Link
+                                                href="/cliente/compras"
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    page.url.startsWith('/cliente/compras') && activeItemStyles,
+                                                    'h-9 cursor-pointer px-3',
+                                                )}
+                                            >
+                                                <span className="mr-2">📦</span>
+                                                Mis Compras
+                                            </Link>
+                                            {page.url.startsWith('/cliente/compras') && (
+                                                <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-cyan-500"></div>
+                                            )}
+                                        </NavigationMenuItem>
+                                    </>
+                                )}
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>
 
                     <div className="ml-auto flex items-center space-x-2">
+
                         <div className="relative flex items-center space-x-1">
                             <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
+                            
+                            {/* Botón del carrito solo para clientes */}
+                            {isCliente && (
+                                <TooltipProvider delayDuration={0}>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <Link
+                                                href="/carrito"
+                                                className="group text-accent-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring ml-1 inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 relative"
+                                            >
+                                                <span className="sr-only">Mi Carrito</span>
+                                                <ShoppingCart className="size-5 opacity-80 group-hover:opacity-100 text-cyan-600 dark:text-cyan-400" />
+                                                {carritoCount > 0 && (
+                                                    <span className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex items-center justify-center font-medium">
+                                                        {carritoCount > 99 ? '99+' : carritoCount}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Mi Carrito {carritoCount > 0 && `(${carritoCount})`}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
+                            
                             <div className="hidden lg:flex">
-                                {rightNavItems.map((item) => (
+                                {!isCliente && rightNavItems.map((item) => (
                                     <TooltipProvider key={item.title} delayDuration={0}>
                                         <Tooltip>
                                             <TooltipTrigger>
@@ -157,7 +297,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage src={auth.user?.avatar} alt={auth.user?.nombre || 'Usuario'} />
-                                        <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                        <AvatarFallback className={`rounded-lg text-black dark:text-white ${
+                                            isCliente ? 'bg-cyan-200 dark:bg-cyan-700' : 'bg-neutral-200 dark:bg-neutral-700'
+                                        }`}>
                                             {getInitials(auth.user?.nombre)}
                                         </AvatarFallback>
                                     </Avatar>

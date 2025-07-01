@@ -52,6 +52,16 @@ class Carrito extends Model
     }
 
     /**
+     * Relación con Usuario a través de Cliente
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cliente_id', 'id')
+                   ->join('cliente', 'user.id', '=', 'cliente.user_id')
+                   ->where('cliente.id', $this->cliente_id);
+    }
+
+    /**
      * Relación con DetalleCarrito
      */
     public function detalles(): HasMany
@@ -64,7 +74,9 @@ class Carrito extends Model
      */
     public function calcularTotal(): float
     {
-        return $this->detalles()->sum('subtotal');
+        $total = $this->detalles()->sum('subtotal');
+        $this->update(['total' => $total]);
+        return $total;
     }
 
     /**
@@ -81,6 +93,23 @@ class Carrito extends Model
     public function getTotalProductosAttribute(): int
     {
         return $this->detalles()->sum('cantidad');
+    }
+
+    /**
+     * Obtener carrito activo del cliente o crear uno nuevo
+     */
+    public static function obtenerOCrearCarritoActivo(int $clienteId): self
+    {
+        return static::firstOrCreate(
+            [
+                'cliente_id' => $clienteId,
+                'estado' => 'activo'
+            ],
+            [
+                'fecha' => now(),
+                'total' => 0
+            ]
+        );
     }
 
     /**
