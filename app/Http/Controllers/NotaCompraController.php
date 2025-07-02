@@ -106,7 +106,7 @@ class NotaCompraController extends Controller
             'estado' => 'required|in:pendiente,recibida,cancelada',
             'observaciones' => 'nullable|string|max:500',
             'productos' => 'required|array|min:1',
-            'productos.*.id' => 'required|exists:productos,id',
+            'productos.*.id' => 'required|exists:producto,id',
             'productos.*.cantidad' => 'required|integer|min:1',
             'productos.*.precio_unitario' => 'required|numeric|min:0',
         ]);
@@ -212,7 +212,7 @@ class NotaCompraController extends Controller
             'estado' => 'required|in:pendiente,recibida,cancelada',
             'observaciones' => 'nullable|string|max:500',
             'productos' => 'required|array|min:1',
-            'productos.*.id' => 'required|exists:productos,id',
+            'productos.*.id' => 'required|exists:producto,id',
             'productos.*.cantidad' => 'required|integer|min:1',
             'productos.*.precio_unitario' => 'required|numeric|min:0',
         ]);

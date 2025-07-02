@@ -1,6 +1,13 @@
 import { BaseIndex } from '@/components/DataTable';
 import { formatCurrency } from '@/lib/currency';
 
+interface Cliente {
+    id: number;
+    nombre: string;
+    email: string;
+    nit: string;
+}
+
 interface Venta {
     id: number;
     fecha: string;
@@ -8,6 +15,7 @@ interface Venta {
     estado: 'pendiente' | 'completada' | 'cancelada';
     observaciones?: string;
     productos_count: number;
+    cliente?: Cliente;
     created_at: string;
     updated_at: string;
 }
@@ -77,6 +85,35 @@ export default function VentasIndex({ ventas, filters }: VentasIndexProps) {
             },
             render: (fecha: string) => formatDate(fecha),
             sortable: true,
+        },
+        {
+            key: 'cliente',
+            label: {
+                niños: '👤 Cliente',
+                jóvenes: 'Cliente',
+                adultos: 'Cliente',
+            },
+            render: (cliente: Cliente | undefined) => {
+                if (!cliente) {
+                    return (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Sin cliente asignado
+                        </div>
+                    );
+                }
+                
+                return (
+                    <div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                            {cliente.nombre}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {cliente.email}
+                        </div>
+                    </div>
+                );
+            },
+            sortable: false,
         },
         {
             key: 'observaciones',

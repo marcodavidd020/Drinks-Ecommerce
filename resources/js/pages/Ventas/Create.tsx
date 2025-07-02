@@ -30,12 +30,20 @@ interface DetalleVenta {
     total: number;
 }
 
+interface Cliente {
+    id: number;
+    nombre: string;
+    email: string;
+    nit: string;
+}
+
 interface VentaCreateProps {
     productos: Producto[];
+    clientes: Cliente[];
     fecha_actual: string;
 }
 
-export default function VentaCreate({ productos, fecha_actual }: VentaCreateProps) {
+export default function VentaCreate({ productos, clientes, fecha_actual }: VentaCreateProps) {
     const { getTextByMode, getModeClasses, settings } = useAppModeText();
     const [detalles, setDetalles] = useState<DetalleVenta[]>([]);
     const [productoSeleccionado, setProductoSeleccionado] = useState<number | ''>('');
@@ -45,6 +53,7 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
     const [productosFiltrados, setProductosFiltrados] = useState<Producto[]>(productos);
 
     const { data, setData, post, processing, errors, reset } = useForm({
+        cliente_id: '',
         fecha: fecha_actual,
         observaciones: '',
         detalles: [] as Array<{
@@ -172,6 +181,11 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
+        if (!data.cliente_id) {
+            alert('Debe seleccionar un cliente');
+            return;
+        }
+
         if (detalles.length === 0) {
             alert('Debe agregar al menos un producto');
             return;
@@ -224,6 +238,22 @@ export default function VentaCreate({ productos, fecha_actual }: VentaCreateProp
                                 })}
                             </h2>
                             <div className="space-y-4">
+                                <SelectField
+                                    label={getTextByMode({
+                                        niños: '👤 Cliente',
+                                        jóvenes: 'Cliente',
+                                        adultos: 'Seleccionar Cliente',
+                                    })}
+                                    value={data.cliente_id.toString()}
+                                    onChange={(e) => setData('cliente_id', e.target.value)}
+                                    placeholder="Seleccione un cliente"
+                                    options={clientes.map(cliente => ({
+                                        value: cliente.id.toString(),
+                                        label: `${cliente.nombre} - ${cliente.email}${cliente.nit ? ` (NIT: ${cliente.nit})` : ''}`
+                                    }))}
+                                    error={errors.cliente_id}
+                                />
+
                                 <InputField
                                     label={getTextByMode({
                                         niños: '📅 Fecha',

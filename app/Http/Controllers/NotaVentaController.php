@@ -45,13 +45,18 @@ class NotaVentaController extends Controller
 
         // Construir la consulta
         $query = NotaVenta::query()
+            ->with(['cliente.user'])
             ->withCount('detalles as productos_count');
         
         // Aplicar filtros de búsqueda
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                  ->orWhere('observaciones', 'like', "%{$search}%");
+                  ->orWhere('observaciones', 'like', "%{$search}%")
+                  ->orWhereHas('cliente.user', function($query) use ($search) {
+                      $query->where('nombre', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                  });
             });
         }
         
@@ -65,6 +70,26 @@ class NotaVentaController extends Controller
         
         // Ejecutar la consulta con paginación
         $ventas = $query->paginate($perPage, ['*'], 'page', $page)->withQueryString();
+        
+        // Transformar los datos para incluir información del cliente
+        $ventas->getCollection()->transform(function ($venta) {
+            return [
+                'id' => $venta->id,
+                'fecha' => $venta->fecha,
+                'total' => $venta->total,
+                'estado' => $venta->estado,
+                'observaciones' => $venta->observaciones,
+                'productos_count' => $venta->productos_count,
+                'cliente' => $venta->cliente ? [
+                    'id' => $venta->cliente->id,
+                    'nombre' => $venta->cliente->user->nombre,
+                    'email' => $venta->cliente->user->email,
+                    'nit' => $venta->cliente->nit,
+                ] : null,
+                'created_at' => $venta->created_at,
+                'updated_at' => $venta->updated_at,
+            ];
+        });
 
         // Obtener estadísticas básicas
         $estadisticas = [
@@ -118,8 +143,21 @@ class NotaVentaController extends Controller
                 ];
             });
 
+        // Obtener clientes disponibles
+        $clientes = \App\Models\Cliente::with('user')
+            ->get()
+            ->map(function ($cliente) {
+                return [
+                    'id' => $cliente->id,
+                    'nombre' => $cliente->user->nombre,
+                    'email' => $cliente->user->email,
+                    'nit' => $cliente->nit,
+                ];
+            });
+
         return Inertia::render('Ventas/Create', [
             'productos' => $productos,
+            'clientes' => $clientes,
             'fecha_actual' => now()->format('Y-m-d'),
         ]);
     }
@@ -131,10 +169,11 @@ class NotaVentaController extends Controller
     {
         // Validar datos de entrada
         $validated = $request->validate([
+            'cliente_id' => 'required|exists:cliente,id',
             'fecha' => 'required|date',
             'observaciones' => 'nullable|string|max:500',
             'detalles' => 'required|array|min:1',
-            'detalles.*.producto_id' => 'required|exists:productos,id',
+            'detalles.*.producto_id' => 'required|exists:producto,id',
             'detalles.*.cantidad' => 'required|integer|min:1',
             'detalles.*.total' => 'required|numeric|min:0',
         ]);
@@ -146,6 +185,7 @@ class NotaVentaController extends Controller
             
             // Crear la nota de venta
             $notaVenta = NotaVenta::create([
+                'cliente_id' => $validated['cliente_id'],
                 'fecha' => $validated['fecha'],
                 'total' => $total,
                 'estado' => 'pendiente',
@@ -202,7 +242,7 @@ class NotaVentaController extends Controller
     public function show(NotaVenta $venta)
     {
         // Cargar las relaciones necesarias
-        $venta->load(['detalles.productoAlmacen.producto.categoria']);
+        $venta->load(['detalles.productoAlmacen.producto.categoria', 'cliente.user']);
         
         // Calcular totales adicionales
         $venta->setAttribute('total_productos', $venta->detalles->sum('cantidad'));
@@ -234,6 +274,12 @@ class NotaVentaController extends Controller
             'estado' => $venta->estado,
             'observaciones' => $venta->observaciones,
             'total_productos' => $venta->total_productos,
+            'cliente' => [
+                'id' => $venta->cliente->id,
+                'nombre' => $venta->cliente->user->nombre,
+                'email' => $venta->cliente->user->email,
+                'nit' => $venta->cliente->nit,
+            ],
             'detalles' => $detalles,
             'created_at' => $venta->created_at->toISOString(),
             'updated_at' => $venta->updated_at->toISOString(),

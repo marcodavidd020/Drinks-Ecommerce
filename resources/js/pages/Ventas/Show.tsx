@@ -25,6 +25,13 @@ interface DetalleVenta {
     total: number;
 }
 
+interface Cliente {
+    id: number;
+    nombre: string;
+    email: string;
+    nit: string;
+}
+
 interface Venta {
     id: number;
     fecha: string;
@@ -33,6 +40,7 @@ interface Venta {
     estado: 'pendiente' | 'completada' | 'cancelada';
     observaciones?: string;
     total_productos: number;
+    cliente: Cliente;
     detalles: DetalleVenta[];
     created_at: string;
     updated_at: string;
@@ -112,6 +120,28 @@ export default function VentaShow({ venta }: VentaShowProps) {
                 adultos: 'Número de Venta',
             }),
             value: `#${venta.id.toString().padStart(6, '0')}`,
+        },
+        {
+            label: getTextByMode({
+                niños: '👤 Cliente',
+                jóvenes: 'Cliente',
+                adultos: 'Cliente',
+            }),
+            value: (
+                <div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                        {venta.cliente.nombre}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {venta.cliente.email}
+                        {venta.cliente.nit && (
+                            <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                NIT: {venta.cliente.nit}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            ),
         },
         {
             label: getTextByMode({

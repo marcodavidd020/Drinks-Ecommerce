@@ -92,7 +92,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:user'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'celular' => ['nullable', 'string', 'max:20'],
             'genero' => ['nullable', 'string', 'in:masculino,femenino,otro'],
@@ -151,7 +151,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:user,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'celular' => ['nullable', 'string', 'max:20'],
             'genero' => ['nullable', 'string', 'in:masculino,femenino,otro'],

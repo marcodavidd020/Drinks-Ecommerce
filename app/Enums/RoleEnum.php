@@ -10,6 +10,8 @@ enum RoleEnum: string
     case CLIENTE = 'cliente';
     case EMPLEADO = 'empleado';
     case ORGANIZADOR = 'organizador';
+    case VENDEDOR = 'vendedor';
+    case ALMACENISTA = 'almacenista';
 
     /**
      * Obtiene todos los valores de los roles
@@ -34,7 +36,7 @@ enum RoleEnum: string
      */
     public function esGestion(): bool
     {
-        return in_array($this, [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR]);
+        return in_array($this, [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA]);
     }
 
     /**
@@ -55,6 +57,8 @@ enum RoleEnum: string
             self::CLIENTE => 'Cliente',
             self::EMPLEADO => 'Empleado',
             self::ORGANIZADOR => 'Organizador',
+            self::VENDEDOR => 'Vendedor',
+            self::ALMACENISTA => 'Almacenista',
         };
     }
 
@@ -68,6 +72,8 @@ enum RoleEnum: string
             self::CLIENTE => 'Acceso al portal de cliente para ver productos y promociones',
             self::EMPLEADO => 'Gestión operativa de productos, ventas, compras e inventario',
             self::ORGANIZADOR => 'Gestión de eventos, promociones y reportes de ventas',
+            self::VENDEDOR => 'Gestión de ventas y atención al cliente',
+            self::ALMACENISTA => 'Gestión de inventario y almacén',
         };
     }
 
@@ -81,6 +87,8 @@ enum RoleEnum: string
             self::CLIENTE => 'green',
             self::EMPLEADO => 'blue',
             self::ORGANIZADOR => 'purple',
+            self::VENDEDOR => 'orange',
+            self::ALMACENISTA => 'cyan',
         };
     }
 
@@ -94,6 +102,8 @@ enum RoleEnum: string
             self::CLIENTE => '👤',
             self::EMPLEADO => '👷',
             self::ORGANIZADOR => '🎯',
+            self::VENDEDOR => '💼',
+            self::ALMACENISTA => '📦',
         };
     }
 
@@ -105,7 +115,7 @@ enum RoleEnum: string
     public function puedeAsignar(): array
     {
         return match ($this) {
-            self::ADMIN => [self::EMPLEADO, self::ORGANIZADOR, self::CLIENTE],
+            self::ADMIN => [self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA, self::CLIENTE],
             default => [],
         };
     }
@@ -127,7 +137,7 @@ enum RoleEnum: string
      */
     public static function gestion(): array
     {
-        return [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR];
+        return [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA];
     }
 
     /**
@@ -137,7 +147,7 @@ enum RoleEnum: string
      */
     public static function dashboardAccess(): array
     {
-        return [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::CLIENTE];
+        return [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA, self::CLIENTE];
     }
 
     /**
@@ -147,7 +157,7 @@ enum RoleEnum: string
      */
     public static function operativos(): array
     {
-        return [self::EMPLEADO, self::ORGANIZADOR];
+        return [self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA];
     }
 
     /**
@@ -159,6 +169,8 @@ enum RoleEnum: string
             self::ADMIN => 100,
             self::EMPLEADO => 60,
             self::ORGANIZADOR => 60,
+            self::VENDEDOR => 50,
+            self::ALMACENISTA => 50,
             self::CLIENTE => 20,
         };
     }
@@ -203,6 +215,17 @@ enum RoleEnum: string
                 'ver_productos', 'ver_ventas', 'crear_ventas',
                 'ver_promociones', 'crear_promociones', 'editar_promociones',
                 'ver_reportes',
+            ],
+            self::VENDEDOR => [
+                // Permisos de ventas
+                'ver_productos', 'ver_clientes', 'crear_clientes', 'editar_clientes',
+                'ver_ventas', 'crear_ventas', 'ver_promociones',
+            ],
+            self::ALMACENISTA => [
+                // Permisos de inventario
+                'ver_productos', 'editar_productos',
+                'ver_inventario', 'ajustar_inventario',
+                'ver_compras',
             ],
             self::CLIENTE => [
                 // Solo lectura
