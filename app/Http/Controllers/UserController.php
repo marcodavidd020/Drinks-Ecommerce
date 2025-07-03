@@ -124,8 +124,16 @@ class UserController extends Controller
     {
         $user->load(['roles', 'permissions', 'cliente', 'administrativo']);
         
+        // Determinar información de navegación
+        $currentUser = Auth::user();
+        $isViewingOwnProfile = $currentUser && $currentUser->id === $user->id;
+        $canManageUsers = $currentUser && (\App\Helpers\AuthHelper::canManageUsers() || \App\Helpers\AuthHelper::isAdmin());
+        
         return Inertia::render('Users/Show', [
-            'user' => $user
+            'user' => $user,
+            'isViewingOwnProfile' => $isViewingOwnProfile,
+            'canManageUsers' => $canManageUsers,
+            'currentUserRole' => $currentUser?->roles->first()?->name,
         ]);
     }
 

@@ -347,7 +347,7 @@ export default function Navbar({ user }: NavbarProps) {
                                         )}
                                         
                                         <Link
-                                            href="/profile"
+                                            href="/settings/profile"
                                             className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                             {getTextByMode({
@@ -510,7 +510,7 @@ export default function Navbar({ user }: NavbarProps) {
                                         )}
                                         
                                         <Link
-                                            href="/profile"
+                                            href="/settings/profile"
                                             className={`block px-3 py-2 rounded-md text-base font-medium ${colors.text} ${colors.hover}`}
                                             onClick={() => setIsMenuOpen(false)}
                                         >

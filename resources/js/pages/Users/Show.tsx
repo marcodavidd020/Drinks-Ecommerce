@@ -21,10 +21,85 @@ interface User {
 
 interface UserShowProps {
     user: User;
+    isViewingOwnProfile: boolean;
+    canManageUsers: boolean;
+    currentUserRole?: string;
 }
 
-export default function UserShow({ user }: UserShowProps) {
+export default function UserShow({ user, isViewingOwnProfile, canManageUsers, currentUserRole }: UserShowProps) {
     const { settings } = useAppMode();
+
+    // Determinar la URL de regreso según el contexto
+    const getBackHref = () => {
+        if (canManageUsers) {
+            // Si puede gestionar usuarios, va a la lista de usuarios
+            return '/users';
+        } else if (isViewingOwnProfile) {
+            // Si está viendo su propio perfil, va al dashboard apropiado
+            if (currentUserRole === 'cliente') {
+                return '/cliente/dashboard';
+            } else {
+                return '/dashboard';
+            }
+        } else {
+            // En caso de duda, va al dashboard
+            return '/dashboard';
+        }
+    };
+
+    const getBackText = () => {
+        if (canManageUsers) {
+            return getTextByMode({
+                niños: '⬅️ Volver a Usuarios',
+                jóvenes: 'Volver a Usuarios',
+                adultos: 'Volver a Usuarios',
+            });
+        } else if (isViewingOwnProfile) {
+            return getTextByMode({
+                niños: '⬅️ Volver al Dashboard',
+                jóvenes: 'Volver al Dashboard',
+                adultos: 'Volver al Dashboard',
+            });
+        } else {
+            return getTextByMode({
+                niños: '⬅️ Volver',
+                jóvenes: 'Volver',
+                adultos: 'Volver',
+            });
+        }
+    };
+
+    // Determinar si se puede editar el perfil
+    const getEditHref = () => {
+        if (canManageUsers) {
+            // Si puede gestionar usuarios, puede editar cualquier usuario
+            return `/users/${user.id}/edit`;
+        } else if (isViewingOwnProfile) {
+            // Si está viendo su propio perfil, va a configuración personal
+            return '/settings/profile';
+        } else {
+            // Si no puede gestionar usuarios ni es su propio perfil, no puede editar
+            return null;
+        }
+    };
+
+    const getEditText = () => {
+        if (canManageUsers) {
+            return getTextByMode({
+                niños: '✏️ Editar Usuario',
+                jóvenes: 'Editar Usuario',
+                adultos: 'Editar Usuario',
+            });
+        } else if (isViewingOwnProfile) {
+            return getTextByMode({
+                niños: '✏️ Editar mi Perfil',
+                jóvenes: 'Editar Perfil',
+                adultos: 'Editar Perfil',
+            });
+        } else {
+            return null;
+        }
+    };
 
     // Validación para evitar errores si user no está definido
     if (!user) {
@@ -36,10 +111,10 @@ export default function UserShow({ user }: UserShowProps) {
                         <h1 className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">Usuario no encontrado</h1>
                         <p className="mb-4 text-gray-600 dark:text-gray-400">El usuario que estás buscando no existe o ha sido eliminado.</p>
                         <Link
-                            href="/users"
+                            href={getBackHref()}
                             className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700"
                         >
-                            Volver a Usuarios
+                            {getBackText()}
                         </Link>
                     </div>
                 </div>
@@ -263,27 +338,19 @@ export default function UserShow({ user }: UserShowProps) {
             <div className={`space-y-6 ${getModeClasses()}`}>
                 <ShowHeader
                     title={getTextByMode({
-                        niños: `👀 Información de ${user.nombre}`,
-                        jóvenes: `Detalles de ${user.nombre}`,
-                        adultos: `Información del Usuario`,
+                        niños: isViewingOwnProfile ? `👀 Mi Información` : `👀 Información de ${user.nombre}`,
+                        jóvenes: isViewingOwnProfile ? `Mi Perfil` : `Detalles de ${user.nombre}`,
+                        adultos: isViewingOwnProfile ? `Mi Perfil` : `Información del Usuario`,
                     })}
                     description={getTextByMode({
-                        niños: 'Aquí puedes ver toda la información de tu usuario genial',
-                        jóvenes: 'Información completa del usuario',
-                        adultos: 'Información detallada del usuario en el sistema',
+                        niños: isViewingOwnProfile ? 'Aquí puedes ver toda tu información genial' : 'Aquí puedes ver toda la información de tu usuario genial',
+                        jóvenes: isViewingOwnProfile ? 'Tu información personal' : 'Información completa del usuario',
+                        adultos: isViewingOwnProfile ? 'Tu información personal en el sistema' : 'Información detallada del usuario en el sistema',
                     })}
-                    editHref={`/users/${user.id}/edit`}
-                    backHref="/users"
-                    editText={getTextByMode({
-                        niños: '✏️ Editar',
-                        jóvenes: 'Editar',
-                        adultos: 'Editar',
-                    })}
-                    backText={getTextByMode({
-                        niños: '⬅️ Volver',
-                        jóvenes: 'Volver',
-                        adultos: 'Volver',
-                    })}
+                    editHref={getEditHref()}
+                    backHref={getBackHref()}
+                    editText={getEditText()}
+                    backText={getBackText()}
                 />
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

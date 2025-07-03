@@ -18,6 +18,14 @@ class CanManageUsers
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Permitir que los usuarios vean su propio perfil (solo operaciones GET)
+        if ($request->route('user') && 
+            $request->route('user')->id === auth()->id() && 
+            $request->method() === 'GET' &&
+            $request->route()->named('users.show')) {
+            return $next($request);
+        }
+        
         if (!AuthHelper::canManageUsers() && !AuthHelper::isAdmin()) {
             abort(403, 'No tienes permisos para gestionar usuarios.');
         }
