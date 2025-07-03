@@ -8,6 +8,8 @@ use App\Models\NotaCompra;
 use App\Models\DetalleCompra;
 use App\Models\Proveedor;
 use App\Models\Producto;
+use App\Models\Almacen;
+use App\Models\ProductoAlmacen;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -101,7 +103,7 @@ class NotaCompraController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'proveedor_id' => 'required|exists:proveedores,id',
+            'proveedor_id' => 'required|exists:proveedor,id',
             'fecha' => 'required|date',
             'estado' => 'required|in:pendiente,recibida,cancelada',
             'observaciones' => 'nullable|string|max:500',
@@ -120,6 +122,17 @@ class NotaCompraController extends Controller
         try {
             DB::beginTransaction();
 
+            // Obtener el almacén principal
+            $almacenPrincipal = Almacen::where('nombre', 'Almacén Principal')->first();
+            if (!$almacenPrincipal) {
+                // Si no existe, crear el almacén principal
+                $almacenPrincipal = Almacen::create([
+                    'nombre' => 'Almacén Principal',
+                    'descripcion' => 'Almacén principal del sistema',
+                    'ubicacion' => 'Sede principal',
+                ]);
+            }
+
             // Calcular total
             $total = 0;
             foreach ($request->productos as $producto) {
@@ -137,13 +150,26 @@ class NotaCompraController extends Controller
 
             // Crear detalles de compra
             foreach ($request->productos as $producto) {
+                // Encontrar o crear ProductoAlmacen
+                $productoAlmacen = ProductoAlmacen::firstOrCreate([
+                    'producto_id' => $producto['id'],
+                    'almacen_id' => $almacenPrincipal->id,
+                ], [
+                    'stock' => 0
+                ]);
+
                 DetalleCompra::create([
                     'nota_compra_id' => $notaCompra->id,
-                    'producto_id' => $producto['id'],
+                    'producto_almacen_id' => $productoAlmacen->id,
                     'cantidad' => $producto['cantidad'],
                     'precio' => $producto['precio_unitario'],
                     'total' => $producto['cantidad'] * $producto['precio_unitario'],
                 ]);
+
+                // Actualizar stock si la compra está recibida
+                if ($request->estado === 'recibida') {
+                    $productoAlmacen->increment('stock', $producto['cantidad']);
+                }
             }
 
             DB::commit();
@@ -207,7 +233,7 @@ class NotaCompraController extends Controller
     public function update(Request $request, NotaCompra $compra): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'proveedor_id' => 'required|exists:proveedores,id',
+            'proveedor_id' => 'required|exists:proveedor,id',
             'fecha' => 'required|date',
             'estado' => 'required|in:pendiente,recibida,cancelada',
             'observaciones' => 'nullable|string|max:500',
@@ -225,6 +251,24 @@ class NotaCompraController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Obtener el almacén principal
+            $almacenPrincipal = Almacen::where('nombre', 'Almacén Principal')->first();
+            if (!$almacenPrincipal) {
+                // Si no existe, crear el almacén principal
+                $almacenPrincipal = Almacen::create([
+                    'nombre' => 'Almacén Principal',
+                    'descripcion' => 'Almacén principal del sistema',
+                    'ubicacion' => 'Sede principal',
+                ]);
+            }
+
+            // Revertir stock anterior si la compra estaba recibida
+            if ($compra->estado === 'recibida') {
+                foreach ($compra->detalles as $detalle) {
+                    $detalle->productoAlmacen->decrement('stock', $detalle->cantidad);
+                }
+            }
 
             // Calcular nuevo total
             $total = 0;
@@ -245,13 +289,26 @@ class NotaCompraController extends Controller
             $compra->detalles()->delete();
 
             foreach ($request->productos as $producto) {
+                // Encontrar o crear ProductoAlmacen
+                $productoAlmacen = ProductoAlmacen::firstOrCreate([
+                    'producto_id' => $producto['id'],
+                    'almacen_id' => $almacenPrincipal->id,
+                ], [
+                    'stock' => 0
+                ]);
+
                 DetalleCompra::create([
                     'nota_compra_id' => $compra->id,
-                    'producto_id' => $producto['id'],
+                    'producto_almacen_id' => $productoAlmacen->id,
                     'cantidad' => $producto['cantidad'],
                     'precio' => $producto['precio_unitario'],
                     'total' => $producto['cantidad'] * $producto['precio_unitario'],
                 ]);
+
+                // Actualizar stock si la compra está recibida
+                if ($request->estado === 'recibida') {
+                    $productoAlmacen->increment('stock', $producto['cantidad']);
+                }
             }
 
             DB::commit();
