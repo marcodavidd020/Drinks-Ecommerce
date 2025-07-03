@@ -10,6 +10,7 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ 
+    title,
     description, 
     buttonText, 
     buttonHref, 
@@ -45,17 +46,22 @@ export default function PageHeader({
     return (
         <div className="flex justify-between items-center">
             <div>
+                <h1 className={`text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 ${getModeClasses()}`}>
+                    {title}
+                </h1>
                 <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                     {description}
                 </p>
             </div>
             
-            <Link
-                href={buttonHref}
-                className={`${getButtonColorClasses()} ${getModeClasses()}`}
-            >
-                {buttonText}
-            </Link>
+            {buttonText && buttonHref && buttonHref !== '#' && (
+                <Link
+                    href={buttonHref}
+                    className={`${getButtonColorClasses()} ${getModeClasses()}`}
+                >
+                    {buttonText}
+                </Link>
+            )}
         </div>
     );
 } 

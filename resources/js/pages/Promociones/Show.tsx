@@ -22,8 +22,6 @@ interface Promocion {
     fecha_inicio: string;
     fecha_fin: string;
     descuento: string;
-    descuento_porcentaje: number;
-    estado: 'activa' | 'inactiva';
     estado_calculado?: 'activa' | 'inactiva' | 'pendiente' | 'vencida';
     producto: Producto;
     created_at: string;
@@ -58,6 +56,30 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
             month: 'long',
             day: 'numeric',
         });
+    };
+
+    // Extraer porcentaje del texto del descuento
+    const extraerPorcentaje = (descuentoTexto: string): number => {
+        const match = descuentoTexto.match(/(\d+(?:\.\d+)?)%/);
+        return match ? parseFloat(match[1]) : 0;
+    };
+
+    // Extraer monto fijo del texto del descuento
+    const extraerMontoFijo = (descuentoTexto: string): number => {
+        const matches = [
+            /\$\s*(\d+(?:\.\d+)?)/,  // $5.50
+            /(\d+(?:\.\d+)?)\s*pesos/i,  // 5 pesos
+            /(\d+(?:\.\d+)?)\s*bs/i,     // 5 bs
+            /(\d+(?:\.\d+)?)\s*bolivianos/i // 5 bolivianos
+        ];
+        
+        for (const regex of matches) {
+            const match = descuentoTexto.match(regex);
+            if (match) {
+                return parseFloat(match[1]);
+            }
+        }
+        return 0;
     };
 
     const getEstadoBadge = (estadoCalculado: string) => {
@@ -111,14 +133,33 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
     };
 
     const calcularPrecioConDescuento = () => {
-        if (promocion.descuento_porcentaje && promocion.descuento_porcentaje > 0) {
-            return promocion.producto.precio_venta * (1 - promocion.descuento_porcentaje / 100);
+        const porcentaje = extraerPorcentaje(promocion.descuento);
+        const montoFijo = extraerMontoFijo(promocion.descuento);
+        
+        if (porcentaje > 0) {
+            return promocion.producto.precio_venta * (1 - porcentaje / 100);
+        } else if (montoFijo > 0) {
+            return Math.max(0, promocion.producto.precio_venta - montoFijo);
         }
+        
         return promocion.producto.precio_venta;
     };
 
     const calcularAhorro = () => {
         return promocion.producto.precio_venta - calcularPrecioConDescuento();
+    };
+
+    const obtenerDescripcionDescuento = () => {
+        const porcentaje = extraerPorcentaje(promocion.descuento);
+        const montoFijo = extraerMontoFijo(promocion.descuento);
+        
+        if (porcentaje > 0) {
+            return `${porcentaje}%`;
+        } else if (montoFijo > 0) {
+            return formatCurrency(montoFijo);
+        } else {
+            return promocion.descuento || 'No especificado';
+        }
     };
 
     return (
@@ -140,13 +181,13 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                                 <h1 className={`text-2xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                                     {promocion.nombre}
                                 </h1>
-                                {getEstadoBadge(promocion.estado_calculado)}
+                                {getEstadoBadge(promocion.estado_calculado || 'activa')}
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {getTextByMode({
-                                    niños: `¡Esta promoción tiene un descuento del ${promocion.descuento_porcentaje}% para ${promocion.producto.nombre}!`,
-                                    jóvenes: `Promoción con ${promocion.descuento_porcentaje}% de descuento`,
-                                    adultos: `Promoción que incluye ${promocion.descuento_porcentaje}% de descuento para ${promocion.producto.nombre}`,
+                                    niños: `¡Esta promoción tiene un descuento para ${promocion.producto.nombre}!`,
+                                    jóvenes: `Promoción con descuento`,
+                                    adultos: `Promoción con descuento para ${promocion.producto.nombre}`,
                                 })}
                             </p>
                         </div>
@@ -200,7 +241,7 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                                     adultos: 'Fecha de Inicio',
                                 })}
                             </dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            <dd className={`mt-1 text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                                 {formatDate(promocion.fecha_inicio)}
                             </dd>
                         </div>
@@ -210,10 +251,10 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                                 {getTextByMode({
                                     niños: '🏁 Fecha de fin',
                                     jóvenes: 'Fecha de fin',
-                                    adultos: 'Fecha de Finalización',
+                                    adultos: 'Fecha de Fin',
                                 })}
                             </dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            <dd className={`mt-1 text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                                 {formatDate(promocion.fecha_fin)}
                             </dd>
                         </div>
@@ -221,13 +262,13 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                         <div>
                             <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
                                 {getTextByMode({
-                                    niños: '🚦 Estado configurado',
-                                    jóvenes: 'Estado configurado',
-                                    adultos: 'Estado Configurado',
+                                    niños: '🚦 Estado actual',
+                                    jóvenes: 'Estado',
+                                    adultos: 'Estado Actual',
                                 })}
                             </dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                {promocion.estado === 'activa' ? '🟢 Activa' : '⚫ Inactiva'}
+                            <dd className="mt-1">
+                                {getEstadoBadge(promocion.estado_calculado || 'activa')}
                             </dd>
                         </div>
 
@@ -236,97 +277,124 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                                 {getTextByMode({
                                     niños: '💰 Descuento',
                                     jóvenes: 'Descuento',
-                                    adultos: 'Porcentaje de Descuento',
+                                    adultos: 'Descuento',
                                 })}
                             </dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                {promocion.descuento_porcentaje}%
+                            <dd className={`mt-1 text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                {obtenerDescripcionDescuento()}
                             </dd>
                         </div>
                     </div>
                 </div>
 
-                {/* Producto en Promoción */}
+                {/* Información del Producto */}
                 <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                     <h2 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: '🛍️ Producto en Promoción',
-                            jóvenes: 'Producto Incluido',
-                            adultos: 'Producto Incluido en la Promoción',
+                            jóvenes: 'Producto',
+                            adultos: 'Producto en Promoción',
                         })}
                     </h2>
 
-                    <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                                     {promocion.producto.nombre}
                                 </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                     {promocion.producto.cod_producto}
                                     {promocion.producto.categoria && ` | ${promocion.producto.categoria.nombre}`}
                                 </p>
                             </div>
-                            <div className="ml-4 text-right">
-                                <div className="text-lg font-semibold text-green-600 dark:text-green-400">
+                            <div className="text-right">
+                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                     {formatCurrency(calcularPrecioConDescuento())}
                                 </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                                    {formatCurrency(promocion.producto.precio_venta)}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            <div>
-                                <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '💰 Precio original',
-                                        jóvenes: 'Precio original',
-                                        adultos: 'Precio Original',
-                                    })}
-                                </dt>
-                                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {formatCurrency(promocion.producto.precio_venta)}
-                                </dd>
-                            </div>
-
-                            <div>
-                                <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '🎯 Descuento aplicado',
-                                        jóvenes: 'Descuento aplicado',
-                                        adultos: 'Descuento Aplicado',
-                                    })}
-                                </dt>
-                                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {promocion.descuento_porcentaje}%
-                                </dd>
-                            </div>
-
-                            <div>
-                                <dt className={`text-xs font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
-                                    {getTextByMode({
-                                        niños: '💸 Ahorro total',
-                                        jóvenes: 'Ahorro total',
-                                        adultos: 'Ahorro Total',
-                                    })}
-                                </dt>
-                                <dd className="mt-1 text-sm font-semibold text-green-600 dark:text-green-400">
-                                    {formatCurrency(calcularAhorro())}
-                                </dd>
+                                {calcularAhorro() > 0 && (
+                                    <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                                        {formatCurrency(promocion.producto.precio_venta)}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Información de Auditoría */}
+                {/* Información de Precios */}
+                <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                    <h2 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
+                        {getTextByMode({
+                            niños: '💰 Información de Precios',
+                            jóvenes: 'Precios',
+                            adultos: 'Información de Precios',
+                        })}
+                    </h2>
+
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                        <div>
+                            <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                {getTextByMode({
+                                    niños: '💰 Precio original',
+                                    jóvenes: 'Precio original',
+                                    adultos: 'Precio Original',
+                                })}
+                            </dt>
+                            <dd className={`mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                {formatCurrency(promocion.producto.precio_venta)}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                {getTextByMode({
+                                    niños: '🎯 Descuento aplicado',
+                                    jóvenes: 'Descuento',
+                                    adultos: 'Descuento Aplicado',
+                                })}
+                            </dt>
+                            <dd className={`mt-1 text-lg font-semibold text-blue-600 dark:text-blue-400 ${getModeClasses()}`}>
+                                {obtenerDescripcionDescuento()}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                {getTextByMode({
+                                    niños: '💸 Ahorro total',
+                                    jóvenes: 'Ahorro',
+                                    adultos: 'Ahorro Total',
+                                })}
+                            </dt>
+                            <dd className={`mt-1 text-lg font-semibold text-green-600 dark:text-green-400 ${getModeClasses()}`}>
+                                {calcularAhorro() > 0 ? formatCurrency(calcularAhorro()) : 'Sin ahorro'}
+                            </dd>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Descripción del Descuento */}
+                <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                    <h2 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
+                        {getTextByMode({
+                            niños: '📝 Descripción del Descuento',
+                            jóvenes: 'Descripción',
+                            adultos: 'Descripción del Descuento',
+                        })}
+                    </h2>
+                    <p className={`text-sm text-gray-700 dark:text-gray-300 ${getModeClasses()}`}>
+                        {promocion.descuento || 'No hay descripción disponible'}
+                    </p>
+                </div>
+
+                {/* Información de Fechas */}
                 <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                     <h2 className={`text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: '📅 Información de Fechas',
-                            jóvenes: 'Información de Auditoría',
-                            adultos: 'Información de Auditoría',
+                            jóvenes: 'Fechas',
+                            adultos: 'Información de Fechas',
                         })}
                     </h2>
 
@@ -339,7 +407,7 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                                     adultos: 'Fecha de Creación',
                                 })}
                             </dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            <dd className={`mt-1 text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                                 {formatDate(promocion.created_at)}
                             </dd>
                         </div>
@@ -352,7 +420,7 @@ export default function PromocionShow({ promocion }: PromocionShowProps) {
                                     adultos: 'Última Actualización',
                                 })}
                             </dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            <dd className={`mt-1 text-sm text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                                 {formatDate(promocion.updated_at)}
                             </dd>
                         </div>

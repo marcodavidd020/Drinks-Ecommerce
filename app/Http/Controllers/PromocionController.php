@@ -27,16 +27,14 @@ class PromocionController extends Controller
 
         if ($request->filled('estado')) {
             $estado = $request->input('estado');
+            $hoy = now();
             if ($estado === 'activa') {
-                $query->where('estado', 'activa')
-                      ->where('fecha_inicio', '<=', now())
-                      ->where('fecha_fin', '>=', now());
-            } elseif ($estado === 'inactiva') {
-                $query->where('estado', 'inactiva');
+                $query->where('fecha_inicio', '<=', $hoy)
+                      ->where('fecha_fin', '>=', $hoy);
             } elseif ($estado === 'vencida') {
-                $query->where('fecha_fin', '<', now());
+                $query->where('fecha_fin', '<', $hoy);
             } elseif ($estado === 'pendiente') {
-                $query->where('fecha_inicio', '>', now());
+                $query->where('fecha_inicio', '>', $hoy);
             }
         }
 
@@ -81,9 +79,8 @@ class PromocionController extends Controller
             'nombre' => 'required|string|max:255',
             'fecha_inicio' => 'required|date|after_or_equal:today',
             'fecha_fin' => 'required|date|after:fecha_inicio',
-            'descuento' => 'required|string|max:255',
+            'descuento' => 'required|string',
             'producto_id' => 'required|exists:producto,id',
-            'estado' => 'required|in:activa,inactiva',
         ]);
 
         Promocion::create($validated);
@@ -128,9 +125,8 @@ class PromocionController extends Controller
             'nombre' => 'required|string|max:255',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after:fecha_inicio',
-            'descuento' => 'required|string|max:255',
+            'descuento' => 'required|string',
             'producto_id' => 'required|exists:producto,id',
-            'estado' => 'required|in:activa,inactiva',
         ]);
 
         $promocion->update($validated);
@@ -158,10 +154,6 @@ class PromocionController extends Controller
         $hoy = now();
         $inicio = Carbon::parse($promocion->fecha_inicio);
         $fin = Carbon::parse($promocion->fecha_fin);
-
-        if ($promocion->estado === 'inactiva') {
-            return 'inactiva';
-        }
 
         if ($hoy->lt($inicio)) {
             return 'pendiente';
