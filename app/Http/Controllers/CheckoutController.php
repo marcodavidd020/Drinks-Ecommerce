@@ -120,7 +120,7 @@ class CheckoutController extends Controller
             return redirect()->route('carrito.index')->with('error', 'El carrito está vacío');
         }
 
-        // Obtener direcciones disponibles
+        // Obtener todas las direcciones disponibles
         $direcciones = Direccion::all();
 
         return Inertia::render('Checkout/Direccion', [
@@ -273,7 +273,7 @@ class CheckoutController extends Controller
         $cliente = $user->cliente;
 
         if (!$cliente) {
-            return response()->json(['error' => 'Usuario no es cliente'], 403);
+            return redirect()->route('carrito.index')->with('error', 'Usuario no es cliente');
         }
 
         // Obtener carrito activo
@@ -283,7 +283,7 @@ class CheckoutController extends Controller
                          ->first();
 
         if (!$carrito || $carrito->detalles->isEmpty()) {
-            return response()->json(['error' => 'Carrito vacío'], 400);
+            return redirect()->route('carrito.index')->with('error', 'Carrito vacío');
         }
 
         try {
@@ -353,22 +353,14 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pedido procesado exitosamente',
-                'pedido_id' => $pedido->id,
-                'nota_venta_id' => $notaVenta->id,
-                'redirect_url' => route('checkout.exito', ['pedido' => $pedido->id])
-            ]);
+            return redirect()->route('checkout.exito', ['pedido' => $pedido->id])
+                ->with('success', 'Pedido procesado exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error en checkout: ' . $e->getMessage());
             
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al procesar el pedido: ' . $e->getMessage()
-            ], 500);
+            return back()->withErrors(['error' => 'Error al procesar el pedido: ' . $e->getMessage()]);
         }
     }
 
@@ -417,6 +409,34 @@ class CheckoutController extends Controller
             $pago->marcarFallido();
             $notaVenta->update(['estado' => 'cancelada']);
             $pedido->update(['estado' => 'cancelado']);
+        }
+    }
+
+    /**
+     * Guardar nueva dirección desde checkout
+     */
+    public function storeDireccion(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'referencia' => 'required|string|max:500',
+            'latitud' => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
+        ]);
+
+        try {
+            $direccion = Direccion::create([
+                'nombre' => $request->nombre,
+                'referencia' => $request->referencia,
+                'latitud' => $request->latitud,
+                'longitud' => $request->longitud,
+            ]);
+
+            return redirect()->route('checkout.direccion')
+                ->with('success', 'Dirección agregada exitosamente.');
+        } catch (\Exception $e) {
+            \Log::error('Error al guardar dirección: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Error al guardar la dirección: ' . $e->getMessage()]);
         }
     }
 } 

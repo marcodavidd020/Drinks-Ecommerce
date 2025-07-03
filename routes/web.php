@@ -92,6 +92,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('checkout')->name('checkout.')->middleware(['role:cliente'])->group(function () {
         Route::get('/', [\App\Http\Controllers\CheckoutController::class, 'inicio'])->name('inicio');
         Route::get('/direccion', [\App\Http\Controllers\CheckoutController::class, 'direccion'])->name('direccion');
+        Route::post('/direccion/store', [\App\Http\Controllers\CheckoutController::class, 'storeDireccion'])->name('direccion.store');
         Route::post('/pago', [\App\Http\Controllers\CheckoutController::class, 'pago'])->name('pago');
         Route::get('/datos-tarjeta', [\App\Http\Controllers\CheckoutController::class, 'datosTarjeta'])->name('datos-tarjeta');
         Route::post('/confirmar', [\App\Http\Controllers\CheckoutController::class, 'confirmar'])->name('confirmar');

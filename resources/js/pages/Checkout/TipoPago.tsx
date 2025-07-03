@@ -157,9 +157,13 @@ export default function CheckoutTipoPago({ carrito, direccion, tiposPago, total 
                     setProcessing(false);
                     popup.close();
                 } else if (event.data.type === 'payment_success') {
-                    console.log('Pago exitoso');
+                    console.log('Pago exitoso:', event.data);
                     // Redirigir a página de éxito
                     router.get('/checkout/exito');
+                } else if (event.data.type === 'payment_cancelled') {
+                    console.log('Pago cancelado por el usuario');
+                    setProcessing(false);
+                    popup.close();
                 } else if (event.data.type === 'qr_error') {
                     console.error('Error en QR:', event.data.message);
                     alert(getTextByMode({

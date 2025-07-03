@@ -565,35 +565,279 @@ class ConsumirServicioController extends Controller
         <html lang=\"es\">
         <head>
             <meta charset=\"UTF-8\">
-            <title>QR Simulado</title>
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+            <title>Código QR de Pago</title>
             <style>
-                body { font-family: Arial; text-align: center; padding: 20px; }
-                .qr-container { max-width: 400px; margin: 0 auto; }
-                .mock-qr { 
-                    width: 200px; height: 200px; border: 2px dashed #333;
-                    display: flex; align-items: center; justify-content: center;
-                    margin: 20px auto; background: #f5f5f5;
+                body {
+                    margin: 0;
+                    padding: 20px;
+                    font-family: \"Inter\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;
+                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    box-sizing: border-box;
+                }
+                
+                .qr-container {
+                    background: white;
+                    border-radius: 20px;
+                    padding: 30px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    text-align: center;
+                    max-width: 400px;
+                    width: 100%;
+                    border: 3px solid #e5e7eb;
+                }
+                
+                .qr-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                }
+                
+                .qr-title {
+                    color: #1f2937;
+                    font-size: 24px;
+                    font-weight: 700;
+                    margin: 0;
+                }
+                
+                .qr-subtitle {
+                    color: #6b7280;
+                    font-size: 14px;
+                    margin-bottom: 25px;
+                    line-height: 1.5;
+                }
+                
+                .qr-image-wrapper {
+                    background: #f9fafb;
+                    border-radius: 15px;
+                    padding: 30px;
+                    margin: 25px 0;
+                    border: 2px dashed #d1d5db;
+                    position: relative;
+                }
+                
+                .mock-qr {
+                    width: 200px;
+                    height: 200px;
+                    background: linear-gradient(45deg, #f3f4f6 25%, #e5e7eb 25%, #e5e7eb 50%, #f3f4f6 50%, #f3f4f6 75%, #e5e7eb 75%);
+                    background-size: 20px 20px;
+                    border: 3px solid #374151;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .qr-icon {
+                    background: white;
+                    padding: 10px;
+                    border-radius: 8px;
+                    font-size: 24px;
+                    border: 2px solid #374151;
+                    z-index: 2;
+                }
+                
+                .qr-amount {
+                    background: #f0fdf4;
+                    color: #166534;
+                    padding: 15px;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    font-size: 18px;
+                    margin-bottom: 20px;
+                    border: 2px solid #bbf7d0;
+                }
+                
+                .qr-info {
+                    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                    color: white;
+                    padding: 15px;
+                    border-radius: 12px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    margin: 20px 0;
+                }
+                
+                .qr-steps {
+                    text-align: left;
+                    background: #f8fafc;
+                    padding: 20px;
+                    border-radius: 12px;
+                    margin: 20px 0;
+                    border-left: 4px solid #3b82f6;
+                }
+                
+                .qr-steps h4 {
+                    margin: 0 0 15px 0;
+                    color: #1f2937;
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+                
+                .qr-steps ol {
+                    margin: 0;
+                    padding-left: 20px;
+                    color: #4b5563;
+                    font-size: 14px;
+                    line-height: 1.6;
+                }
+                
+                .qr-steps li {
+                    margin-bottom: 8px;
+                }
+                
+                .action-buttons {
+                    display: flex;
+                    gap: 10px;
+                    margin-top: 25px;
+                }
+                
+                .simulate-button {
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    flex: 1;
+                    transition: all 0.3s ease;
+                }
+                
+                .simulate-button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+                }
+                
+                .cancel-button {
+                    background: transparent;
+                    color: #6b7280;
+                    border: 2px solid #d1d5db;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    flex: 1;
+                }
+                
+                .cancel-button:hover {
+                    border-color: #9ca3af;
+                    color: #374151;
+                }
+                
+                .transaction-id {
+                    background: #f3f4f6;
+                    padding: 10px;
+                    border-radius: 8px;
+                    font-family: monospace;
+                    font-size: 12px;
+                    color: #6b7280;
+                    margin-top: 15px;
+                }
+                
+                @media (max-width: 480px) {
+                    .qr-container {
+                        margin: 10px;
+                        padding: 20px;
+                    }
+                    
+                    .qr-title {
+                        font-size: 20px;
+                    }
+                    
+                    .mock-qr {
+                        width: 150px;
+                        height: 150px;
+                    }
+                    
+                    .action-buttons {
+                        flex-direction: column;
+                    }
                 }
             </style>
         </head>
         <body>
             <div class=\"qr-container\">
-                <h2>🔧 QR Simulado (Testing)</h2>
-                <p>Monto: Bs. " . number_format($monto, 2) . "</p>
-                <div class=\"mock-qr\">
-                    <span style=\"font-size: 24px;\">📱 QR</span>
+                <div class=\"qr-header\">
+                    <span style=\"font-size: 32px;\">📱</span>
+                    <h1 class=\"qr-title\">Código QR de Pago</h1>
                 </div>
-                <p><small>Este es un QR simulado para pruebas</small></p>
-                <button onclick=\"simulatePayment()\">Simular Pago Exitoso</button>
+                
+                <div class=\"qr-subtitle\">
+                    Escanea este código con tu aplicación de pagos para completar la transacción
+                </div>
+                
+                <div class=\"qr-amount\">
+                    💰 Monto: Bs. " . number_format($monto, 2) . "
+                </div>
+                
+                <div class=\"qr-image-wrapper\">
+                    <div class=\"mock-qr\">
+                        <div class=\"qr-icon\">📱</div>
+                    </div>
+                    <div style=\"margin-top: 10px; font-size: 12px; color: #6b7280;\">
+                        🔧 QR Simulado para Testing
+                    </div>
+                </div>
+                
+                <div class=\"qr-info\">
+                    ✅ QR generado exitosamente<br>
+                    📱 Usa tu app de pagos favorita para escanear
+                </div>
+                
+                <div class=\"qr-steps\">
+                    <h4>📋 Pasos para pagar:</h4>
+                    <ol>
+                        <li>Abre tu aplicación de pagos móviles</li>
+                        <li>Selecciona la opción \"Escanear QR\"</li>
+                        <li>Apunta la cámara hacia este código</li>
+                        <li>Confirma el monto y completa el pago</li>
+                        <li>Guarda el comprobante de pago</li>
+                    </ol>
+                </div>
+                
+                <div class=\"transaction-id\">
+                    🔢 ID Transacción: #QR-" . strtoupper(uniqid()) . "
+                </div>
+                
+                <div class=\"action-buttons\">
+                    <button class=\"simulate-button\" onclick=\"simulatePayment()\">
+                        ✅ Simular Pago Exitoso
+                    </button>
+                    <button class=\"cancel-button\" onclick=\"cancelPayment()\">
+                        ❌ Cancelar
+                    </button>
+                </div>
             </div>
+            
             <script>
                 function simulatePayment() {
                     if (window.opener) {
                         window.opener.postMessage({
-                            type: 'payment_success'
+                            type: 'payment_success',
+                            method: 'qr'
                         }, '*');
                         window.close();
                     }
+                }
+                
+                function cancelPayment() {
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'payment_cancelled'
+                        }, '*');
+                    }
+                    window.close();
                 }
             </script>
         </body>
@@ -612,28 +856,314 @@ class ConsumirServicioController extends Controller
         <html lang=\"es\">
         <head>
             <meta charset=\"UTF-8\">
-            <title>Tigo Money Simulado</title>
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+            <title>Pago Tigo Money</title>
             <style>
-                body { font-family: Arial; text-align: center; padding: 20px; background: #f59e0b; }
-                .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+                body {
+                    margin: 0;
+                    padding: 20px;
+                    font-family: \"Inter\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;
+                    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    box-sizing: border-box;
+                }
+                
+                .tigo-container {
+                    background: white;
+                    border-radius: 20px;
+                    padding: 30px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    text-align: center;
+                    max-width: 400px;
+                    width: 100%;
+                    border: 3px solid #f59e0b;
+                }
+                
+                .tigo-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                }
+                
+                .tigo-title {
+                    color: #d97706;
+                    font-size: 24px;
+                    font-weight: 700;
+                    margin: 0;
+                }
+                
+                .tigo-subtitle {
+                    color: #6b7280;
+                    font-size: 14px;
+                    margin-bottom: 25px;
+                    line-height: 1.5;
+                }
+                
+                .amount-display {
+                    background: #fef3c7;
+                    color: #92400e;
+                    padding: 15px;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    font-size: 18px;
+                    margin-bottom: 25px;
+                    border: 2px solid #fcd34d;
+                }
+                
+                .phone-input-group {
+                    text-align: left;
+                    margin-bottom: 20px;
+                }
+                
+                .phone-label {
+                    display: block;
+                    color: #374151;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                }
+                
+                .phone-input {
+                    width: 100%;
+                    padding: 12px 16px;
+                    border: 2px solid #d1d5db;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    transition: border-color 0.2s;
+                    box-sizing: border-box;
+                }
+                
+                .phone-input:focus {
+                    outline: none;
+                    border-color: #f59e0b;
+                    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+                }
+                
+                .phone-help {
+                    font-size: 12px;
+                    color: #6b7280;
+                    margin-top: 5px;
+                }
+                
+                .transaction-info {
+                    background: #f3f4f6;
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                    text-align: left;
+                }
+                
+                .transaction-label {
+                    font-weight: 600;
+                    color: #374151;
+                    font-size: 14px;
+                    margin-bottom: 5px;
+                }
+                
+                .transaction-id {
+                    font-family: monospace;
+                    color: #6b7280;
+                    font-size: 14px;
+                }
+                
+                .pay-button {
+                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                    margin-bottom: 10px;
+                }
+                
+                .pay-button:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+                }
+                
+                .pay-button:disabled {
+                    background: #d1d5db;
+                    cursor: not-allowed;
+                    transform: none;
+                    box-shadow: none;
+                }
+                
+                .cancel-button {
+                    background: transparent;
+                    color: #6b7280;
+                    border: 2px solid #d1d5db;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    width: 100%;
+                }
+                
+                .cancel-button:hover {
+                    border-color: #9ca3af;
+                    color: #374151;
+                }
+                
+                .info-steps {
+                    background: #fef3c7;
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-top: 20px;
+                    text-align: left;
+                    border-left: 4px solid #f59e0b;
+                }
+                
+                .info-steps h4 {
+                    margin: 0 0 10px 0;
+                    color: #92400e;
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+                
+                .info-steps ul {
+                    margin: 0;
+                    padding-left: 20px;
+                    color: #92400e;
+                    font-size: 13px;
+                    line-height: 1.4;
+                }
+                
+                .info-steps li {
+                    margin-bottom: 5px;
+                }
+                
+                @media (max-width: 480px) {
+                    .tigo-container {
+                        margin: 10px;
+                        padding: 20px;
+                    }
+                    
+                    .tigo-title {
+                        font-size: 20px;
+                    }
+                }
             </style>
         </head>
         <body>
-            <div class=\"container\">
-                <h2>📱 Tigo Money (Testing)</h2>
-                <p>Monto: Bs. " . number_format($monto, 2) . "</p>
-                <p>Simulación de pago Tigo Money</p>
-                <button onclick=\"simulatePayment()\">Confirmar Pago</button>
+            <div class=\"tigo-container\">
+                <div class=\"tigo-header\">
+                    <span style=\"font-size: 32px;\">📱</span>
+                    <h1 class=\"tigo-title\">Pago Tigo Money</h1>
+                </div>
+                
+                <div class=\"tigo-subtitle\">
+                    Completa el pago con tu número Tigo Money
+                </div>
+                
+                <div class=\"amount-display\">
+                    💰 Monto: Bs. " . number_format($monto, 2) . "
+                </div>
+                
+                <form id=\"tigoForm\" onsubmit=\"return processPayment(event)\">
+                    <div class=\"phone-input-group\">
+                        <label class=\"phone-label\" for=\"phoneNumber\">
+                            📞 Ingrese su número TigoMoney
+                        </label>
+                        <input 
+                            type=\"tel\" 
+                            id=\"phoneNumber\" 
+                            class=\"phone-input\" 
+                            placeholder=\"7XXXXXXX\"
+                            pattern=\"[67][0-9]{7}\"
+                            maxlength=\"8\"
+                            required
+                        />
+                        <div class=\"phone-help\">
+                            Ejemplo: 70123456 o 60987654
+                        </div>
+                    </div>
+                    
+                    <div class=\"transaction-info\">
+                        <div class=\"transaction-label\">🔢 Transacción:</div>
+                        <div class=\"transaction-id\">#TM-" . strtoupper(uniqid()) . "</div>
+                    </div>
+                    
+                    <button type=\"submit\" class=\"pay-button\" id=\"payButton\">
+                        💳 Confirmar Pago
+                    </button>
+                </form>
+                
+                <button type=\"button\" class=\"cancel-button\" onclick=\"cancelPayment()\">
+                    ❌ Cancelar
+                </button>
+                
+                <div class=\"info-steps\">
+                    <h4>ℹ️ Información importante:</h4>
+                    <ul>
+                        <li>Ingrese su número Tigo Money de 8 dígitos</li>
+                        <li>Verifique que tenga saldo suficiente</li>
+                        <li>Recibirá un SMS de confirmación</li>
+                        <li>Esta es una simulación para pruebas</li>
+                    </ul>
+                </div>
             </div>
+            
             <script>
-                function simulatePayment() {
+                function processPayment(event) {
+                    event.preventDefault();
+                    
+                    const phoneInput = document.getElementById('phoneNumber');
+                    const payButton = document.getElementById('payButton');
+                    
+                    if (!phoneInput.value || phoneInput.value.length !== 8) {
+                        alert('Por favor ingrese un número válido de 8 dígitos');
+                        return false;
+                    }
+                    
+                    // Simular procesamiento
+                    payButton.disabled = true;
+                    payButton.innerHTML = '⏳ Procesando...';
+                    
+                    setTimeout(() => {
+                        // Simular éxito del pago
+                        if (window.opener) {
+                            window.opener.postMessage({
+                                type: 'payment_success',
+                                method: 'tigo_money',
+                                phone: phoneInput.value
+                            }, '*');
+                            window.close();
+                        }
+                    }, 2000);
+                    
+                    return false;
+                }
+                
+                function cancelPayment() {
                     if (window.opener) {
                         window.opener.postMessage({
-                            type: 'payment_success'
+                            type: 'payment_cancelled'
                         }, '*');
-                        window.close();
                     }
+                    window.close();
                 }
+                
+                // Validación en tiempo real del número
+                document.getElementById('phoneNumber').addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/[^0-9]/g, '');
+                    if (value.length > 8) {
+                        value = value.substring(0, 8);
+                    }
+                    e.target.value = value;
+                    
+                    const payButton = document.getElementById('payButton');
+                    payButton.disabled = value.length !== 8;
+                });
             </script>
         </body>
         </html>", 200, ['Content-Type' => 'text/html']);
