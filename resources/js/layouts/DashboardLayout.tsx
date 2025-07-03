@@ -3,6 +3,7 @@ import DashboardSidebar from '@/components/dashboard-sidebar';
 import { useAppMode } from '@/contexts/AppModeContext';
 import { Link, router, usePage } from '@inertiajs/react';
 import { ReactNode, useState } from 'react';
+import PageCounter from '@/components/PageCounter';
 
 interface User {
     id: number;
@@ -198,21 +199,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, head
                 <main className="flex-1 overflow-auto">
                     <div className="p-6">{children}</div>
                 </main>
+
+                {/* Indicador de modo actual (solo en desarrollo) */}
+                {import.meta.env.DEV && (
+                    <div className="fixed bottom-4 left-4 bg-black bg-opacity-50 text-white text-xs px-3 py-2 rounded-lg z-50">
+                        <div>Modo: {settings.ageMode}</div>
+                        <div>Tema: {settings.currentTheme}</div>
+                        <div>Fuente: {settings.fontSize}</div>
+                        <div>Contraste: {settings.contrast}</div>
+                        {user && <div>Usuario: {user.nombre}</div>}
+                    </div>
+                )}
+
+                {/* Contador de páginas */}
+                <PageCounter />
             </div>
 
             {/* Click fuera del dropdown para cerrarlo */}
             {showUserDropdown && <div className="fixed inset-0 z-10" onClick={() => setShowUserDropdown(false)} />}
-
-            {/* Indicador de modo actual (solo en desarrollo) */}
-            {import.meta.env.DEV && (
-                <div className="bg-opacity-50 fixed bottom-4 left-4 z-50 rounded-lg bg-black px-3 py-2 text-xs text-white">
-                    <div>Modo: {settings.ageMode}</div>
-                    <div>Tema: {settings.currentTheme}</div>
-                    <div>Fuente: {settings.fontSize}</div>
-                    <div>Contraste: {settings.contrast}</div>
-                    {user && <div>Usuario: {user.nombre}</div>}
-                </div>
-            )}
         </div>
     );
 };

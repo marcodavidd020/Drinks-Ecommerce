@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react';
 import { useAppMode } from '@/contexts/AppModeContext';
 import ModeSelector from '@/components/ModeSelector';
 import Navbar from '@/components/navbar';
+import PageCounter from '@/components/PageCounter';
 
 interface User {
   id: number;
@@ -91,6 +92,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           {user && <div>Usuario: {user.nombre}</div>}
         </div>
       )}
+
+      {/* Contador de páginas */}
+      <PageCounter />
     </div>
   );
 };
