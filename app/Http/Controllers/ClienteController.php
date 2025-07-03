@@ -45,9 +45,9 @@ class ClienteController extends Controller
 
         // Aplicar ordenamiento
         if (in_array($sortBy, ['nombre', 'email', 'estado'])) {
-            $query->join('users', 'clientes.user_id', '=', 'users.id')
-                ->orderBy("users.{$sortBy}", $sortOrder)
-                ->select('clientes.*');
+            $query->join('user', 'cliente.user_id', '=', 'user.id')
+                ->orderBy("user.{$sortBy}", $sortOrder)
+                ->select('cliente.*');
         } else {
             $query->orderBy($sortBy, $sortOrder);
         }
@@ -98,7 +98,7 @@ class ClienteController extends Controller
     {
         $validated = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:user'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'nit' => ['required', 'string', 'max:20', 'unique:cliente'],
             'celular' => ['nullable', 'string', 'max:20'],
@@ -166,7 +166,7 @@ class ClienteController extends Controller
     {
         $validated = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $cliente->user_id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:user,email,' . $cliente->user_id],
             'celular' => ['nullable', 'string', 'max:20'],
             'nit' => ['nullable', 'string', 'max:20', 'unique:cliente,nit,' . $cliente->id],
         ]);
