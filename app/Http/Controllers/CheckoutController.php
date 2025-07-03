@@ -170,7 +170,45 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Paso 3: Confirmar pedido
+     * Paso 3a: Datos de tarjeta para pagos con tarjeta
+     */
+    public function datosTarjeta(Request $request): Response
+    {
+        $request->validate([
+            'direccion_id' => 'required|exists:direccion,id',
+            'tipo_pago_id' => 'required|exists:tipo_pago,id'
+        ]);
+
+        $user = Auth::user();
+        $cliente = $user->cliente;
+
+        if (!$cliente) {
+            return redirect()->route('carrito.index');
+        }
+
+        // Obtener carrito activo
+        $carrito = Carrito::where('cliente_id', $cliente->id)
+                         ->where('estado', 'activo')
+                         ->first();
+
+        if (!$carrito || $carrito->detalles->isEmpty()) {
+            return redirect()->route('carrito.index')->with('error', 'El carrito está vacío');
+        }
+
+        // Obtener datos seleccionados
+        $direccion = Direccion::findOrFail($request->direccion_id);
+        $tipoPago = TipoPago::findOrFail($request->tipo_pago_id);
+
+        return Inertia::render('Checkout/DatosTarjeta', [
+            'carrito' => $carrito,
+            'direccion' => $direccion,
+            'tipoPago' => $tipoPago,
+            'total' => $carrito->total
+        ]);
+    }
+
+    /**
+     * Paso 3b: Confirmar pedido
      */
     public function confirmar(Request $request): Response
     {
@@ -221,7 +259,14 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'direccion_id' => 'required|exists:direccion,id',
-            'tipo_pago_id' => 'required|exists:tipo_pago,id'
+            'tipo_pago_id' => 'required|exists:tipo_pago,id',
+            'metodo_pago' => 'nullable|string|in:tarjeta,qr,tigo_money',
+            'datos_tarjeta' => 'nullable|array',
+            'datos_tarjeta.numero_tarjeta' => 'required_if:metodo_pago,tarjeta|string',
+            'datos_tarjeta.nombre_titular' => 'required_if:metodo_pago,tarjeta|string',
+            'datos_tarjeta.tipo_tarjeta' => 'required_if:metodo_pago,tarjeta|in:credito,debito',
+            'datos_tarjeta.ultimo_digitos' => 'required_if:metodo_pago,tarjeta|string|size:4',
+            'observaciones' => 'nullable|string|max:500'
         ]);
 
         $user = Auth::user();
@@ -253,13 +298,21 @@ class CheckoutController extends Controller
             ]);
 
             // 2. Crear la Nota de Venta
+            $observacionesVenta = $request->observaciones ?? 'Pedido procesado desde carrito web';
+            if ($request->metodo_pago === 'tarjeta' && isset($request->datos_tarjeta)) {
+                $observacionesVenta .= ' - Pago con ' . ucfirst($request->datos_tarjeta['tipo_tarjeta']) . 
+                                      ' terminada en ' . $request->datos_tarjeta['ultimo_digitos'];
+            } elseif ($request->metodo_pago) {
+                $observacionesVenta .= ' - Pago mediante ' . strtoupper($request->metodo_pago);
+            }
+
             $notaVenta = NotaVenta::create([
                 'cliente_id' => $cliente->id,
                 'pedido_id' => $pedido->id,
                 'fecha' => now(),
                 'total' => $carrito->total,
                 'estado' => 'pendiente',
-                'observaciones' => 'Pedido procesado desde carrito web',
+                'observaciones' => $observacionesVenta,
             ]);
 
             // 3. Crear detalles de venta y actualizar stock

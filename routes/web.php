@@ -16,6 +16,7 @@ use App\Http\Controllers\RolController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\ClienteDashboardController;
+use App\Http\Controllers\ConsumirServicioController;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -92,10 +93,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [\App\Http\Controllers\CheckoutController::class, 'inicio'])->name('inicio');
         Route::get('/direccion', [\App\Http\Controllers\CheckoutController::class, 'direccion'])->name('direccion');
         Route::post('/pago', [\App\Http\Controllers\CheckoutController::class, 'pago'])->name('pago');
+        Route::get('/datos-tarjeta', [\App\Http\Controllers\CheckoutController::class, 'datosTarjeta'])->name('datos-tarjeta');
         Route::post('/confirmar', [\App\Http\Controllers\CheckoutController::class, 'confirmar'])->name('confirmar');
         Route::post('/procesar', [\App\Http\Controllers\CheckoutController::class, 'procesar'])->name('procesar');
         Route::get('/exito/{pedido}', [\App\Http\Controllers\CheckoutController::class, 'exito'])->name('exito');
     });
+    
+    // Rutas para servicios de pago (QR y Tigo Money)
+    Route::prefix('pago')->name('pago.')->middleware(['role:cliente'])->group(function () {
+        Route::post('/recolectar', [ConsumirServicioController::class, 'RecolectarDatos'])->name('recolectar');
+        Route::post('/consultar', [ConsumirServicioController::class, 'ConsultarEstado'])->name('consultar');
+        Route::post('/callback', [ConsumirServicioController::class, 'urlCallback'])->name('callback');
+    });
+    
+    // Rutas públicas para callback (sin middleware de autenticación)
+    Route::post('/consultar', [ConsumirServicioController::class, 'ConsultarEstado'])->name('consultar.estado');
     
     // Gestión de usuarios - solo para admin y usuarios con permisos específicos
     Route::middleware(['can.manage.users'])->group(function () {

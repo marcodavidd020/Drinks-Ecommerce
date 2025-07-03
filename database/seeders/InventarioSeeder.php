@@ -125,13 +125,11 @@ class InventarioSeeder extends Seeder
             }
         }
 
-        // Crear tipos de pago
+        // Crear tipos de pago (solo 3 tipos: Tarjeta, QR, Tigo Money)
         $tiposPago = [
-            ['tipo_pago' => 'Efectivo'],
-            ['tipo_pago' => 'Tarjeta de Débito'],
-            ['tipo_pago' => 'Tarjeta de Crédito'],
-            ['tipo_pago' => 'Transferencia Bancaria'],
+            ['tipo_pago' => 'Tarjeta'],
             ['tipo_pago' => 'QR'],
+            ['tipo_pago' => 'Tigo Money']
         ];
 
         foreach ($tiposPago as $tipoPagoData) {
