@@ -104,4 +104,13 @@ class NotaVenta extends Model
     {
         return $this->belongsTo(Pedido::class, 'pedido_id');
     }
+
+    /**
+     * Relación con Pagos (1:N)
+     * Una nota de venta puede tener múltiples pagos
+     */
+    public function pagos(): HasMany
+    {
+        return $this->hasMany(Pago::class);
+    }
 }

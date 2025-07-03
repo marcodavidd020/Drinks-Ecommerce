@@ -26,4 +26,13 @@ class TipoPago extends Model
     protected $fillable = [
         'tipo_pago',
     ];
+
+    /**
+     * Relación con Pagos (1:N)
+     * Un tipo de pago puede tener múltiples pagos
+     */
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class);
+    }
 }

@@ -123,31 +123,9 @@ export default function ClienteCarrito({ carrito, detalles, total }: ClienteCarr
         }
     };
 
-    const realizarCheckout = async () => {
-        try {
-            const response = await fetch('/carrito/checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            });
-
-            if (response.ok) {
-                alert(getTextByMode({
-                    niños: '¡Pedido realizado! 🎉 Pronto tendrás tus bebidas',
-                    jóvenes: '¡Pedido confirmado! Gracias por tu compra',
-                    adultos: 'Pedido procesado exitosamente'
-                }));
-                router.visit('/cliente/dashboard');
-            } else {
-                const error = await response.json();
-                alert(error.error || 'Error procesando el pedido');
-            }
-        } catch (error) {
-            console.error('Error en checkout:', error);
-            alert('Error procesando el pedido');
-        }
+    const realizarCheckout = () => {
+        // Redirigir al nuevo flujo de checkout
+        router.visit('/checkout');
     };
 
     return (

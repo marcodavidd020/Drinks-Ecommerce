@@ -87,6 +87,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/checkout', [CarritoController::class, 'checkout'])->name('checkout');
     });
     
+    // Rutas de checkout para el proceso completo de compra
+    Route::prefix('checkout')->name('checkout.')->middleware(['role:cliente'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\CheckoutController::class, 'inicio'])->name('inicio');
+        Route::get('/direccion', [\App\Http\Controllers\CheckoutController::class, 'direccion'])->name('direccion');
+        Route::post('/pago', [\App\Http\Controllers\CheckoutController::class, 'pago'])->name('pago');
+        Route::post('/confirmar', [\App\Http\Controllers\CheckoutController::class, 'confirmar'])->name('confirmar');
+        Route::post('/procesar', [\App\Http\Controllers\CheckoutController::class, 'procesar'])->name('procesar');
+        Route::get('/exito/{pedido}', [\App\Http\Controllers\CheckoutController::class, 'exito'])->name('exito');
+    });
+    
     // Gestión de usuarios - solo para admin y usuarios con permisos específicos
     Route::middleware(['can.manage.users'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');

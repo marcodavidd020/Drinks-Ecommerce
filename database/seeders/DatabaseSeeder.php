@@ -47,6 +47,9 @@ class DatabaseSeeder extends Seeder
             
             // Datos específicos para home
             HomeDataSeeder::class,
+            
+            // Datos para checkout
+            CheckoutDataSeeder::class,
         ]);
         
         $this->command->info('🎉 Siembra de datos completada exitosamente!');
