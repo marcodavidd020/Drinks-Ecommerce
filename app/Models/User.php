@@ -165,7 +165,7 @@ class User extends Authenticatable
     public function tieneAccesoDashboard(): bool
     {
         return $this->can('ver dashboard') || 
-               $this->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+               $this->hasAnyRole(['admin', 'vendedor', 'cliente']);
     }
 
     /**
@@ -236,7 +236,7 @@ class User extends Authenticatable
     public function esCliente(): bool
     {
         return $this->hasRole('cliente') && 
-               !$this->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+               !$this->hasAnyRole(['admin', 'vendedor']);
     }
 
     /**
@@ -244,7 +244,7 @@ class User extends Authenticatable
      */
     public function esAdministrativo(): bool
     {
-        return $this->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+        return $this->hasAnyRole(['admin', 'vendedor']);
     }
 
     /**
@@ -256,10 +256,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Verifica si es empleado (genérico)
+     * Verifica si es vendedor (genérico)
      */
-    public function esEmpleado(): bool
+    public function esVendedor(): bool
     {
-        return $this->hasRole('empleado');
+        return $this->hasRole('vendedor');
     }
 }

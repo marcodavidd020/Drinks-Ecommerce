@@ -47,11 +47,6 @@ class AuthHelper
         return self::hasRole(RoleEnum::CLIENTE);
     }
 
-    public static function isEmpleado(): bool
-    {
-        return self::hasRole(RoleEnum::EMPLEADO);
-    }
-
     public static function isGestion(): bool
     {
         return self::hasAnyRole(RoleEnum::gestion());
@@ -187,5 +182,13 @@ class AuthHelper
             ->unique()
             ->values()
             ->toArray();
+    }
+
+    /**
+     * Verifica si el usuario es vendedor
+     */
+    public static function isVendedor(): bool
+    {
+        return self::hasRole(RoleEnum::VENDEDOR);
     }
 } 

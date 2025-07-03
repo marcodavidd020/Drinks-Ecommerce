@@ -66,7 +66,7 @@ class AuthenticatedSessionController extends Controller
 
         // Verificar si es cliente (tiene rol cliente y no tiene roles administrativos)
         $isCliente = $user->hasRole('cliente') && 
-                    !$user->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+                    !$user->hasAnyRole(['admin', 'vendedor']);
 
         // Si es cliente, redirigir al home
         if ($isCliente && $user->cliente) {

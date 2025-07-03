@@ -20,7 +20,7 @@ class RedirectClienteToDashboard
         $user = Auth::user();
 
         // Si el usuario es un cliente (solo tiene rol cliente), redirigir a su página especial
-        if ($user && $user->hasRole('cliente') && !$user->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista'])) {
+        if ($user && $user->hasRole('cliente') && !$user->hasAnyRole(['admin', 'vendedor'])) {
             // Si está tratando de acceder al dashboard admin, redirigir a página de cliente
             if ($request->is('dashboard') || $request->is('dashboard/*')) {
                 return redirect()->route('cliente.dashboard');

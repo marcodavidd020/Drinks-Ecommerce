@@ -132,15 +132,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     });
 
-    // Gestión de clientes - acceso para admin, empleado y organizador
+    // Gestión de clientes - acceso para admin y vendedor
     Route::middleware(['has.gestion.role'])->group(function () {
         Route::resource('clientes', ClienteController::class);
         Route::patch('/clientes/{cliente}/toggle-status', [ClienteController::class, 'toggleStatus'])
             ->name('clientes.toggle-status');
     });
 
-    // Gestión de proveedores - acceso para admin y empleado
-    Route::middleware(['has.roles:admin,empleado'])->group(function () {
+    // Gestión de proveedores - acceso para admin y vendedor
+    Route::middleware(['has.roles:admin,vendedor'])->group(function () {
         Route::resource('proveedores', ProveedorController::class)->parameters([
             'proveedores' => 'proveedor'
         ]);
@@ -148,7 +148,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('proveedores.toggle-status');
     });
 
-    // Gestión de productos - acceso para admin, empleado y organizador
+    // Gestión de productos - acceso para admin y vendedor
     Route::middleware(['can.manage.products'])->group(function () {
         Route::resource('productos', ProductoController::class);
         Route::patch('/productos/{producto}/toggle-status', [ProductoController::class, 'toggleStatus'])
@@ -157,20 +157,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('productos.update-stock');
     });
 
-    // Gestión de categorías - acceso para admin y empleado
-    Route::middleware(['has.roles:admin,empleado'])->group(function () {
+    // Gestión de categorías - acceso para admin y vendedor
+    Route::middleware(['has.roles:admin,vendedor'])->group(function () {
         Route::resource('categorias', CategoriaController::class);
     });
 
-    // Gestión de almacenes - acceso para admin y empleado
-    Route::middleware(['has.roles:admin,empleado'])->group(function () {
+    // Gestión de almacenes - acceso para admin y vendedor
+    Route::middleware(['has.roles:admin,vendedor'])->group(function () {
         Route::resource('almacenes', AlmacenController::class)->parameters([
             'almacenes' => 'almacen'
         ]);
     });
 
-    // Gestión de inventarios - acceso para admin y empleado
-    Route::middleware(['has.roles:admin,empleado'])->group(function () {
+    // Gestión de inventarios - acceso para admin y vendedor
+    Route::middleware(['has.roles:admin,vendedor'])->group(function () {
         Route::resource('inventarios', InventarioController::class)->parameters([
             'inventarios' => 'inventario'
         ]);
@@ -180,7 +180,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('inventarios.transferencia');
     });
 
-    // Gestión de ventas - acceso para admin, empleado y organizador
+    // Gestión de ventas - acceso para admin y vendedor
     Route::middleware(['can.manage.sales'])->group(function () {
         Route::get('/ventas', [NotaVentaController::class, 'index'])->name('ventas.index');
         Route::get('/ventas/create', [NotaVentaController::class, 'create'])->name('ventas.create');
@@ -189,8 +189,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/ventas/{venta}/estado', [NotaVentaController::class, 'updateEstado'])->name('ventas.update-estado');
     });
 
-    // Gestión de compras - acceso para admin y empleado
-    Route::middleware(['has.roles:admin,empleado'])->group(function () {
+    // Gestión de compras - acceso para admin y vendedor
+    Route::middleware(['has.roles:admin,vendedor'])->group(function () {
         Route::resource('compras', NotaCompraController::class)->parameters([
             'compras' => 'compra'
         ]);
@@ -198,7 +198,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('compras.cambiar-estado');
     });
 
-    // Gestión de promociones - acceso para admin, empleado y organizador
+    // Gestión de promociones - acceso para admin y vendedor
     Route::middleware(['can.manage.promotions'])->group(function () {
         Route::resource('promociones', PromocionController::class)->parameters([
             'promociones' => 'promocion'
@@ -231,8 +231,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/admin/permissions', [PermisoController::class, 'index'])->name('admin.permissions');
     });
 
-    // Rutas para reportes - acceso para admin y organizador
-    Route::middleware(['has.roles:admin,organizador'])->group(function () {
+    // Rutas para reportes - acceso solo para admin
+    Route::middleware(['has.roles:admin'])->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
         Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
