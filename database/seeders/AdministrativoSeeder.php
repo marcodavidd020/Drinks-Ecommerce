@@ -48,7 +48,7 @@ class AdministrativoSeeder extends Seeder
                     'cargo' => 'Jefe de Operaciones',
                     'salario' => 6500.00,
                 ],
-                'role' => 'empleado'
+                'role' => 'admin'
             ],
             [
                 'nombre' => 'Carlos Organización',
@@ -62,7 +62,7 @@ class AdministrativoSeeder extends Seeder
                     'cargo' => 'Coordinador de Eventos',
                     'salario' => 5500.00,
                 ],
-                'role' => 'organizador'
+                'role' => 'vendedor'
             ]
         ];
 
@@ -94,10 +94,10 @@ class AdministrativoSeeder extends Seeder
         }
 
         // Crear administrativos adicionales con Factory
-        $roles = ['empleado', 'organizador'];
+        $roles = ['admin', 'vendedor'];
         $cargos = [
-            'empleado' => ['Supervisor de Ventas', 'Jefe de Almacén', 'Contador', 'Asistente Administrativo'],
-            'organizador' => ['Coordinador de Marketing', 'Gestor de Eventos', 'Especialista en Promociones']
+            'admin' => ['Supervisor de Ventas', 'Jefe de Almacén', 'Contador', 'Asistente Administrativo'],
+            'vendedor' => ['Coordinador de Marketing', 'Gestor de Eventos', 'Especialista en Promociones', 'Vendedor Senior']
         ];
 
         for ($i = 0; $i < 8; $i++) {

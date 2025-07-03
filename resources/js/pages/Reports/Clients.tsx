@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Download, Calendar, TrendingUp, Users, DollarSign, ShoppingCart } from 'lucide-react';
+import { Download, Calendar, Users, DollarSign, ShoppingCart } from 'lucide-react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import { formatCurrency } from '@/lib/currency';

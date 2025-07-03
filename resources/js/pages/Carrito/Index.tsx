@@ -27,11 +27,7 @@ interface DetalleCarrito {
     producto: Producto;
 }
 
-interface Carrito {
-    id: number;
-    total: number;
-    fecha: string;
-}
+
 
 interface CarritoIndexProps {
     detalles: DetalleCarrito[];

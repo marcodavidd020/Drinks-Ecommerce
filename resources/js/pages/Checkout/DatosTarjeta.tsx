@@ -15,11 +15,6 @@ interface Direccion {
     referencia: string;
 }
 
-interface Carrito {
-    id: number;
-    total: number;
-}
-
 interface CheckoutDatosTarjetaProps {
     direccion: Direccion;
     tipoPago: TipoPago;

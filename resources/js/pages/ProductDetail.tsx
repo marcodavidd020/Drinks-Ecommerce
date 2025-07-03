@@ -46,7 +46,7 @@ export default function ProductDetail({
     const { settings } = useAppMode();
     const [cantidad, setCantidad] = useState(1);
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { setData, post, processing } = useForm({
         producto_id: producto.id,
         cantidad: 1,
     });

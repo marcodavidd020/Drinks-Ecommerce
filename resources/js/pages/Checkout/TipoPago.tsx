@@ -15,19 +15,13 @@ interface Direccion {
     referencia: string;
 }
 
-interface Carrito {
-    id: number;
-    total: number;
-}
-
 interface CheckoutTipoPagoProps {
-    carrito: Carrito;
     direccion: Direccion;
     tiposPago: TipoPago[];
     total: number;
 }
 
-export default function CheckoutTipoPago({ carrito, direccion, tiposPago, total }: CheckoutTipoPagoProps) {
+export default function CheckoutTipoPago({ direccion, tiposPago, total }: CheckoutTipoPagoProps) {
     const { settings } = useAppMode();
     const [tipoPagoSeleccionado, setTipoPagoSeleccionado] = useState<number | null>(null);
     const [processing, setProcessing] = useState(false);

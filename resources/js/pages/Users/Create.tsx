@@ -17,7 +17,7 @@ interface CreateUserProps {
 export default function CreateUser({ roles }: CreateUserProps) {
     const { getTextByMode, getModeClasses } = useAppModeText();
     
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, errors } = useForm({
         nombre: '',
         email: '',
         password: '',
@@ -247,7 +247,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                     </div>
 
                     <FormButtons
-                        showCancel
+                        cancelHref="/users"
                         cancelText={getTextByMode({
                             niños: '❌ Cancelar',
                             jóvenes: 'Cancelar',

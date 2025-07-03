@@ -112,14 +112,6 @@ export default function SalesReport({
         window.open(`/reports/sales/pdf?${params.toString()}`, '_blank');
     };
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
-    };
-
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('es-CO');
     };

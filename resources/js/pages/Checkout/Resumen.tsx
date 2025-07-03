@@ -24,12 +24,6 @@ interface DetalleCarrito {
     };
 }
 
-interface Carrito {
-    id: number;
-    total: number;
-    detalles: DetalleCarrito[];
-}
-
 interface Cliente {
     id: number;
     nombre: string;
@@ -38,13 +32,12 @@ interface Cliente {
 }
 
 interface CheckoutResumenProps {
-    carrito: Carrito;
     detalles: DetalleCarrito[];
     total: number;
     cliente: Cliente;
 }
 
-export default function CheckoutResumen({ carrito, detalles, total, cliente }: CheckoutResumenProps) {
+export default function CheckoutResumen({ detalles, total, cliente }: CheckoutResumenProps) {
     const { settings } = useAppMode();
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {

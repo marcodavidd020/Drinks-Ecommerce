@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
 import { formatCurrency } from '@/lib/currency';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 
 interface TipoPago {
     id: number;

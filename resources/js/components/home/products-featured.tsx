@@ -34,7 +34,7 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
     const [showSuccessMessage, setShowSuccessMessage] = useState<number | null>(null);
 
     // Verificar si el usuario está autenticado y es cliente
-    const { auth } = (page.props as unknown) as { auth: { user?: { roles?: Array<{ name: string }> } } };
+    const { auth } = page.props as unknown as SharedData;
     const isAuthenticated = !!auth.user;
     
     // Verificar roles correctamente como en otros componentes

@@ -1,4 +1,4 @@
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { formatCurrency } from '@/lib/currency';
@@ -32,26 +32,21 @@ interface DetalleCarrito {
     almacen: Almacen;
 }
 
-interface Carrito {
-    id: number;
-    total: number;
-    fecha: string;
-    total_productos: number;
-}
+// interface Carrito {
+//     id: number;
+//     total: number;
+//     fecha: string;
+//     total_productos: number;
+// }
 
 interface ClienteCarritoProps {
-    carrito: Carrito | null;
     detalles: DetalleCarrito[];
     total: number;
 }
 
-export default function ClienteCarrito({ carrito, detalles, total }: ClienteCarritoProps) {
+export default function ClienteCarrito({ detalles, total }: ClienteCarritoProps) {
     const { getTextByMode } = useAppModeText();
     const [processingItems, setProcessingItems] = useState<number[]>([]);
-
-    const { data, setData, patch, processing } = useForm({
-        cantidad: 1
-    });
 
     const actualizarCantidad = async (detalleId: number, nuevaCantidad: number) => {
         if (nuevaCantidad < 1) return;
@@ -345,10 +340,9 @@ export default function ClienteCarrito({ carrito, detalles, total }: ClienteCarr
 
                                     <button
                                         onClick={realizarCheckout}
-                                        disabled={processing}
                                         className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {processing ? (
+                                        {processingItems.length > 0 ? (
                                             getTextByMode({
                                                 niños: '🔄 Procesando...',
                                                 jóvenes: 'Procesando pedido...',

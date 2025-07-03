@@ -85,7 +85,10 @@ export default function InventoryReport({
     };
 
     const applyFilters = () => {
-        router.get('/reports/inventory', localFilters, {
+        const params = {
+            low_stock_threshold: localFilters.low_stock_threshold
+        };
+        router.get('/reports/inventory', params, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -105,14 +108,6 @@ export default function InventoryReport({
             low_stock_threshold: localFilters.low_stock_threshold.toString()
         });
         window.open(`/reports/inventory/pdf?${params.toString()}`, '_blank');
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-        }).format(amount);
     };
 
     const getStockBadge = (stock: number, threshold: number) => {
