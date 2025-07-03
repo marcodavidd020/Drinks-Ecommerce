@@ -78,121 +78,12 @@ export default function CheckoutTipoPago({ carrito, direccion, tiposPago, total 
                 tipo_pago_id: tipoPagoSeleccionado
             });
         }
-        // Si es QR o Tigo Money, usar el servicio de pagos
-        else if (tipoPagoNombre.includes('qr') || tipoPagoNombre.includes('tigo')) {
-            // Determinar el tipo de servicio
-            const tipoServicio = tipoPagoNombre.includes('tigo') ? 2 : 1; // 1 = QR, 2 = Tigo Money
-            
-            // Preparar datos para el servicio
-            const datosServicio = {
-                tnTipoServicio: tipoServicio,
-                tnTelefono: '70000000', // Temporal - debería venir del cliente
-                tnNombre: 'Cliente Temporal', // Temporal - debería venir del cliente
-                tcCiNit: '12345678', // Temporal - debería venir del cliente
-                tnMonto: total,
-                tcCorreo: 'cliente@example.com', // Temporal - debería venir del cliente
-                tcDetallePedido: 'Pedido desde tienda online'
-            };
-            
-            console.log('Abriendo popup para servicio de pago', { tipoServicio, datosServicio });
-            
-            // Abrir ventana emergente para el servicio de pagos
-            const popup = window.open('', 'PagoWindow', 'width=600,height=700,scrollbars=yes,resizable=yes');
-            
-            if (!popup) {
-                alert(getTextByMode({
-                    niños: '¡Oops! Tu navegador bloqueó la ventana de pago',
-                    jóvenes: 'El navegador bloqueó el popup. Permite ventanas emergentes.',
-                    adultos: 'Su navegador bloqueó la ventana emergente. Por favor permita las ventanas emergentes.'
-                }));
-                setProcessing(false);
-                return;
-            }
-            
-            // Crear formulario y enviarlo al servicio
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/pago/recolectar';
-            form.target = 'PagoWindow';
-            
-            // Agregar token CSRF
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken;
-                form.appendChild(csrfInput);
-            }
-            
-            // Agregar datos del servicio
-            Object.entries(datosServicio).forEach(([key, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = String(value);
-                form.appendChild(input);
+        // Si es QR, ir directo a confirmación (se simulará el QR ahí)
+        else if (tipoPagoNombre.includes('qr')) {
+            router.post('/checkout/confirmar', {
+                direccion_id: direccion.id,
+                tipo_pago_id: tipoPagoSeleccionado
             });
-            
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-            
-            console.log('Formulario enviado al popup');
-            
-            // Escuchar mensajes de la ventana popup
-            const messageHandler = (event: MessageEvent) => {
-                console.log('Mensaje recibido del popup:', event.data);
-                
-                if (event.data.type === 'qr_loaded' && event.data.success) {
-                    console.log('QR cargado exitosamente');
-                    setProcessing(false);
-                } else if (event.data.type === 'payment_error') {
-                    console.error('Error en el servicio de pago:', event.data.message);
-                    alert(getTextByMode({
-                        niños: `¡Ups! Hubo un problema: ${event.data.message}`,
-                        jóvenes: `Error: ${event.data.message}`,
-                        adultos: `Error en el servicio de pago: ${event.data.message}`
-                    }));
-                    setProcessing(false);
-                    popup.close();
-                } else if (event.data.type === 'payment_success') {
-                    console.log('Pago exitoso:', event.data);
-                    // Redirigir a página de éxito
-                    router.get('/checkout/exito');
-                } else if (event.data.type === 'payment_cancelled') {
-                    console.log('Pago cancelado por el usuario');
-                    setProcessing(false);
-                    popup.close();
-                } else if (event.data.type === 'qr_error') {
-                    console.error('Error en QR:', event.data.message);
-                    alert(getTextByMode({
-                        niños: '¡Oops! No pudimos crear el código QR',
-                        jóvenes: 'Error al generar el código QR',
-                        adultos: 'Error al generar el código QR. Intente nuevamente.'
-                    }));
-                    setProcessing(false);
-                    popup.close();
-                }
-            };
-            
-            window.addEventListener('message', messageHandler);
-            
-            // Limpiar listener cuando se cierre el popup
-            popup.addEventListener('beforeunload', () => {
-                window.removeEventListener('message', messageHandler);
-                setProcessing(false);
-            });
-            
-            // Detectar si el popup se cierra manualmente
-            const checkClosed = setInterval(() => {
-                if (popup.closed) {
-                    clearInterval(checkClosed);
-                    window.removeEventListener('message', messageHandler);
-                    setProcessing(false);
-                    console.log('Popup cerrado manualmente');
-                }
-            }, 1000);
         }
         // Para otros tipos de pago, continuar con el flujo normal
         else {

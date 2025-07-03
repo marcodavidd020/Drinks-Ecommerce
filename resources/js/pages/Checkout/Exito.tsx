@@ -24,7 +24,7 @@ interface NotaVenta {
 interface CheckoutExitoProps {
     notaVenta: NotaVenta;
     direccion: Direccion;
-    tipoPago: TipoPago;
+    tipoPago: TipoPago | null;
     total: number;
 }
 
@@ -53,6 +53,9 @@ export default function CheckoutExito({ notaVenta, direccion, tipoPago, total }:
         if (tipo.includes('tigo')) return '📱';
         return '💰';
     };
+
+    // Valores por defecto si tipoPago es null
+    const tipoPagoSeguro = tipoPago || { id: 0, tipo_pago: 'Efectivo' };
 
     return (
         <DashboardLayout>
@@ -145,7 +148,7 @@ export default function CheckoutExito({ notaVenta, direccion, tipoPago, total }:
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                             <div className="flex items-center mb-4">
                                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400 text-2xl mr-4">
-                                    {getTipoPagoIcon(tipoPago.tipo_pago)}
+                                    {getTipoPagoIcon(tipoPagoSeguro.tipo_pago)}
                                 </div>
                                 <h2 className={`text-xl font-bold text-gray-900 dark:text-white ${getModeClasses()}`}>
                                     {getTextByMode({
@@ -159,7 +162,7 @@ export default function CheckoutExito({ notaVenta, direccion, tipoPago, total }:
                             <div className="space-y-3">
                                 <div>
                                     <h3 className={`font-semibold text-gray-900 dark:text-white ${getModeClasses()}`}>
-                                        {tipoPago.tipo_pago}
+                                        {tipoPagoSeguro.tipo_pago}
                                     </h3>
                                     <p className={`text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
                                         {getTextByMode({

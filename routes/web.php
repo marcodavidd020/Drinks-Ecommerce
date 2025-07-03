@@ -19,6 +19,7 @@ use App\Http\Controllers\ClienteDashboardController;
 use App\Http\Controllers\ConsumirServicioController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\CheckoutController;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -102,6 +103,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/pago', [\App\Http\Controllers\CheckoutController::class, 'pago'])->name('pago');
         Route::get('/datos-tarjeta', [\App\Http\Controllers\CheckoutController::class, 'datosTarjeta'])->name('datos-tarjeta');
         Route::post('/confirmar', [\App\Http\Controllers\CheckoutController::class, 'confirmar'])->name('confirmar');
+        Route::post('/generar-qr', [\App\Http\Controllers\CheckoutController::class, 'generarQR'])->name('generar-qr');
         Route::post('/procesar', [\App\Http\Controllers\CheckoutController::class, 'procesar'])->name('procesar');
         Route::get('/exito/{pedido}', [\App\Http\Controllers\CheckoutController::class, 'exito'])->name('exito');
     });

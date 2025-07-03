@@ -227,7 +227,7 @@ class CheckoutController extends Controller
         // Obtener carrito activo
         $carrito = Carrito::where('cliente_id', $cliente->id)
                          ->where('estado', 'activo')
-                         ->with(['detalles.productoAlmacen.producto'])
+                         ->with(['detalles.productoAlmacen.producto.categoria'])
                          ->first();
 
         if (!$carrito || $carrito->detalles->isEmpty()) {
@@ -253,6 +253,72 @@ class CheckoutController extends Controller
     }
 
     /**
+     * Generar QR real para pagos QR
+     */
+    public function generarQR(Request $request)
+    {
+        $request->validate([
+            'direccion_id' => 'required|exists:direccion,id',
+            'tipo_pago_id' => 'required|exists:tipo_pago,id',
+            'total' => 'required|numeric|min:0.01'
+        ]);
+
+        $user = Auth::user();
+        $cliente = $user->cliente;
+
+        if (!$cliente) {
+            return response()->json(['error' => 'Usuario no es cliente'], 400);
+        }
+
+        // Obtener carrito activo
+        $carrito = Carrito::where('cliente_id', $cliente->id)
+                         ->where('estado', 'activo')
+                         ->with(['detalles.productoAlmacen.producto.categoria'])
+                         ->first();
+
+        if (!$carrito || $carrito->detalles->isEmpty()) {
+            return response()->json(['error' => 'Carrito vacío'], 400);
+        }
+
+        // Preparar detalles del pedido para el servicio
+        $detallesPedido = [];
+        foreach ($carrito->detalles as $detalle) {
+            $detallesPedido[] = [
+                'producto' => $detalle->productoAlmacen->producto->nombre,
+                'cantidad' => $detalle->cantidad,
+                'precio' => $detalle->precio_unitario,
+                'subtotal' => $detalle->subtotal
+            ];
+        }
+
+        // Crear instancia del ConsumirServicioController
+        $consumirServicio = new ConsumirServicioController();
+
+        // Preparar request para el servicio de QR
+        $qrRequest = new Request([
+            'tnTipoServicio' => 1, // 1 = generar QR
+            'tnTelefono' => $cliente->telefono ?? '70000000',
+            'tnNombre' => $cliente->user->nombre,
+            'tcCiNit' => $cliente->nit ?? '0',
+            'tnMonto' => $carrito->total,
+            'tcCorreo' => $cliente->user->email,
+            'tcDetallePedido' => json_encode($detallesPedido)
+        ]);
+
+        try {
+            // Generar QR usando el servicio real
+            $qrResponse = $consumirServicio->RecolectarDatos($qrRequest);
+            
+            // Retornar la respuesta HTML del QR
+            return $qrResponse;
+            
+        } catch (\Exception $e) {
+            \Log::error('Error generando QR: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al generar el código QR'], 500);
+        }
+    }
+
+    /**
      * Paso 4: Procesar el pedido completo
      */
     public function procesar(Request $request)
@@ -260,7 +326,7 @@ class CheckoutController extends Controller
         $request->validate([
             'direccion_id' => 'required|exists:direccion,id',
             'tipo_pago_id' => 'required|exists:tipo_pago,id',
-            'metodo_pago' => 'nullable|string|in:tarjeta,qr,tigo_money',
+            'metodo_pago' => 'nullable|string|in:tarjeta,qr',
             'datos_tarjeta' => 'nullable|array',
             'datos_tarjeta.numero_tarjeta' => 'required_if:metodo_pago,tarjeta|string',
             'datos_tarjeta.nombre_titular' => 'required_if:metodo_pago,tarjeta|string',
@@ -279,7 +345,7 @@ class CheckoutController extends Controller
         // Obtener carrito activo
         $carrito = Carrito::where('cliente_id', $cliente->id)
                          ->where('estado', 'activo')
-                         ->with(['detalles.productoAlmacen.producto'])
+                         ->with(['detalles.productoAlmacen.producto.categoria'])
                          ->first();
 
         if (!$carrito || $carrito->detalles->isEmpty()) {
@@ -302,8 +368,8 @@ class CheckoutController extends Controller
             if ($request->metodo_pago === 'tarjeta' && isset($request->datos_tarjeta)) {
                 $observacionesVenta .= ' - Pago con ' . ucfirst($request->datos_tarjeta['tipo_tarjeta']) . 
                                       ' terminada en ' . $request->datos_tarjeta['ultimo_digitos'];
-            } elseif ($request->metodo_pago) {
-                $observacionesVenta .= ' - Pago mediante ' . strtoupper($request->metodo_pago);
+            } elseif ($request->metodo_pago === 'qr') {
+                $observacionesVenta .= ' - Pago mediante QR confirmado';
             }
 
             $notaVenta = NotaVenta::create([
@@ -380,15 +446,18 @@ class CheckoutController extends Controller
         // Cargar relaciones
         $pedido->load([
             'direccion', 
-            'notaVenta.detalles.productoAlmacen.producto',
+            'notaVenta.detalles.productoAlmacen.producto.categoria',
             'notaVenta.pagos.tipoPago'
         ]);
 
+        $pago = $pedido->notaVenta->pagos->first();
+        
         return Inertia::render('Checkout/Exito', [
             'pedido' => $pedido,
             'notaVenta' => $pedido->notaVenta,
             'direccion' => $pedido->direccion,
-            'pago' => $pedido->notaVenta->pagos->first(),
+            'tipoPago' => $pago ? $pago->tipoPago : null,
+            'total' => $pedido->notaVenta->total,
             'detalles' => $pedido->notaVenta->detalles,
         ]);
     }

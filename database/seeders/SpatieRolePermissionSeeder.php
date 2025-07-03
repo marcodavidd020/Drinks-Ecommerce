@@ -122,24 +122,12 @@ class SpatieRolePermissionSeeder extends Seeder
                 'description' => 'Administrador del sistema con acceso completo'
             ],
             [
-                'name' => 'empleado',
-                'description' => 'Empleado con acceso a operaciones principales'
-            ],
-            [
                 'name' => 'cliente',
-                'description' => 'Cliente del sistema con acceso limitado'
-            ],
-            [
-                'name' => 'organizador',
-                'description' => 'Organizador de eventos y promociones'
+                'description' => 'Cliente del sistema con acceso a compras'
             ],
             [
                 'name' => 'vendedor',
-                'description' => 'Vendedor con acceso a ventas y clientes'
-            ],
-            [
-                'name' => 'almacenista',
-                'description' => 'Encargado del inventario y almacén'
+                'description' => 'Vendedor con acceso a ventas, productos y clientes'
             ],
         ];
 
@@ -170,45 +158,21 @@ class SpatieRolePermissionSeeder extends Seeder
                 'ver dashboard', 'gestionar roles', 'gestionar permisos', 'acceso admin', 'ver reportes'
             ],
             
-            'empleado' => [
-                // Operaciones principales del negocio
+            'vendedor' => [
+                // Permisos de ventas y gestión operativa
                 'ver clientes', 'crear clientes', 'editar clientes',
                 'gestionar productos', 'crear productos', 'editar productos', 'ver productos',
                 'gestionar categorias', 'crear categorias', 'editar categorias', 'ver categorias',
                 'gestionar proveedores', 'crear proveedores', 'editar proveedores', 'ver proveedores',
+                'gestionar ventas', 'crear ventas', 'editar ventas', 'ver ventas',
                 'gestionar compras', 'crear compras', 'editar compras', 'ver compras',
                 'gestionar inventario', 'ajustar inventario', 'ver inventario',
-                'ver dashboard'
-            ],
-            
-            'organizador' => [
-                // Enfoque en clientes, ventas y promociones
-                'gestionar clientes', 'crear clientes', 'editar clientes', 'ver clientes',
-                'ver productos', 'editar productos',
-                'gestionar ventas', 'crear ventas', 'ver ventas',
-                'gestionar promociones', 'crear promociones', 'editar promociones', 'eliminar promociones', 'ver promociones',
+                'gestionar promociones', 'crear promociones', 'editar promociones', 'ver promociones',
                 'ver dashboard', 'ver reportes'
             ],
             
-            'vendedor' => [
-                // Enfoque en ventas y atención al cliente
-                'ver clientes', 'crear clientes', 'editar clientes',
-                'ver productos',
-                'gestionar ventas', 'crear ventas', 'ver ventas',
-                'ver promociones',
-                'ver dashboard'
-            ],
-            
-            'almacenista' => [
-                // Enfoque en inventario y productos
-                'ver productos', 'editar productos',
-                'gestionar inventario', 'ajustar inventario', 'ver inventario',
-                'ver compras',
-                'ver dashboard'
-            ],
-            
             'cliente' => [
-                // Acceso mínimo, solo visualización de productos
+                // Acceso mínimo, solo para compras
                 'ver productos', 'ver promociones'
             ]
         ];
@@ -224,29 +188,41 @@ class SpatieRolePermissionSeeder extends Seeder
 
     private function assignRolesToUsers(): void
     {
-        // Solo asignar roles si los usuarios no tienen roles ya asignados
-        $usersWithoutRoles = User::doesntHave('roles')->get();
-        
-        if ($usersWithoutRoles->isEmpty()) {
-            $this->command->info('   • Todos los usuarios ya tienen roles asignados');
-            return;
+        // Asignar rol admin al primer usuario (generalmente el super admin)
+        $firstUser = User::first();
+        if ($firstUser && !$firstUser->hasAnyRole(['admin', 'cliente', 'vendedor'])) {
+            $firstUser->assignRole('admin');
+            $this->command->info("   • Rol 'admin' asignado al usuario: {$firstUser->email}");
         }
 
-        // Asignar rol de cliente por defecto a usuarios sin roles
-        foreach ($usersWithoutRoles as $user) {
-            $user->assignRole('cliente');
-        }
-
-        $this->command->info('   • Usuarios sin roles asignados como clientes: ' . $usersWithoutRoles->count());
-        
-        // Asignar primer usuario como admin si no hay ningún admin
-        $admins = User::role('admin')->count();
-        if ($admins === 0) {
-            $firstUser = User::first();
-            if ($firstUser) {
-                $firstUser->syncRoles(['admin']);
-                $this->command->info("   • Primer usuario asignado como admin: {$firstUser->email}");
+        // Reasignar roles obsoletos a equivalentes modernos
+        $users = User::all();
+        foreach ($users as $user) {
+            $rolesActuales = $user->roles->pluck('name')->toArray();
+            $rolesObsoletos = ['empleado', 'organizador', 'almacenista'];
+            
+            // Si tiene roles obsoletos, asignar vendedor
+            if (array_intersect($rolesObsoletos, $rolesActuales)) {
+                // Remover roles obsoletos uno por uno
+                foreach ($rolesObsoletos as $rolObsoleto) {
+                    if ($user->hasRole($rolObsoleto)) {
+                        $user->removeRole($rolObsoleto);
+                    }
+                }
+                // Asignar vendedor si no lo tiene ya
+                if (!$user->hasRole('vendedor')) {
+                    $user->assignRole('vendedor');
+                }
+                $this->command->info("   • Usuario {$user->email}: roles obsoletos cambiados a 'vendedor'");
+            }
+            
+            // Si no tiene ningún rol, asignar cliente por defecto
+            if ($user->roles->isEmpty()) {
+                $user->assignRole('cliente');
+                $this->command->info("   • Usuario {$user->email}: asignado rol 'cliente' por defecto");
             }
         }
+
+        $this->command->info('   • Reasignación de roles completada');
     }
 } 

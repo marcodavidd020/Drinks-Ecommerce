@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
 import { formatCurrency } from '@/lib/currency';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 interface TipoPago {
     id: number;
@@ -30,6 +30,7 @@ interface DetalleCarrito {
             categoria: {
                 nombre: string;
             };
+            cod_producto: string;
         };
     };
 }
@@ -49,6 +50,9 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
     const { settings } = useAppMode();
     const [processing, setProcessing] = useState(false);
     const [observaciones, setObservaciones] = useState('');
+    const [showQR, setShowQR] = useState(false);
+    const [qrConfirmed, setQrConfirmed] = useState(false);
+    const qrIframeRef = useRef<HTMLIFrameElement>(null);
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
@@ -69,17 +73,95 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
         const tipo = tipoPago.toLowerCase();
         if (tipo.includes('tarjeta')) return '💳';
         if (tipo.includes('qr')) return '📱';
-        if (tipo.includes('tigo')) return '📱';
         return '💰';
     };
 
-    const procesarPedido = () => {
+    const isQRPayment = tipoPago.tipo_pago.toLowerCase().includes('qr');
+
+    const generarQR = () => {
+        setShowQR(true);
         setProcessing(true);
+        
+        // Crear un formulario temporal para hacer POST al iframe
+        if (qrIframeRef.current) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/checkout/generar-qr';
+            form.target = 'qr-iframe';
+            form.style.display = 'none';
+
+            // Agregar token CSRF
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+
+            // Agregar parámetros
+            const params = {
+                'direccion_id': direccion.id,
+                'tipo_pago_id': tipoPago.id,
+                'total': carrito.total
+            };
+
+            Object.entries(params).forEach(([key, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value.toString();
+                form.appendChild(input);
+            });
+
+            // Agregar el formulario al DOM y enviarlo
+            document.body.appendChild(form);
+            
+            // Establecer el nombre del iframe
+            qrIframeRef.current.name = 'qr-iframe';
+            
+            form.submit();
+            document.body.removeChild(form);
+            
+            // Ocultar el spinner después de un momento
+            setTimeout(() => {
+                setProcessing(false);
+            }, 2000);
+        }
+    };
+
+    const confirmarPagoQR = () => {
+        setQrConfirmed(true);
+        setProcessing(true);
+        
+        // Procesar el pago QR
         router.post('/checkout/procesar', {
             direccion_id: direccion.id,
             tipo_pago_id: tipoPago.id,
+            metodo_pago: 'qr',
             observaciones: observaciones
         });
+    };
+
+    const procesarPedido = () => {
+        if (isQRPayment && !qrConfirmed) {
+            // Para pago QR, primero mostrar QR
+            if (!showQR) {
+                generarQR();
+                return;
+            }
+            // Si ya se mostró el QR, confirmar pago
+            confirmarPagoQR();
+        } else {
+            // Para otros métodos de pago, procesar normalmente
+            setProcessing(true);
+            router.post('/checkout/procesar', {
+                direccion_id: direccion.id,
+                tipo_pago_id: tipoPago.id,
+                observaciones: observaciones
+            });
+        }
     };
 
     return (
@@ -170,19 +252,19 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                                     {carrito.detalles.map((detalle: DetalleCarrito) => (
                                         <div key={detalle.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                             <img 
-                                                src={detalle.productoAlmacen.producto.imagen} 
-                                                alt={detalle.productoAlmacen.producto.nombre}
+                                                src={detalle.productoAlmacen?.producto?.imagen || '/images/no-image.jpg'} 
+                                                alt={detalle.productoAlmacen?.producto?.nombre || 'Producto'}
                                                 className="w-16 h-16 object-cover rounded-lg"
                                             />
                                             <div className="flex-1">
                                                 <h3 className={`font-semibold text-gray-900 dark:text-white ${getModeClasses()}`}>
-                                                    {detalle.productoAlmacen.producto.nombre}
+                                                    {detalle.productoAlmacen?.producto?.nombre || 'Producto sin nombre'}
                                                 </h3>
                                                 <p className={`text-sm text-gray-600 dark:text-gray-400 ${getModeClasses()}`}>
-                                                    {detalle.productoAlmacen.producto.categoria.nombre}
+                                                    {detalle.productoAlmacen?.producto?.categoria?.nombre || 'Sin categoría'}
                                                 </p>
                                                 <p className={`text-sm text-gray-500 dark:text-gray-500 ${getModeClasses()}`}>
-                                                    {detalle.productoAlmacen.producto.cod_producto}
+                                                    {detalle.productoAlmacen?.producto?.cod_producto || 'Sin código'}
                                                 </p>
                                             </div>
                                             <div className="text-right">
@@ -224,6 +306,77 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                                     />
                                 </div>
                             </div>
+
+                            {/* Sección de QR para pagos QR */}
+                            {isQRPayment && (
+                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                                        <h2 className={`text-xl font-bold text-gray-900 dark:text-white ${getModeClasses()}`}>
+                                            {getTextByMode({
+                                                niños: '📱 ¡Tu Código QR!',
+                                                jóvenes: 'Código QR de Pago',
+                                                adultos: 'Código QR de Pago'
+                                            })}
+                                        </h2>
+                                    </div>
+
+                                    <div className="p-6">
+                                        {!showQR ? (
+                                            <div className="text-center py-8">
+                                                <div className="text-6xl mb-4">📱</div>
+                                                <p className={`text-gray-600 dark:text-gray-400 mb-4 ${getModeClasses()}`}>
+                                                    {getTextByMode({
+                                                        niños: 'Haz clic en "Generar QR" para ver tu código',
+                                                        jóvenes: 'Haz clic en "Generar QR" para proceder',
+                                                        adultos: 'Haga clic en "Generar QR" para proceder con el pago'
+                                                    })}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="py-6">
+                                                {/* QR Code real generado por el servicio */}
+                                                <div className="w-full">
+                                                    <iframe 
+                                                        ref={qrIframeRef}
+                                                        className="w-full h-96 border border-gray-300 rounded-lg"
+                                                        title="Código QR de Pago"
+                                                        style={{ minHeight: '600px' }}
+                                                    />
+                                                </div>
+
+                                                {!qrConfirmed && (
+                                                    <button
+                                                        onClick={confirmarPagoQR}
+                                                        disabled={processing}
+                                                        className={`w-full mt-4 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02] ${getModeClasses()}`}
+                                                    >
+                                                        {getTextByMode({
+                                                            niños: '✅ ¡Confirmar Pago QR!',
+                                                            jóvenes: '✅ Confirmar Pago',
+                                                            adultos: '✅ Confirmar Pago QR'
+                                                        })}
+                                                    </button>
+                                                )}
+
+                                                {qrConfirmed && (
+                                                    <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4 mt-4">
+                                                        <div className="flex items-center justify-center">
+                                                            <span className="text-2xl mr-2">✅</span>
+                                                            <p className={`text-green-800 dark:text-green-200 font-medium ${getModeClasses()}`}>
+                                                                {getTextByMode({
+                                                                    niños: '¡Pago confirmado!',
+                                                                    jóvenes: 'Pago confirmado',
+                                                                    adultos: 'Pago confirmado exitosamente'
+                                                                })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Resumen final */}
@@ -311,11 +464,23 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                                                     </span>
                                                 </div>
                                             ) : (
-                                                getTextByMode({
-                                                    niños: '🎉 ¡Confirmar y Pedir!',
-                                                    jóvenes: '✅ Confirmar Pedido',
-                                                    adultos: 'Confirmar Pedido'
-                                                })
+                                                isQRPayment && !showQR 
+                                                    ? getTextByMode({
+                                                        niños: '📱 ¡Generar QR!',
+                                                        jóvenes: '📱 Generar QR',
+                                                        adultos: '📱 Generar Código QR'
+                                                    })
+                                                    : isQRPayment && showQR && !qrConfirmed
+                                                    ? getTextByMode({
+                                                        niños: '✅ ¡Confirmar Pago QR!',
+                                                        jóvenes: '✅ Confirmar Pago QR',
+                                                        adultos: '✅ Confirmar Pago QR'
+                                                    })
+                                                    : getTextByMode({
+                                                        niños: '🎉 ¡Confirmar y Pedir!',
+                                                        jóvenes: '✅ Confirmar Pedido',
+                                                        adultos: 'Confirmar Pedido'
+                                                    })
                                             )}
                                         </button>
 

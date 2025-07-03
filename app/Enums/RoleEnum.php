@@ -8,10 +8,7 @@ enum RoleEnum: string
 {
     case ADMIN = 'admin';
     case CLIENTE = 'cliente';
-    case EMPLEADO = 'empleado';
-    case ORGANIZADOR = 'organizador';
     case VENDEDOR = 'vendedor';
-    case ALMACENISTA = 'almacenista';
 
     /**
      * Obtiene todos los valores de los roles
@@ -32,11 +29,11 @@ enum RoleEnum: string
     }
 
     /**
-     * Verifica si el rol es de gestión (admin, empleado, organizador)
+     * Verifica si el rol es de gestión (admin, vendedor)
      */
     public function esGestion(): bool
     {
-        return in_array($this, [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA]);
+        return in_array($this, [self::ADMIN, self::VENDEDOR]);
     }
 
     /**
@@ -55,10 +52,7 @@ enum RoleEnum: string
         return match ($this) {
             self::ADMIN => 'Administrador',
             self::CLIENTE => 'Cliente',
-            self::EMPLEADO => 'Empleado',
-            self::ORGANIZADOR => 'Organizador',
             self::VENDEDOR => 'Vendedor',
-            self::ALMACENISTA => 'Almacenista',
         };
     }
 
@@ -69,11 +63,8 @@ enum RoleEnum: string
     {
         return match ($this) {
             self::ADMIN => 'Acceso completo a todas las funcionalidades del sistema',
-            self::CLIENTE => 'Acceso al portal de cliente para ver productos y promociones',
-            self::EMPLEADO => 'Gestión operativa de productos, ventas, compras e inventario',
-            self::ORGANIZADOR => 'Gestión de eventos, promociones y reportes de ventas',
-            self::VENDEDOR => 'Gestión de ventas y atención al cliente',
-            self::ALMACENISTA => 'Gestión de inventario y almacén',
+            self::CLIENTE => 'Acceso al portal de cliente para ver productos y realizar compras',
+            self::VENDEDOR => 'Gestión de ventas, atención al cliente y productos',
         };
     }
 
@@ -85,10 +76,7 @@ enum RoleEnum: string
         return match ($this) {
             self::ADMIN => 'red',
             self::CLIENTE => 'green',
-            self::EMPLEADO => 'blue',
-            self::ORGANIZADOR => 'purple',
             self::VENDEDOR => 'orange',
-            self::ALMACENISTA => 'cyan',
         };
     }
 
@@ -100,10 +88,7 @@ enum RoleEnum: string
         return match ($this) {
             self::ADMIN => '🛡️',
             self::CLIENTE => '👤',
-            self::EMPLEADO => '👷',
-            self::ORGANIZADOR => '🎯',
             self::VENDEDOR => '💼',
-            self::ALMACENISTA => '📦',
         };
     }
 
@@ -115,7 +100,8 @@ enum RoleEnum: string
     public function puedeAsignar(): array
     {
         return match ($this) {
-            self::ADMIN => [self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA, self::CLIENTE],
+            self::ADMIN => [self::VENDEDOR, self::CLIENTE],
+            self::VENDEDOR => [self::CLIENTE],
             default => [],
         };
     }
@@ -137,7 +123,7 @@ enum RoleEnum: string
      */
     public static function gestion(): array
     {
-        return [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA];
+        return [self::ADMIN, self::VENDEDOR];
     }
 
     /**
@@ -147,17 +133,7 @@ enum RoleEnum: string
      */
     public static function dashboardAccess(): array
     {
-        return [self::ADMIN, self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA, self::CLIENTE];
-    }
-
-    /**
-     * Obtiene los roles operativos
-     *
-     * @return array<RoleEnum>
-     */
-    public static function operativos(): array
-    {
-        return [self::EMPLEADO, self::ORGANIZADOR, self::VENDEDOR, self::ALMACENISTA];
+        return [self::ADMIN, self::VENDEDOR, self::CLIENTE];
     }
 
     /**
@@ -167,10 +143,7 @@ enum RoleEnum: string
     {
         return match ($this) {
             self::ADMIN => 100,
-            self::EMPLEADO => 60,
-            self::ORGANIZADOR => 60,
             self::VENDEDOR => 50,
-            self::ALMACENISTA => 50,
             self::CLIENTE => 20,
         };
     }
@@ -202,34 +175,19 @@ enum RoleEnum: string
                 'ver_reportes', 'generar_reportes',
                 'configurar_sistema', 'gestionar_roles', 'gestionar_permisos',
             ],
-            self::EMPLEADO => [
-                // Permisos operativos
+            self::VENDEDOR => [
+                // Permisos de ventas y gestión básica
                 'ver_productos', 'crear_productos', 'editar_productos',
+                'ver_clientes', 'crear_clientes', 'editar_clientes',
                 'ver_ventas', 'crear_ventas', 'editar_ventas',
                 'ver_compras', 'crear_compras',
                 'ver_inventario', 'ajustar_inventario',
                 'ver_promociones', 'crear_promociones', 'editar_promociones',
-            ],
-            self::ORGANIZADOR => [
-                // Permisos de eventos
-                'ver_productos', 'ver_ventas', 'crear_ventas',
-                'ver_promociones', 'crear_promociones', 'editar_promociones',
                 'ver_reportes',
             ],
-            self::VENDEDOR => [
-                // Permisos de ventas
-                'ver_productos', 'ver_clientes', 'crear_clientes', 'editar_clientes',
-                'ver_ventas', 'crear_ventas', 'ver_promociones',
-            ],
-            self::ALMACENISTA => [
-                // Permisos de inventario
-                'ver_productos', 'editar_productos',
-                'ver_inventario', 'ajustar_inventario',
-                'ver_compras',
-            ],
             self::CLIENTE => [
-                // Solo lectura
-                'ver_productos', 'ver_promociones',
+                // Permisos básicos de cliente
+                'ver_productos', 'ver_promociones', 'gestionar_carrito', 'realizar_compras',
             ],
         };
     }

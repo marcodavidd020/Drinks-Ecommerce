@@ -154,7 +154,7 @@ class RolController extends Controller
                         'email' => $user->email,
                     ];
                 }),
-                'is_system_role' => in_array($role->name, ['admin', 'cliente', 'empleado', 'organizador']),
+                'is_system_role' => in_array($role->name, ['admin', 'cliente', 'vendedor']),
             ]
         ]);
     }
@@ -183,7 +183,7 @@ class RolController extends Controller
                 'name' => $role->name,
                 'guard_name' => $role->guard_name,
                 'permissions' => $role->permissions->pluck('id')->toArray(),
-                'is_system_role' => in_array($role->name, ['admin', 'cliente', 'empleado', 'organizador']),
+                'is_system_role' => in_array($role->name, ['admin', 'cliente', 'vendedor']),
             ],
             'permissions' => $permissions,
         ]);
@@ -204,7 +204,7 @@ class RolController extends Controller
             DB::beginTransaction();
 
             // Actualizar el rol (solo si no es del sistema)
-            if (!in_array($role->name, ['admin', 'cliente', 'empleado', 'organizador'])) {
+            if (!in_array($role->name, ['admin', 'cliente', 'vendedor'])) {
                 $role->update([
                     'name' => $validated['name'],
                 ]);
@@ -234,7 +234,7 @@ class RolController extends Controller
     public function destroy(Role $role): RedirectResponse
     {
         // Verificar que no sea uno de los roles del sistema
-        $systemRoles = ['admin', 'cliente', 'empleado', 'organizador'];
+        $systemRoles = ['admin', 'cliente', 'vendedor'];
         
         if (in_array($role->name, $systemRoles)) {
             return redirect()->route('admin.roles.index')

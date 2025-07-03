@@ -58,11 +58,10 @@ class CheckoutDataSeeder extends Seeder
 
         $this->command->info('💳 Creando tipos de pago...');
         
-        // Crear tipos de pago (solo 3 tipos: Tarjeta, QR, Tigo Money)
+        // Crear tipos de pago (solo 2 tipos: Tarjeta y QR)
         $tiposPago = [
             ['tipo_pago' => 'Tarjeta'],
-            ['tipo_pago' => 'QR'],
-            ['tipo_pago' => 'Tigo Money']
+            ['tipo_pago' => 'QR']
         ];
 
         foreach ($tiposPago as $tipoPagoData) {
