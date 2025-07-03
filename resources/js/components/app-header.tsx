@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingCart } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -50,14 +50,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const [carritoCount, setCarritoCount] = useState(0);
     
     // Verificar si el usuario es cliente (tiene rol cliente y está autenticado)
-    const userRoles = (auth.user?.roles as any[]) || [];
+    const userRoles = (auth.user?.roles as Array<{ name: string }>) || [];
     const isCliente = auth.user && userRoles.some(role => role.name === 'cliente') && 
                      !userRoles.some(role => ['admin', 'empleado', 'organizador', 'vendedor', 'almacenista'].includes(role.name));
 
-
-
     // Función para obtener el conteo del carrito
-    const fetchCarritoCount = async () => {
+    const fetchCarritoCount = useCallback(async () => {
         if (!isCliente) return;
         
         try {
@@ -74,12 +72,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         } catch (error) {
             console.error('Error obteniendo contador del carrito:', error);
         }
-    };
+    }, [isCliente]);
 
     // Cargar el conteo del carrito al montar el componente
     useEffect(() => {
         fetchCarritoCount();
-    }, [isCliente]);
+    }, [fetchCarritoCount]);
 
     // Escuchar eventos de actualización del carrito
     useEffect(() => {
@@ -89,7 +87,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
         window.addEventListener('carrito-updated', handleCarritoUpdate);
         return () => window.removeEventListener('carrito-updated', handleCarritoUpdate);
-    }, []);
+    }, [fetchCarritoCount]);
 
     return (
         <>

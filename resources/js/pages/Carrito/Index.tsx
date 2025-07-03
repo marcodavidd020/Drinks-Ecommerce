@@ -34,16 +34,15 @@ interface Carrito {
 }
 
 interface CarritoIndexProps {
-    carrito: Carrito | null;
     detalles: DetalleCarrito[];
     total: number;
 }
 
-export default function CarritoIndex({ carrito, detalles, total }: CarritoIndexProps) {
+export default function CarritoIndex({ detalles, total }: CarritoIndexProps) {
     const { settings } = useAppMode();
     const [cantidades, setCantidades] = useState<{ [key: number]: number }>({});
 
-    const { data, setData, patch, delete: destroy, post, processing } = useForm();
+    const { patch, delete: destroy, post, processing } = useForm();
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;

@@ -21,13 +21,12 @@ interface Carrito {
 }
 
 interface CheckoutDatosTarjetaProps {
-    carrito: Carrito;
     direccion: Direccion;
     tipoPago: TipoPago;
     total: number;
 }
 
-export default function CheckoutDatosTarjeta({ carrito, direccion, tipoPago, total }: CheckoutDatosTarjetaProps) {
+export default function CheckoutDatosTarjeta({ direccion, tipoPago, total }: CheckoutDatosTarjetaProps) {
     const { settings } = useAppMode();
     const [processing, setProcessing] = useState(false);
     const [formData, setFormData] = useState({

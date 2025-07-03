@@ -1,6 +1,7 @@
 import { useAppMode } from '@/contexts/AppModeContext';
 import { Link, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/currency';
+import { type SharedData } from '@/types';
 import { useState } from 'react';
 
 interface Producto {
@@ -33,11 +34,11 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
     const [showSuccessMessage, setShowSuccessMessage] = useState<number | null>(null);
 
     // Verificar si el usuario está autenticado y es cliente
-    const { auth } = page.props as any;
+    const { auth } = (page.props as unknown) as { auth: { user?: { roles?: Array<{ name: string }> } } };
     const isAuthenticated = !!auth.user;
     
     // Verificar roles correctamente como en otros componentes
-    const userRoles = (auth.user?.roles as any[]) || [];
+    const userRoles = (auth.user?.roles as Array<{ name: string }>) || [];
     const hasRole = (role: string): boolean => {
         return userRoles.some(r => r.name === role);
     };

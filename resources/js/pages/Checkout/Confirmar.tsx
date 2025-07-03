@@ -48,11 +48,10 @@ interface CheckoutConfirmarProps {
 
 export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total }: CheckoutConfirmarProps) {
     const { settings } = useAppMode();
-    const [processing, setProcessing] = useState(false);
     const [observaciones, setObservaciones] = useState('');
     const [showQR, setShowQR] = useState(false);
     const [qrConfirmed, setQrConfirmed] = useState(false);
-    const qrIframeRef = useRef<HTMLIFrameElement>(null);
+    const isQRPayment = tipoPago.tipo_pago === 'QR';
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
@@ -76,66 +75,98 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
         return '💰';
     };
 
-    const isQRPayment = tipoPago.tipo_pago.toLowerCase().includes('qr');
-
     const generarQR = () => {
         setShowQR(true);
-        setProcessing(true);
         
-        // Crear un formulario temporal para hacer POST al iframe
-        if (qrIframeRef.current) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/checkout/generar-qr';
-            form.target = 'qr-iframe';
-            form.style.display = 'none';
+        // Crear un formulario temporal para hacer POST a una nueva ventana
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/checkout/generar-qr';
+        form.target = 'qr-popup';
+        form.style.display = 'none';
 
-            // Agregar token CSRF
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken;
-                form.appendChild(csrfInput);
-            }
+        // Agregar token CSRF
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
 
-            // Agregar parámetros
-            const params = {
-                'direccion_id': direccion.id,
-                'tipo_pago_id': tipoPago.id,
-                'total': carrito.total
-            };
+        // Agregar datos del formulario
+        const fieldsToAdd = [
+            { name: 'direccion_id', value: direccion.id.toString() },
+            { name: 'tipo_pago_id', value: tipoPago.id.toString() },
+            { name: 'total', value: total.toString() }
+        ];
 
-            Object.entries(params).forEach(([key, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value.toString();
-                form.appendChild(input);
-            });
+        fieldsToAdd.forEach(field => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = field.name;
+            input.value = field.value;
+            form.appendChild(input);
+        });
 
-            // Agregar el formulario al DOM y enviarlo
-            document.body.appendChild(form);
-            
-            // Establecer el nombre del iframe
-            qrIframeRef.current.name = 'qr-iframe';
-            
+        // Agregar el formulario al body y enviarlo
+        document.body.appendChild(form);
+        
+        // Abrir ventana popup
+        const popup = window.open('', 'qr-popup', 
+            'width=500,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
+        );
+        
+        if (popup) {
+            // Enviar el formulario
             form.submit();
+            
+            // Limpiar el formulario
             document.body.removeChild(form);
             
-            // Ocultar el spinner después de un momento
-            setTimeout(() => {
-                setProcessing(false);
-            }, 2000);
+            // Configurar el popup
+            popup.focus();
+            
+            // Escuchar mensajes del popup
+            const messageHandler = (event: MessageEvent) => {
+                if (event.source === popup) {
+                    if (event.data.type === 'payment_success') {
+                        console.log('Pago exitoso recibido');
+                        setShowQR(false);
+                    } else if (event.data.type === 'payment_cancelled') {
+                        console.log('Pago cancelado');
+                        setShowQR(false);
+                    }
+                    
+                    // Remover el listener
+                    window.removeEventListener('message', messageHandler);
+                }
+            };
+            
+            window.addEventListener('message', messageHandler);
+            
+            // Cleanup cuando se cierre la ventana
+            const checkClosed = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkClosed);
+                    setShowQR(false);
+                    window.removeEventListener('message', messageHandler);
+                }
+            }, 1000);
+            
+        } else {
+            // Si no se pudo abrir la ventana (bloqueador de popups)
+            alert('No se pudo abrir la ventana del QR. Por favor, permite ventanas emergentes para este sitio.');
+            setShowQR(false);
+            document.body.removeChild(form);
         }
     };
 
     const confirmarPagoQR = () => {
         setQrConfirmed(true);
-        setProcessing(true);
         
-        // Procesar el pago QR
+        // Procesar el pago QR directamente
         router.post('/checkout/procesar', {
             direccion_id: direccion.id,
             tipo_pago_id: tipoPago.id,
@@ -154,8 +185,7 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
             // Si ya se mostró el QR, confirmar pago
             confirmarPagoQR();
         } else {
-            // Para otros métodos de pago, procesar normalmente
-            setProcessing(true);
+            // Para otros métodos de pago, procesar directamente
             router.post('/checkout/procesar', {
                 direccion_id: direccion.id,
                 tipo_pago_id: tipoPago.id,
@@ -334,20 +364,28 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                                             </div>
                                         ) : (
                                             <div className="py-6">
-                                                {/* QR Code real generado por el servicio */}
-                                                <div className="w-full">
-                                                    <iframe 
-                                                        ref={qrIframeRef}
-                                                        className="w-full h-96 border border-gray-300 rounded-lg"
-                                                        title="Código QR de Pago"
-                                                        style={{ minHeight: '600px' }}
-                                                    />
+                                                {/* QR Code ya generado en ventana popup */}
+                                                <div className="text-center">
+                                                    <div className="text-6xl mb-4">✅</div>
+                                                    <p className={`text-gray-600 dark:text-gray-400 mb-4 ${getModeClasses()}`}>
+                                                        {getTextByMode({
+                                                            niños: '¡QR generado en ventana nueva!',
+                                                            jóvenes: 'QR generado en ventana nueva',
+                                                            adultos: 'Código QR generado en ventana nueva'
+                                                        })}
+                                                    </p>
+                                                    <p className={`text-sm text-gray-500 dark:text-gray-400 ${getModeClasses()}`}>
+                                                        {getTextByMode({
+                                                            niños: 'Busca la ventana del QR o haz clic en "Generar QR" de nuevo',
+                                                            jóvenes: 'Busca la ventana del QR o genera uno nuevo',
+                                                            adultos: 'Busque la ventana del QR o genere uno nuevo'
+                                                        })}
+                                                    </p>
                                                 </div>
 
                                                 {!qrConfirmed && (
                                                     <button
                                                         onClick={confirmarPagoQR}
-                                                        disabled={processing}
                                                         className={`w-full mt-4 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02] ${getModeClasses()}`}
                                                     >
                                                         {getTextByMode({
@@ -445,48 +483,30 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                                     <div className="space-y-3">
                                         <button
                                             onClick={procesarPedido}
-                                            disabled={processing}
-                                            className={`w-full font-bold py-4 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02] text-center ${
-                                                !processing
-                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
-                                                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                                            } ${getModeClasses()}`}
+                                            className={`w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02] text-center ${getModeClasses()}`}
                                         >
-                                            {processing ? (
-                                                <div className="flex items-center justify-center space-x-2">
-                                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                    <span>
-                                                        {getTextByMode({
-                                                            niños: 'Procesando pedido...',
-                                                            jóvenes: 'Procesando...',
-                                                            adultos: 'Procesando...'
-                                                        })}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                isQRPayment && !showQR 
-                                                    ? getTextByMode({
-                                                        niños: '📱 ¡Generar QR!',
-                                                        jóvenes: '📱 Generar QR',
-                                                        adultos: '📱 Generar Código QR'
-                                                    })
-                                                    : isQRPayment && showQR && !qrConfirmed
-                                                    ? getTextByMode({
-                                                        niños: '✅ ¡Confirmar Pago QR!',
-                                                        jóvenes: '✅ Confirmar Pago QR',
-                                                        adultos: '✅ Confirmar Pago QR'
-                                                    })
-                                                    : getTextByMode({
-                                                        niños: '🎉 ¡Confirmar y Pedir!',
-                                                        jóvenes: '✅ Confirmar Pedido',
-                                                        adultos: 'Confirmar Pedido'
-                                                    })
-                                            )}
+                                            {isQRPayment && !showQR 
+                                                ? getTextByMode({
+                                                    niños: '📱 ¡Generar QR!',
+                                                    jóvenes: '📱 Generar QR',
+                                                    adultos: '📱 Generar Código QR'
+                                                })
+                                                : isQRPayment && showQR && !qrConfirmed
+                                                ? getTextByMode({
+                                                    niños: '✅ ¡Confirmar Pago QR!',
+                                                    jóvenes: '✅ Confirmar Pago QR',
+                                                    adultos: '✅ Confirmar Pago QR'
+                                                })
+                                                : getTextByMode({
+                                                    niños: '🎉 ¡Confirmar y Pedir!',
+                                                    jóvenes: '✅ Confirmar Pedido',
+                                                    adultos: 'Confirmar Pedido'
+                                                })
+                                            }
                                         </button>
 
                                         <button
                                             onClick={() => router.get('/checkout/pago')}
-                                            disabled={processing}
                                             className={`w-full border-2 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 font-medium py-3 px-6 rounded-lg transition-all text-center ${getModeClasses()}`}
                                         >
                                             {getTextByMode({

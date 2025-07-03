@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/currency';
-import { Search, Filter, SortAsc, SortDesc, Star, ShoppingCart } from 'lucide-react';
+import { Search, Filter, Star, ShoppingCart } from 'lucide-react';
 
 interface Producto {
     id: number;
@@ -95,7 +95,7 @@ export default function CatalogoProductos({
         }
     };
 
-    const aplicarFiltros = (nuevosFiltros: any) => {
+    const aplicarFiltros = (nuevosFiltros: Record<string, unknown>) => {
         const params = {
             ...filtros,
             ...nuevosFiltros,

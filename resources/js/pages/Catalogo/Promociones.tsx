@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
 import { useAppModeText } from '@/hooks/useAppModeText';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/currency';
-import { Calendar, Clock, Gift, Star, ShoppingCart, Tag } from 'lucide-react';
+import { Calendar, Clock, Gift, ShoppingCart, Tag } from 'lucide-react';
 
 interface Producto {
     id: number;

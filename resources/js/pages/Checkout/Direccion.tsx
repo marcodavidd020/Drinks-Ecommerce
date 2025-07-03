@@ -23,7 +23,7 @@ interface CheckoutDireccionProps {
     total: number;
 }
 
-export default function CheckoutDireccion({ carrito, direcciones, total }: CheckoutDireccionProps) {
+export default function CheckoutDireccion({ direcciones, total }: CheckoutDireccionProps) {
     const { settings } = useAppMode();
     const [direccionSeleccionada, setDireccionSeleccionada] = useState<number | null>(null);
     const [processing, setProcessing] = useState(false);

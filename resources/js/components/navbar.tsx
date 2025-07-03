@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAppMode } from '@/contexts/AppModeContext';
 
 interface User {
@@ -14,11 +14,12 @@ interface NavbarProps {
 }
 
 export default function Navbar({ user }: NavbarProps) {
+    const { settings } = useAppMode();
+    const page = usePage();
+    const { url } = page;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [carritoCount, setCarritoCount] = useState(0);
-    const { url } = usePage();
-    const { settings } = useAppMode();
 
     // Cerrar menús al cambiar el tamaño de pantalla o hacer click fuera
     useEffect(() => {
@@ -43,7 +44,7 @@ export default function Navbar({ user }: NavbarProps) {
     }, []);
 
     // Verificar roles con Spatie
-    const userRoles = (user?.roles as any[]) || [];
+    const userRoles = (user?.roles as Array<{ name: string }>) || [];
     const hasRole = (role: string): boolean => {
         return userRoles.some(r => r.name === role);
     };
@@ -56,7 +57,7 @@ export default function Navbar({ user }: NavbarProps) {
     const isAdministrativo = user && hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
 
     // Función para obtener el conteo del carrito
-    const fetchCarritoCount = async () => {
+    const fetchCarritoCount = useCallback(async () => {
         if (!isCliente) return;
         
         try {
@@ -72,12 +73,12 @@ export default function Navbar({ user }: NavbarProps) {
         } catch (error) {
             console.error('Error obteniendo contador del carrito:', error);
         }
-    };
+    }, [isCliente]);
 
     // Cargar el conteo del carrito al montar el componente
     useEffect(() => {
         fetchCarritoCount();
-    }, [isCliente]);
+    }, [fetchCarritoCount]);
 
     // Escuchar eventos de actualización del carrito
     useEffect(() => {
@@ -87,7 +88,7 @@ export default function Navbar({ user }: NavbarProps) {
 
         window.addEventListener('carrito-updated', handleCarritoUpdate);
         return () => window.removeEventListener('carrito-updated', handleCarritoUpdate);
-    }, []);
+    }, [fetchCarritoCount]);
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;

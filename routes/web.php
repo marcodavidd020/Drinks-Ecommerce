@@ -23,6 +23,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 // Página principal usando el HomeController
 Route::get('/', [HomeController::class, 'index'])->name('home');

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface User {
     id: number;
@@ -40,7 +40,7 @@ export default function DashboardSidebar() {
     const isCliente = hasRole('cliente') && !hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
 
     // Función para obtener el conteo del carrito
-    const fetchCarritoCount = async () => {
+    const fetchCarritoCount = useCallback(async () => {
         if (!isCliente) return;
         
         try {
@@ -56,12 +56,12 @@ export default function DashboardSidebar() {
         } catch (error) {
             console.error('Error obteniendo contador del carrito:', error);
         }
-    };
+    }, [isCliente]);
 
     // Cargar el conteo del carrito al montar el componente
     useEffect(() => {
         fetchCarritoCount();
-    }, [isCliente]);
+    }, [fetchCarritoCount]);
 
     // Escuchar eventos de actualización del carrito
     useEffect(() => {
@@ -71,7 +71,7 @@ export default function DashboardSidebar() {
 
         window.addEventListener('carrito-updated', handleCarritoUpdate);
         return () => window.removeEventListener('carrito-updated', handleCarritoUpdate);
-    }, []);
+    }, [fetchCarritoCount]);
 
     // Si es cliente solo, mostrar sidebar especial
     if (isCliente) {

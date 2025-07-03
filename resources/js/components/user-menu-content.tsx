@@ -18,7 +18,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
     };
 
     // Verificar si el usuario es cliente
-    const userRoles = (user?.roles as any[]) || [];
+    const userRoles = (user?.roles as Array<{ name: string }>) || [];
     const isCliente = userRoles.some(role => role.name === 'cliente') && 
                      !userRoles.some(role => ['admin', 'empleado', 'organizador', 'vendedor', 'almacenista'].includes(role.name));
     const isAdministrativo = userRoles.some(role => ['admin', 'empleado', 'organizador', 'vendedor', 'almacenista'].includes(role.name));

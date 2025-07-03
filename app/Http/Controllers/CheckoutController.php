@@ -257,64 +257,124 @@ class CheckoutController extends Controller
      */
     public function generarQR(Request $request)
     {
-        $request->validate([
-            'direccion_id' => 'required|exists:direccion,id',
-            'tipo_pago_id' => 'required|exists:tipo_pago,id',
-            'total' => 'required|numeric|min:0.01'
+        \Log::info('=== INICIO GENERAR QR ===', [
+            'request_data' => $request->all(),
+            'headers' => $request->headers->all(),
+            'method' => $request->method(),
+            'url' => $request->url()
         ]);
-
-        $user = Auth::user();
-        $cliente = $user->cliente;
-
-        if (!$cliente) {
-            return response()->json(['error' => 'Usuario no es cliente'], 400);
-        }
-
-        // Obtener carrito activo
-        $carrito = Carrito::where('cliente_id', $cliente->id)
-                         ->where('estado', 'activo')
-                         ->with(['detalles.productoAlmacen.producto.categoria'])
-                         ->first();
-
-        if (!$carrito || $carrito->detalles->isEmpty()) {
-            return response()->json(['error' => 'Carrito vacío'], 400);
-        }
-
-        // Preparar detalles del pedido para el servicio
-        $detallesPedido = [];
-        foreach ($carrito->detalles as $detalle) {
-            $detallesPedido[] = [
-                'producto' => $detalle->productoAlmacen->producto->nombre,
-                'cantidad' => $detalle->cantidad,
-                'precio' => $detalle->precio_unitario,
-                'subtotal' => $detalle->subtotal
-            ];
-        }
-
-        // Crear instancia del ConsumirServicioController
-        $consumirServicio = new ConsumirServicioController();
-
-        // Preparar request para el servicio de QR
-        $qrRequest = new Request([
-            'tnTipoServicio' => 1, // 1 = generar QR
-            'tnTelefono' => $cliente->telefono ?? '70000000',
-            'tnNombre' => $cliente->user->nombre,
-            'tcCiNit' => $cliente->nit ?? '0',
-            'tnMonto' => $carrito->total,
-            'tcCorreo' => $cliente->user->email,
-            'tcDetallePedido' => json_encode($detallesPedido)
-        ]);
-
+        
         try {
-            // Generar QR usando el servicio real
-            $qrResponse = $consumirServicio->RecolectarDatos($qrRequest);
+            $request->validate([
+                'direccion_id' => 'required|exists:direccion,id',
+                'tipo_pago_id' => 'required|exists:tipo_pago,id',
+                'total' => 'required|numeric|min:0.01'
+            ]);
+
+            $user = Auth::user();
+            \Log::info('Usuario autenticado', ['user_id' => $user?->id]);
             
-            // Retornar la respuesta HTML del QR
-            return $qrResponse;
+            $cliente = $user->cliente;
+
+            if (!$cliente) {
+                \Log::error('Usuario no es cliente');
+                return response('
+                    <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
+                        <h2>Error: Usuario no autorizado</h2>
+                        <p>Solo los clientes pueden generar códigos QR</p>
+                    </div>
+                ', 400)->header('Content-Type', 'text/html; charset=utf-8');
+            }
+
+            // Obtener carrito activo
+            $carrito = Carrito::where('cliente_id', $cliente->id)
+                             ->where('estado', 'activo')
+                             ->with(['detalles.productoAlmacen.producto.categoria'])
+                             ->first();
+
+            if (!$carrito || $carrito->detalles->isEmpty()) {
+                \Log::error('Carrito vacío o no encontrado');
+                return response('
+                    <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
+                        <h2>Error: Carrito vacío</h2>
+                        <p>Debe agregar productos al carrito antes de generar un QR</p>
+                    </div>
+                ', 400)->header('Content-Type', 'text/html; charset=utf-8');
+            }
+
+            // Preparar detalles del pedido para el servicio QR
+            $detallesPedido = [];
+            foreach ($carrito->detalles as $detalle) {
+                $detallesPedido[] = [
+                    'producto' => $detalle->productoAlmacen->producto->nombre,
+                    'cantidad' => $detalle->cantidad,
+                    'precio' => $detalle->precio_unitario,
+                    'subtotal' => $detalle->cantidad * $detalle->precio_unitario
+                ];
+            }
+
+            // Preparar datos para el servicio QR
+            $qrRequest = new Request([
+                'tnTipoServicio' => 1, // 1 = QR
+                'tnTelefono' => $cliente->telefono ?? '70000000',
+                'tnNombre' => $cliente->nombre ?? $user->nombre,
+                'tcCiNit' => $cliente->ci ?? '12345678',
+                'tnMonto' => $request->total,
+                'tcCorreo' => $user->email,
+                'tcDetallePedido' => json_encode($detallesPedido)
+            ]);
+
+            \Log::info('Datos preparados para QR', ['qr_request' => $qrRequest->all()]);
+
+            // Crear instancia del controlador del servicio QR
+            $consumirServicio = new ConsumirServicioController();
             
+            // Capturar la salida del controlador usando buffer
+            ob_start();
+            $result = $consumirServicio->RecolectarDatos($qrRequest);
+            $output = ob_get_contents();
+            ob_end_clean();
+
+            \Log::info('Resultado del servicio QR', [
+                'output_length' => strlen($output),
+                'has_result' => !empty($result),
+                'result_type' => gettype($result)
+            ]);
+
+            // Si hay salida del buffer, la usamos
+            if (!empty($output)) {
+                \Log::info('Retornando output del buffer');
+                return response($output, 200)
+                    ->header('Content-Type', 'text/html; charset=utf-8');
+            }
+
+            // Si no hay salida pero hay resultado, lo procesamos
+            if (!empty($result)) {
+                \Log::info('Retornando resultado directo');
+                return $result;
+            }
+
+            // Si no hay nada, retornamos error
+            \Log::error('No se generó ningún resultado');
+            return response('
+                <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
+                    <h2>Error: No se pudo generar el QR</h2>
+                    <p>Hubo un problema al conectar con el servicio de pagos</p>
+                </div>
+            ', 500)->header('Content-Type', 'text/html; charset=utf-8');
+
         } catch (\Exception $e) {
-            \Log::error('Error generando QR: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al generar el código QR'], 500);
+            \Log::error('Error en generarQR', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response('
+                <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
+                    <h2>Error: ' . htmlspecialchars($e->getMessage()) . '</h2>
+                    <p>Hubo un error al procesar la solicitud</p>
+                </div>
+            ', 500)->header('Content-Type', 'text/html; charset=utf-8');
         }
     }
 
