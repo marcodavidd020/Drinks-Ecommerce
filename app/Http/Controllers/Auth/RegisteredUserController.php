@@ -57,10 +57,15 @@ class RegisteredUserController extends Controller
             'nit' => 'AUTO-' . $user->id,
         ]);
 
+        // Refrescar el usuario para cargar las relaciones
+        $user->refresh();
+        $user->load(['roles', 'cliente']);
+
         event(new Registered($user));
 
         Auth::login($user);
 
-        return to_route('dashboard');
+        // Redirigir al home para clientes en lugar del dashboard
+        return redirect()->route('home')->with('success', '¡Bienvenido a BebiFresh! Tu cuenta ha sido creada exitosamente.');
     }
 }

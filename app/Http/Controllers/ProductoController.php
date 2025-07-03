@@ -254,37 +254,45 @@ class ProductoController extends Controller
     /**
      * Mostrar producto para vista pública (sin autenticación)
      */
-    public function showPublic(Producto $producto): Response
+    public function showPublic(Producto $producto)
     {
-        $producto->load(['categoria', 'productoAlmacenes.almacen']);
+        try {
+            $producto->load(['categoria', 'productoAlmacenes.almacen']);
 
-        // Calcular stock total
-        $producto->stock_total = $producto->productoAlmacenes->sum('stock');
+            // Calcular stock total
+            $producto->stock_total = $producto->productoAlmacenes->sum('stock');
 
-        // Obtener promociones activas del producto
-        $promociones = Promocion::where('producto_id', $producto->id)
-            ->where('fecha_inicio', '<=', now())
-            ->where('fecha_fin', '>=', now())
-            ->get();
+            // Obtener promociones activas del producto (simplificado)
+            $promociones = collect(); // Temporalmente vacío para debug
+            
+            // Productos relacionados de la misma categoría (simplificado)
+            $productosRelacionados = collect(); // Temporalmente vacío para debug
 
-        // Productos relacionados de la misma categoría
-        $productosRelacionados = Producto::where('categoria_id', $producto->categoria_id)
-            ->where('id', '!=', $producto->id)
-            ->with(['categoria', 'productoAlmacenes'])
-            ->limit(4)
-            ->get()
-            ->map(function ($prod) {
-                $prod->stock_total = $prod->productoAlmacenes->sum('stock');
-                return $prod;
-            });
+            // Obtener carrito count de forma segura
+            $carritoCount = 0;
+            try {
+                if (Auth::check()) {
+                    $carritoCount = $this->getCarritoCount();
+                }
+            } catch (\Exception $e) {
+                Log::error('Error obteniendo carrito count: ' . $e->getMessage());
+                $carritoCount = 0;
+            }
 
-        return Inertia::render('ProductDetail', [
-            'producto' => $producto,
-            'promociones' => $promociones,
-            'productosRelacionados' => $productosRelacionados,
-            'isAuthenticated' => Auth::check(),
-            'carritoCount' => Auth::check() ? $this->getCarritoCount() : 0,
-        ]);
+            return Inertia::render('ProductDetail', [
+                'producto' => $producto,
+                'promociones' => $promociones,
+                'productosRelacionados' => $productosRelacionados,
+                'isAuthenticated' => Auth::check(),
+                'carritoCount' => $carritoCount,
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error en showPublic: ' . $e->getMessage());
+            
+            // Redirigir al home con error
+            return redirect()->route('home')->with('error', 'Error cargando el producto');
+        }
     }
 
     /**

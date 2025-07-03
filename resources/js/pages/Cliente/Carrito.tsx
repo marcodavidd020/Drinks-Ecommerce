@@ -158,7 +158,7 @@ export default function ClienteCarrito({ carrito, detalles, total }: ClienteCarr
                 adultos: 'Carrito de Compras - BebiFresh'
             })} />
 
-            <div className="space-y-6">
+            <div className="p-6 space-y-6">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
                     <div className="flex items-center justify-between">

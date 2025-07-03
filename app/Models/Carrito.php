@@ -76,6 +76,7 @@ class Carrito extends Model
     {
         $total = (float) $this->detalles()->sum('subtotal');
         $this->update(['total' => $total]);
+        $this->refresh();
         return $total;
     }
 
@@ -92,7 +93,7 @@ class Carrito extends Model
      */
     public function getTotalProductosAttribute(): int
     {
-        return $this->detalles()->sum('cantidad');
+        return (int) $this->detalles()->sum('cantidad');
     }
 
     /**

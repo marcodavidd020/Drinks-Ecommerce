@@ -43,6 +43,9 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        // Cargar relaciones necesarias
+        $user->load(['roles', 'cliente', 'administrativo']);
+
         $request->session()->regenerate();
 
         // Redirigir según el rol del usuario
@@ -61,18 +64,30 @@ class AuthenticatedSessionController extends Controller
             return redirect($intended);
         }
 
-        // Verificar si puede acceder al dashboard
+        // Verificar si es cliente (tiene rol cliente y no tiene roles administrativos)
+        $isCliente = $user->hasRole('cliente') && 
+                    !$user->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+
+        // Si es cliente, redirigir al home
+        if ($isCliente && $user->cliente) {
+            return redirect()->route('home')->with('success', '¡Bienvenido de vuelta a BebiFresh!');
+        }
+
+        // Verificar si puede acceder al dashboard administrativo
         if (AuthHelper::canAccessDashboard() || AuthHelper::isAdmin() || AuthHelper::isGestion()) {
             return redirect()->route('dashboard');
         }
 
-        // Si es cliente, redirigir al home
-        if (AuthHelper::isCliente()) {
-            return redirect()->route('home');
+        // Si es cliente pero no tiene registro de cliente, crear uno
+        if ($user->hasRole('cliente') && !$user->cliente) {
+            $user->cliente()->create([
+                'nit' => 'AUTO-' . $user->id,
+            ]);
+            return redirect()->route('home')->with('success', '¡Bienvenido a BebiFresh!');
         }
 
-        // Por defecto al dashboard
-        return redirect()->route('dashboard');
+        // Por defecto al home
+        return redirect()->route('home');
     }
 
     /**

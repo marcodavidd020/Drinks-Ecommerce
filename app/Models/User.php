@@ -235,7 +235,16 @@ class User extends Authenticatable
      */
     public function esCliente(): bool
     {
-        return $this->hasRole('cliente');
+        return $this->hasRole('cliente') && 
+               !$this->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
+    }
+
+    /**
+     * Verifica si es administrativo (tiene roles de gestión)
+     */
+    public function esAdministrativo(): bool
+    {
+        return $this->hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
     }
 
     /**

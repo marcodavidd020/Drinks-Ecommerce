@@ -81,63 +81,105 @@ class CarritoController extends Controller
      */
     public function agregar(Request $request)
     {
-        $request->validate([
-            'producto_almacen_id' => 'required|exists:producto_almacen,id',
-            'cantidad' => 'required|integer|min:1'
-        ]);
+        try {
+            $request->validate([
+                'producto_id' => 'required|exists:producto,id',
+                'cantidad' => 'required|integer|min:1'
+            ]);
 
-        $user = Auth::user();
-        $cliente = $user->cliente;
+            $user = Auth::user();
+            $cliente = $user->cliente;
 
-        if (!$cliente) {
-            return response()->json(['error' => 'Usuario no es cliente'], 403);
-        }
-
-        $productoAlmacen = ProductoAlmacen::with('producto')->findOrFail($request->producto_almacen_id);
-
-        // Verificar stock disponible
-        if ($productoAlmacen->stock < $request->cantidad) {
-            return response()->json(['error' => 'Stock insuficiente'], 400);
-        }
-
-        // Obtener o crear carrito activo
-        $carrito = Carrito::obtenerOCrearCarritoActivo($cliente->id);
-
-        // Verificar si el producto ya está en el carrito
-        $detalleExistente = DetalleCarrito::where('carrito_id', $carrito->id)
-                                          ->where('producto_almacen_id', $request->producto_almacen_id)
-                                          ->first();
-
-        if ($detalleExistente) {
-            // Actualizar cantidad
-            $nuevaCantidad = $detalleExistente->cantidad + $request->cantidad;
-            
-            if ($productoAlmacen->stock < $nuevaCantidad) {
-                return response()->json(['error' => 'Stock insuficiente para la cantidad total'], 400);
+            if (!$cliente) {
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'Usuario no es cliente'], 403);
+                }
+                return back()->withErrors(['error' => 'Usuario no es cliente']);
             }
 
-            $detalleExistente->update([
-                'cantidad' => $nuevaCantidad,
-                'precio_unitario' => $productoAlmacen->producto->precio_venta
+            // Buscar ProductoAlmacen con stock disponible para este producto
+            $productoAlmacen = ProductoAlmacen::where('producto_id', $request->producto_id)
+                                            ->where('stock', '>', 0)
+                                            ->with(['producto', 'almacen'])
+                                            ->first();
+
+            if (!$productoAlmacen) {
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'Producto no disponible en stock'], 404);
+                }
+                return back()->withErrors(['error' => 'Producto no disponible en stock']);
+            }
+
+            // Verificar stock disponible
+            if ($productoAlmacen->stock < $request->cantidad) {
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'Stock insuficiente'], 400);
+                }
+                return back()->withErrors(['error' => 'Stock insuficiente']);
+            }
+
+            // Obtener o crear carrito activo
+            $carrito = Carrito::obtenerOCrearCarritoActivo($cliente->id);
+
+            // Verificar si el producto ya está en el carrito
+            $detalleExistente = DetalleCarrito::where('carrito_id', $carrito->id)
+                                              ->where('producto_almacen_id', $productoAlmacen->id)
+                                              ->first();
+
+            if ($detalleExistente) {
+                // Actualizar cantidad
+                $nuevaCantidad = $detalleExistente->cantidad + $request->cantidad;
+                
+                if ($productoAlmacen->stock < $nuevaCantidad) {
+                    if ($request->expectsJson()) {
+                        return response()->json(['error' => 'Stock insuficiente para la cantidad total'], 400);
+                    }
+                    return back()->withErrors(['error' => 'Stock insuficiente para la cantidad total']);
+                }
+
+                $detalleExistente->update([
+                    'cantidad' => $nuevaCantidad,
+                    'precio_unitario' => $productoAlmacen->producto->precio_venta
+                ]);
+            } else {
+                // Crear nuevo detalle
+                DetalleCarrito::create([
+                    'carrito_id' => $carrito->id,
+                    'producto_almacen_id' => $productoAlmacen->id,
+                    'cantidad' => $request->cantidad,
+                    'precio_unitario' => $productoAlmacen->producto->precio_venta
+                ]);
+            }
+
+            // Actualizar total del carrito
+            $carrito->calcularTotal();
+
+            // Responder según el tipo de request
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Producto agregado al carrito',
+                    'carrito_total' => $carrito->total,
+                    'carrito_items' => $carrito->total_productos
+                ]);
+            }
+            
+            return back()->with('success', 'Producto agregado al carrito exitosamente');
+            
+        } catch (\Exception $e) {
+            \Log::error('Error agregando al carrito', [
+                'message' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'request_data' => $request->all()
             ]);
-        } else {
-            // Crear nuevo detalle
-            DetalleCarrito::create([
-                'carrito_id' => $carrito->id,
-                'producto_almacen_id' => $request->producto_almacen_id,
-                'cantidad' => $request->cantidad,
-                'precio_unitario' => $productoAlmacen->producto->precio_venta
-            ]);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'Error interno del servidor'
+                ], 500);
+            }
+            
+            return back()->withErrors(['error' => 'Error al agregar producto al carrito']);
         }
-
-        // Actualizar total del carrito
-        $carrito->calcularTotal();
-
-        return response()->json([
-            'message' => 'Producto agregado al carrito',
-            'carrito_total' => $carrito->total,
-            'carrito_items' => $carrito->total_productos
-        ]);
     }
 
     /**

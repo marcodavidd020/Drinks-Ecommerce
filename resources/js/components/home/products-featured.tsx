@@ -35,7 +35,19 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
     // Verificar si el usuario está autenticado y es cliente
     const { auth } = page.props as any;
     const isAuthenticated = !!auth.user;
-    const isCliente = auth.user && auth.user.roles?.some((role: any) => role.name === 'cliente');
+    
+    // Verificar roles correctamente como en otros componentes
+    const userRoles = (auth.user?.roles as any[]) || [];
+    const hasRole = (role: string): boolean => {
+        return userRoles.some(r => r.name === role);
+    };
+    const hasAnyRole = (roles: string[]): boolean => {
+        return roles.some(role => hasRole(role));
+    };
+    
+    // Verificar que es cliente y NO tiene roles administrativos
+    const isCliente = auth.user && hasRole('cliente') && 
+                     !hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
 
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
@@ -75,44 +87,41 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
         setAddingToCart(prev => [...prev, productoId]);
 
         try {
-            // Buscar producto_almacen_id (simplificado: usar el primer registro disponible)
-            const response = await fetch(`/api/producto/${productoId}/almacen`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            });
-
-            let productoAlmacenId = null;
-            if (response.ok) {
-                const data = await response.json();
-                productoAlmacenId = data.producto_almacen_id;
-            } else {
-                // Fallback: asumir que producto_id = producto_almacen_id para simplicidad
-                productoAlmacenId = productoId;
+            // Obtener el CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!csrfToken) {
+                throw new Error('Token de seguridad no encontrado');
             }
 
-            // Agregar al carrito
+            // Agregar al carrito directamente con producto_id
             const carritoResponse = await fetch('/carrito/agregar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    producto_almacen_id: productoAlmacenId,
+                    producto_id: productoId,
                     cantidad: 1
                 })
             });
 
+            const responseData = await carritoResponse.json();
+
             if (carritoResponse.ok) {
-                const data = await carritoResponse.json();
-                
                 // Mostrar mensaje de éxito
                 setShowSuccessMessage(productoId);
                 setTimeout(() => setShowSuccessMessage(null), 3000);
 
                 // Disparar evento para actualizar contador en header
-                window.dispatchEvent(new CustomEvent('carrito-updated'));
+                window.dispatchEvent(new CustomEvent('carrito-updated', {
+                    detail: {
+                        count: responseData.carrito_items,
+                        total: responseData.carrito_total
+                    }
+                }));
 
                 console.log(getTextByMode({
                     niños: '🎉 ¡Producto agregado al carrito!',
@@ -120,19 +129,15 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                     adultos: 'Producto agregado al carrito'
                 }));
             } else {
-                const errorData = await carritoResponse.json();
-                alert(errorData.error || getTextByMode({
-                    niños: '😅 Oops, no pudimos agregar el producto',
-                    jóvenes: 'Error al agregar producto',
-                    adultos: 'Error al agregar producto al carrito'
-                }));
+                throw new Error(responseData.error || 'Error al agregar producto al carrito');
             }
         } catch (error) {
             console.error('Error agregando al carrito:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
             alert(getTextByMode({
-                niños: '😰 Algo salió mal, intenta de nuevo',
-                jóvenes: 'Error de conexión',
-                adultos: 'Error de conexión. Intente nuevamente.'
+                niños: `😰 ${errorMessage || 'Algo salió mal, intenta de nuevo'}`,
+                jóvenes: `Error: ${errorMessage || 'Error de conexión'}`,
+                adultos: `Error: ${errorMessage || 'Error de conexión. Intente nuevamente.'}`
             }));
         } finally {
             setAddingToCart(prev => prev.filter(id => id !== productoId));
