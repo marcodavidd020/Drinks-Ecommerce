@@ -85,9 +85,9 @@ export default function ClienteCompraDetalle({ venta }: CompraDetalleProps) {
     return (
         <DashboardLayout>
             <Head title={getTextByMode({
-                niños: `🧾 Compra #${venta.id} - BebiFresh`,
+                niños: `🧾 Compra #${venta.id} - Arturo`,
                 jóvenes: `Detalle Compra #${venta.id}`,
-                adultos: `Detalle de Compra #${venta.id} - BebiFresh`
+                adultos: `Detalle de Compra #${venta.id} - Arturo`
             })} />
 
             <div className="space-y-6">

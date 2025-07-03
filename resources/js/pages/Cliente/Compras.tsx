@@ -90,9 +90,9 @@ export default function ClienteCompras({ compras }: ComprasProps) {
     return (
         <DashboardLayout>
             <Head title={getTextByMode({
-                niños: '📦 Mis Compras BebiFresh',
+                niños: '📦 Mis Compras Arturo',
                 jóvenes: 'Historial de Compras',
-                adultos: 'Historial de Compras - BebiFresh'
+                adultos: 'Historial de Compras - Arturo'
             })} />
 
             <div className="space-y-6">
@@ -300,7 +300,7 @@ export default function ClienteCompras({ compras }: ComprasProps) {
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 mb-8">
                             {getTextByMode({
-                                niños: 'Es hora de probar las bebidas más deliciosas de BebiFresh 🧃✨',
+                                niños: 'Es hora de probar las bebidas más deliciosas de Arturo 🧃✨',
                                 jóvenes: 'Descubre nuestras bebidas refrescantes y haz tu primera compra',
                                 adultos: 'Explore nuestro catálogo y realice su primera compra'
                             })}

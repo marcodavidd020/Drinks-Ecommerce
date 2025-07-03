@@ -83,7 +83,7 @@ class AlmacenController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:100|unique:almacenes,nombre',
+            'nombre' => 'required|string|max:100|unique:almacen,nombre',
             'descripcion' => 'nullable|string|max:500',
             'ubicacion' => 'required|string|max:200',
         ]);
@@ -187,7 +187,7 @@ class AlmacenController extends Controller
     public function update(Request $request, Almacen $almacen)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:100|unique:almacenes,nombre,' . $almacen->id,
+            'nombre' => 'required|string|max:100|unique:almacen,nombre,' . $almacen->id,
             'descripcion' => 'nullable|string|max:500',
             'ubicacion' => 'required|string|max:200',
         ]);

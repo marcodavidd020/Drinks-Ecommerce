@@ -70,7 +70,7 @@ class AuthenticatedSessionController extends Controller
 
         // Si es cliente, redirigir al home
         if ($isCliente && $user->cliente) {
-            return redirect()->route('home')->with('success', '¡Bienvenido de vuelta a BebiFresh!');
+            return redirect()->route('home')->with('success', '¡Bienvenido de vuelta a Arturo!');
         }
 
         // Verificar si puede acceder al dashboard administrativo
@@ -83,7 +83,7 @@ class AuthenticatedSessionController extends Controller
             $user->cliente()->create([
                 'nit' => 'AUTO-' . $user->id,
             ]);
-            return redirect()->route('home')->with('success', '¡Bienvenido a BebiFresh!');
+            return redirect()->route('home')->with('success', '¡Bienvenido a Arturo!');
         }
 
         // Por defecto al home

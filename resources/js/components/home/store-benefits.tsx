@@ -136,16 +136,16 @@ export default function StoreBenefits() {
                 <div className="text-center mb-12">
                     <h2 className={`text-adaptive text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
                         {getTextByMode({
-                            niños: '✨ ¿Por Qué BebiFresh es Genial? ✨',
+                            niños: '✨ ¿Por Qué Arturo es Genial? ✨',
                             jóvenes: '🌟 Por Qué Somos Tu Best Choice',
-                            adultos: 'Beneficios de BebiFresh'
+                            adultos: 'Beneficios de Arturo'
                         })}
                     </h2>
                     <p className={`text-adaptive text-gray-600 dark:text-gray-400 max-w-2xl mx-auto ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: '¡Descubre todas las cosas increíbles que hacemos para que tengas las mejores bebidas!',
                             jóvenes: 'Descubre por qué somos la mejor opción para tus bebidas favoritas',
-                            adultos: 'Conoce las ventajas de elegir BebiFresh para todas tus bebidas'
+                            adultos: 'Conoce las ventajas de elegir Arturo para todas tus bebidas'
                         })}
                     </p>
                 </div>

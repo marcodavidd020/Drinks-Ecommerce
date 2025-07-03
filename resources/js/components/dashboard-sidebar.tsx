@@ -84,7 +84,7 @@ export default function DashboardSidebar() {
                     <div className="flex items-center justify-between p-4 border-b border-cyan-200 dark:border-gray-700">
                         {!isCollapsed && (
                             <h2 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">
-                                🧃 BebiFresh
+                                🧃 Arturo
                             </h2>
                         )}
                         <button
@@ -192,10 +192,10 @@ export default function DashboardSidebar() {
                         <Link
                             href="/"
                             className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-cyan-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                            title={isCollapsed ? 'Inicio BebiFresh' : undefined}
+                            title={isCollapsed ? 'Inicio Arturo' : undefined}
                         >
                             <span className="text-lg mr-3">🌿</span>
-                            {!isCollapsed && <span className="truncate">Inicio BebiFresh</span>}
+                            {!isCollapsed && <span className="truncate">Inicio Arturo</span>}
                         </Link>
                     </div>
                 </div>
@@ -364,7 +364,7 @@ export default function DashboardSidebar() {
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                     {!isCollapsed && (
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            🧃 BebiFresh Admin
+                            🧃 Arturo Admin
                         </h2>
                     )}
                     <button
@@ -426,12 +426,12 @@ export default function DashboardSidebar() {
                     <Link
                         href="/"
                         className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                        title={isCollapsed ? 'Volver a BebiFresh' : undefined}
+                        title={isCollapsed ? 'Volver a Arturo' : undefined}
                     >
                         <span className="text-lg mr-3">🌿</span>
                         {!isCollapsed && (
                             <span className="truncate">
-                                Volver a BebiFresh
+                                Volver a Arturo
                             </span>
                         )}
                     </Link>

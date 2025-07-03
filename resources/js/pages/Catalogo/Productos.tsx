@@ -143,9 +143,9 @@ export default function CatalogoProductos({
     return (
         <AppLayout showNavbar={true} showModeSelector={true}>
             <Head title={getTextByMode({
-                niños: '🧃 Catálogo de Bebidas - BebiFresh',
-                jóvenes: '🥤 Bebidas Cool - BebiFresh',
-                adultos: 'Catálogo de Productos - BebiFresh'
+                niños: '🧃 Catálogo de Bebidas - Arturo',
+                jóvenes: '🥤 Bebidas Cool - Arturo',
+                adultos: 'Catálogo de Productos - Arturo'
             })} />
 
             <div className={`min-h-screen py-8 ${getModeClasses()}`}>

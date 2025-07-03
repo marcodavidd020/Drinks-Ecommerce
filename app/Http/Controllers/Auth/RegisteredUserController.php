@@ -66,6 +66,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         // Redirigir al home para clientes en lugar del dashboard
-        return redirect()->route('home')->with('success', '¡Bienvenido a BebiFresh! Tu cuenta ha sido creada exitosamente.');
+        return redirect()->route('home')->with('success', '¡Bienvenido a Arturo! Tu cuenta ha sido creada exitosamente.');
     }
 }

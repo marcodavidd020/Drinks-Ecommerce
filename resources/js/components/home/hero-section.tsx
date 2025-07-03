@@ -70,9 +70,9 @@ export default function HeroSection({ totalProductos, totalCategorias, totalProm
                     {/* Título principal */}
                     <h1 className={`text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight drop-shadow-lg ${getModeClasses()}`}>
                         {getTextByMode({
-                            niños: '🧃 ¡Bienvenido a BebiFresh! 🥤',
-                            jóvenes: '🔥 BebiFresh - Your Hydration Station',
-                            adultos: 'BebiFresh - Tu Tienda de Bebidas de Confianza'
+                            niños: '🧃 ¡Bienvenido a Arturo! 🥤',
+                            jóvenes: '🔥 Arturo - Your Hydration Station',
+                            adultos: 'Arturo - Tu Tienda de Bebidas de Confianza'
                         })}
                     </h1>
 

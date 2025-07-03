@@ -100,7 +100,7 @@ export default function Home({
 
     return (
         <AppLayout showNavbar={true} showModeSelector={true}>
-            <Head title="BebiFresh - Tu Tienda de Bebidas Favorita" />
+            <Head title="Arturo - Tu Tienda de Bebidas Favorita" />
 
             {/* Aplicar clases específicas del modo a todo el contenido */}
             <div className={`min-h-screen -mx-4 sm:-mx-6 lg:-mx-8 -my-6 ${getModeClasses()}`}>

@@ -31,19 +31,19 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'BebiFresh') }}</title>
-        <meta name="description" content="BebiFresh - Tu tienda de bebidas no alcohólicas favorita. Jugos naturales, sodas, aguas saborizadas y más bebidas refrescantes.">
-        <meta name="keywords" content="bebidas, jugos, sodas, agua, refrescos, no alcohólicas, naturales, BebiFresh">
+        <title inertia>{{ config('app.name', 'Arturo') }}</title>
+        <meta name="description" content="Arturo - Tu tienda de bebidas no alcohólicas favorita. Jugos naturales, sodas, aguas saborizadas y más bebidas refrescantes.">
+        <meta name="keywords" content="bebidas, jugos, sodas, agua, refrescos, no alcohólicas, naturales, Arturo">
         
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
-        <meta property="og:title" content="BebiFresh - Tu Tienda de Bebidas Favorita">
+        <meta property="og:title" content="Arturo - Tu Tienda de Bebidas Favorita">
         <meta property="og:description" content="Descubre nuestra amplia selección de bebidas refrescantes: jugos naturales, sodas artesanales, aguas saborizadas y más.">
-        <meta property="og:image" content="{{ asset('images/bebifresh-og.jpg') }}">
+        <meta property="og:image" content="{{ asset('images/Arturo-og.jpg') }}">
 
         <!-- Twitter -->
         <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:title" content="BebiFresh - Tu Tienda de Bebidas Favorita">
+        <meta property="twitter:title" content="Arturo - Tu Tienda de Bebidas Favorita">
         <meta property="twitter:description" content="Bebidas refrescantes y deliciosas para todos los momentos.">
 
         <!-- Fonts -->

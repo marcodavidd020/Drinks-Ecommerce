@@ -58,9 +58,9 @@ export default function ClienteDashboard({
     return (
         <DashboardLayout>
             <Head title={getTextByMode({
-                niños: '🏠 Mi BebiFresh',
-                jóvenes: 'Mi Dashboard - BebiFresh',
-                adultos: 'Dashboard Cliente - BebiFresh'
+                niños: '🏠 Mi Arturo',
+                jóvenes: 'Mi Dashboard - Arturo',
+                adultos: 'Dashboard Cliente - Arturo'
             })} />
 
             <div className="space-y-6">

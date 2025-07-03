@@ -39,23 +39,23 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     const title = getTextByMode({
-        niños: '🧃 ¡Bienvenido a BebiFresh!',
-        jóvenes: '💧 Accede a BebiFresh',
-        adultos: 'Iniciar Sesión en BebiFresh'
+        niños: '🧃 ¡Bienvenido a Arturo!',
+        jóvenes: '💧 Accede a Arturo',
+        adultos: 'Iniciar Sesión en Arturo'
     });
 
     const description = getTextByMode({
         niños: '¡Vamos a explorar bebidas súper refrescantes juntos! 🌟',
         jóvenes: 'Accede para descubrir las mejores bebidas y ofertas',
-        adultos: 'Ingresa tu email y contraseña para acceder a tu cuenta de BebiFresh'
+        adultos: 'Ingresa tu email y contraseña para acceder a tu cuenta de Arturo'
     });
 
     return (
         <AuthLayout title={title} description={description}>
             <Head title={getTextByMode({
-                niños: 'Entrar - BebiFresh',
-                jóvenes: 'Login - BebiFresh',
-                adultos: 'Iniciar Sesión - BebiFresh'
+                niños: 'Entrar - Arturo',
+                jóvenes: 'Login - Arturo',
+                adultos: 'Iniciar Sesión - Arturo'
             })} />
 
             {/* Status de éxito */}
@@ -68,7 +68,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
             )}
 
-            {/* Beneficios de BebiFresh */}
+            {/* Beneficios de Arturo */}
             <div className="mb-6 grid grid-cols-3 gap-4">
                 <div className="text-center p-3 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800">
                     <Droplets className="h-6 w-6 mx-auto mb-2 text-cyan-600 dark:text-cyan-400" />
@@ -107,7 +107,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <div className="grid gap-2">
                         <Label htmlFor="email" className="text-adaptive">
                             {getTextByMode({
-                                niños: '📧 Tu email de BebiFresh',
+                                niños: '📧 Tu email de Arturo',
                                 jóvenes: 'Email',
                                 adultos: 'Correo Electrónico'
                             })}
@@ -182,7 +182,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         />
                         <Label htmlFor="remember" className="text-sm text-adaptive">
                             {getTextByMode({
-                                niños: '🧠 ¡Recuérdame en BebiFresh!',
+                                niños: '🧠 ¡Recuérdame en Arturo!',
                                 jóvenes: 'Recordarme',
                                 adultos: 'Mantener sesión iniciada'
                             })}
@@ -198,13 +198,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         {processing && <LoaderCircle className="h-5 w-5 animate-spin mr-2" />}
                         {processing ? (
                             getTextByMode({
-                                niños: '🔄 Entrando a BebiFresh...',
+                                niños: '🔄 Entrando a Arturo...',
                                 jóvenes: 'Accediendo...',
                                 adultos: 'Iniciando sesión...'
                             })
                         ) : (
                             getTextByMode({
-                                niños: '🧃 ¡Entrar a BebiFresh!',
+                                niños: '🧃 ¡Entrar a Arturo!',
                                 jóvenes: '💧 Acceder',
                                 adultos: 'Iniciar Sesión'
                             })
@@ -219,8 +219,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-adaptive px-2 text-adaptive-secondary">
                             {getTextByMode({
-                                niños: '¿Primera vez en BebiFresh?',
-                                jóvenes: '¿Nuevo en BebiFresh?',
+                                niños: '¿Primera vez en Arturo?',
+                                jóvenes: '¿Nuevo en Arturo?',
                                 adultos: 'o'
                             })}
                         </span>
@@ -230,9 +230,9 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 <div className="text-center">
                     <p className="text-sm text-adaptive-secondary mb-3">
                         {getTextByMode({
-                            niños: '¿Aún no tienes una cuenta en BebiFresh? ¡Créala ahora y disfruta bebidas increíbles! 🌿',
-                            jóvenes: '¿No tienes cuenta? ¡Únete a BebiFresh ahora!',
-                            adultos: '¿No tienes una cuenta en BebiFresh?'
+                            niños: '¿Aún no tienes una cuenta en Arturo? ¡Créala ahora y disfruta bebidas increíbles! 🌿',
+                            jóvenes: '¿No tienes cuenta? ¡Únete a Arturo ahora!',
+                            adultos: '¿No tienes una cuenta en Arturo?'
                         })}
                     </p>
                     <TextLink 
@@ -241,9 +241,9 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         className="inline-flex items-center justify-center w-full px-4 py-3 border border-cyan-200 dark:border-cyan-700 rounded-md shadow-sm text-sm font-medium text-cyan-700 dark:text-cyan-300 bg-white dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all duration-200 hover:scale-[1.02]"
                     >
                         {getTextByMode({
-                            niños: '🌟 ¡Unirme a BebiFresh!',
-                            jóvenes: '✨ Registrarse en BebiFresh',
-                            adultos: 'Crear Cuenta en BebiFresh'
+                            niños: '🌟 ¡Unirme a Arturo!',
+                            jóvenes: '✨ Registrarse en Arturo',
+                            adultos: 'Crear Cuenta en Arturo'
                         })}
                     </TextLink>
                 </div>

@@ -119,10 +119,10 @@ class ProductoController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'cod_producto' => ['required', 'string', 'max:50', 'unique:productos'],
+            'cod_producto' => ['required', 'string', 'max:50', 'unique:producto'],
             'nombre' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
-            'categoria_id' => ['required', 'exists:categorias,id'],
+            'categoria_id' => ['required', 'exists:categoria,id'],
             'precio_compra' => ['required', 'numeric', 'min:0'],
             'precio_venta' => ['required', 'numeric', 'min:0'],
             'imagen' => ['nullable', 'string', 'max:500'], // URL de imagen
@@ -177,10 +177,10 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto): RedirectResponse
     {
         $validated = $request->validate([
-            'cod_producto' => ['required', 'string', 'max:50', 'unique:productos,cod_producto,' . $producto->id],
+            'cod_producto' => ['required', 'string', 'max:50', 'unique:producto,cod_producto,' . $producto->id],
             'nombre' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
-            'categoria_id' => ['required', 'exists:categorias,id'],
+            'categoria_id' => ['required', 'exists:categoria,id'],
             'precio_compra' => ['required', 'numeric', 'min:0'],
             'precio_venta' => ['required', 'numeric', 'min:0'],
             'imagen' => ['nullable', 'string', 'max:500'], // URL de imagen

@@ -42,7 +42,28 @@ export default function EditUser({ user, roles, currentRole }: EditUserProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(`/users/${user.id}`);
+        console.log('Iniciando actualización de usuario...');
+        console.log('Datos a enviar:', data);
+        console.log('URL:', `/users/${user.id}`);
+        
+        put(`/users/${user.id}`, {
+            onStart: () => {
+                console.log('Iniciando request...');
+            },
+            onProgress: (progress) => {
+                console.log('Progreso:', progress);
+            },
+            onSuccess: (response) => {
+                console.log('Usuario actualizado exitosamente');
+                console.log('Respuesta:', response);
+            },
+            onError: (errors) => {
+                console.log('Error al actualizar usuario:', errors);
+            },
+            onFinish: () => {
+                console.log('Request terminado');
+            }
+        });
     };
 
     return (

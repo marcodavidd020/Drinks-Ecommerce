@@ -131,9 +131,9 @@ export default function ClienteCarrito({ carrito, detalles, total }: ClienteCarr
     return (
         <DashboardLayout>
             <Head title={getTextByMode({
-                niños: '🛒 Mi Carrito BebiFresh',
-                jóvenes: 'Carrito - BebiFresh',
-                adultos: 'Carrito de Compras - BebiFresh'
+                niños: '🛒 Mi Carrito Arturo',
+                jóvenes: 'Carrito - Arturo',
+                adultos: 'Carrito de Compras - Arturo'
             })} />
 
             <div className="p-6 space-y-6">
@@ -387,7 +387,7 @@ export default function ClienteCarrito({ carrito, detalles, total }: ClienteCarr
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 mb-8">
                             {getTextByMode({
-                                niños: 'Vamos a llenarlo con las bebidas más deliciosas de BebiFresh 🧃✨',
+                                niños: 'Vamos a llenarlo con las bebidas más deliciosas de Arturo 🧃✨',
                                 jóvenes: 'Descubre nuestros productos y encuentra tus bebidas favoritas',
                                 adultos: 'Explore nuestro catálogo y agregue productos a su carrito'
                             })}

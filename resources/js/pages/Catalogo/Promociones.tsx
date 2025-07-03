@@ -153,9 +153,9 @@ export default function CatalogoPromociones({
     return (
         <AppLayout showNavbar={true} showModeSelector={true}>
             <Head title={getTextByMode({
-                niños: '🎁 Ofertas Súper Geniales - BebiFresh',
-                jóvenes: '🔥 Hot Deals - BebiFresh',
-                adultos: 'Promociones - BebiFresh'
+                niños: '🎁 Ofertas Súper Geniales - Arturo',
+                jóvenes: '🔥 Hot Deals - Arturo',
+                adultos: 'Promociones - Arturo'
             })} />
 
             <div className={`min-h-screen py-8 ${getModeClasses()}`}>

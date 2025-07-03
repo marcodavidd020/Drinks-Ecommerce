@@ -229,9 +229,9 @@ export default function Navbar({ user }: NavbarProps) {
                         <div className={`text-2xl font-bold ${colors.text}`}>
                             <span className="text-3xl mr-2">🧃</span>
                             {getTextByMode({
-                                niños: 'BebiFresh Kids',
-                                jóvenes: 'BebiFresh Zone',
-                                adultos: 'BebiFresh'
+                                niños: 'Arturo Kids',
+                                jóvenes: 'Arturo Zone',
+                                adultos: 'Arturo'
                             })}
                         </div>
                     </Link>

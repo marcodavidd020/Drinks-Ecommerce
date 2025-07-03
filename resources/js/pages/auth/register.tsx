@@ -63,9 +63,9 @@ export default function Register() {
     const passwordStrength = Object.values(passwordValidations).filter(Boolean).length;
 
     const title = getTextByMode({
-        niños: '🧃 ¡Únete a BebiFresh!',
-        jóvenes: '💧 Crea tu cuenta en BebiFresh',
-        adultos: 'Únete a BebiFresh'
+        niños: '🧃 ¡Únete a Arturo!',
+        jóvenes: '💧 Crea tu cuenta en Arturo',
+        adultos: 'Únete a Arturo'
     });
 
     const description = getTextByMode({
@@ -77,12 +77,12 @@ export default function Register() {
     return (
         <AuthLayout title={title} description={description}>
             <Head title={getTextByMode({
-                niños: 'Registro BebiFresh',
-                jóvenes: 'Signup - BebiFresh',
-                adultos: 'Crear Cuenta - BebiFresh'
+                niños: 'Registro Arturo',
+                jóvenes: 'Signup - Arturo',
+                adultos: 'Crear Cuenta - Arturo'
             })} />
 
-            {/* Beneficios de BebiFresh */}
+            {/* Beneficios de Arturo */}
             <div className="mb-6 grid grid-cols-2 gap-3">
                 <div className="text-center p-3 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800">
                     <Droplets className="h-5 w-5 mx-auto mb-1 text-cyan-600 dark:text-cyan-400" />
@@ -245,8 +245,8 @@ export default function Register() {
                         <p className="text-xs text-adaptive-muted">
                             {getTextByMode({
                                 niños: 'Te enviaremos ofertas de bebidas refrescantes 🧃',
-                                jóvenes: 'Para ofertas exclusivas de BebiFresh',
-                                adultos: 'Para comunicaciones y promociones de BebiFresh'
+                                jóvenes: 'Para ofertas exclusivas de Arturo',
+                                adultos: 'Para comunicaciones y promociones de Arturo'
                             })}
                         </p>
                     </div>
@@ -404,16 +404,16 @@ export default function Register() {
                         <div className="space-y-1">
                             <Label htmlFor="terms" className="text-sm text-adaptive">
                                 {getTextByMode({
-                                    niños: '📜 Acepto las reglas de BebiFresh',
-                                    jóvenes: 'Acepto términos de BebiFresh',
-                                    adultos: 'Acepto los términos y condiciones de BebiFresh'
+                                    niños: '📜 Acepto las reglas de Arturo',
+                                    jóvenes: 'Acepto términos de Arturo',
+                                    adultos: 'Acepto los términos y condiciones de Arturo'
                                 })}
                             </Label>
                             <p className="text-xs text-adaptive-muted">
                                 {getTextByMode({
                                     niños: 'Prometo disfrutar las bebidas de manera responsable 🧃🤝',
-                                    jóvenes: 'Al registrarte aceptas nuestras políticas de BebiFresh',
-                                    adultos: 'Al crear una cuenta aceptas nuestros términos de servicio y política de privacidad de BebiFresh'
+                                    jóvenes: 'Al registrarte aceptas nuestras políticas de Arturo',
+                                    adultos: 'Al crear una cuenta aceptas nuestros términos de servicio y política de privacidad de Arturo'
                                 })}
                             </p>
                         </div>
@@ -431,15 +431,15 @@ export default function Register() {
                         <UserPlus className="h-5 w-5 mr-2" />
                         {processing ? (
                             getTextByMode({
-                                niños: '🔄 Creando tu cuenta en BebiFresh...',
-                                jóvenes: 'Registrando en BebiFresh...',
-                                adultos: 'Creando cuenta en BebiFresh...'
+                                niños: '🔄 Creando tu cuenta en Arturo...',
+                                jóvenes: 'Registrando en Arturo...',
+                                adultos: 'Creando cuenta en Arturo...'
                             })
                         ) : (
                             getTextByMode({
-                                niños: '🧃 ¡Unirme a BebiFresh!',
-                                jóvenes: '💧 Registrarse en BebiFresh',
-                                adultos: 'Crear Cuenta en BebiFresh'
+                                niños: '🧃 ¡Unirme a Arturo!',
+                                jóvenes: '💧 Registrarse en Arturo',
+                                adultos: 'Crear Cuenta en Arturo'
                             })
                         )}
                     </Button>
@@ -452,7 +452,7 @@ export default function Register() {
                     <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-adaptive px-2 text-adaptive-secondary">
                             {getTextByMode({
-                                niños: '¿Ya tienes cuenta en BebiFresh?',
+                                niños: '¿Ya tienes cuenta en Arturo?',
                                 jóvenes: '¿Ya eres miembro?',
                                 adultos: 'o'
                             })}
@@ -463,9 +463,9 @@ export default function Register() {
                 <div className="text-center">
                     <p className="text-sm text-adaptive-secondary mb-3">
                         {getTextByMode({
-                            niños: '¿Ya tienes una cuenta en BebiFresh? ¡Ingresa y sigamos refrescándonos! 🌿',
-                            jóvenes: '¿Ya tienes cuenta? ¡Accede a BebiFresh ahora!',
-                            adultos: '¿Ya tienes una cuenta en BebiFresh?'
+                            niños: '¿Ya tienes una cuenta en Arturo? ¡Ingresa y sigamos refrescándonos! 🌿',
+                            jóvenes: '¿Ya tienes cuenta? ¡Accede a Arturo ahora!',
+                            adultos: '¿Ya tienes una cuenta en Arturo?'
                         })}
                     </p>
                     <TextLink 
@@ -474,7 +474,7 @@ export default function Register() {
                         className="inline-flex items-center justify-center w-full px-4 py-3 border border-cyan-200 dark:border-cyan-700 rounded-md shadow-sm text-sm font-medium text-cyan-700 dark:text-cyan-300 bg-white dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all duration-200 hover:scale-[1.02]"
                     >
                         {getTextByMode({
-                            niños: '🚪 ¡Entrar a BebiFresh!',
+                            niños: '🚪 ¡Entrar a Arturo!',
                             jóvenes: '🔑 Iniciar sesión',
                             adultos: 'Iniciar Sesión'
                         })}

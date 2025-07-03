@@ -18,6 +18,7 @@ use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\ClienteDashboardController;
 use App\Http\Controllers\ConsumirServicioController;
 use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\ReportController;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -229,9 +230,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas para reportes - acceso para admin y organizador
     Route::middleware(['has.roles:admin,organizador'])->group(function () {
-        Route::get('/reports', function () {
-            return Inertia::render('Reports/Index');
-        })->name('reports.index');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
+        Route::get('/reports/clients', [ReportController::class, 'clients'])->name('reports.clients');
+        Route::get('/reports/purchases', [ReportController::class, 'purchases'])->name('reports.purchases');
+        
+        // Rutas para descargar PDFs
+        Route::get('/reports/sales/pdf', [ReportController::class, 'downloadSalesPdf'])->name('reports.sales.pdf');
+        Route::get('/reports/inventory/pdf', [ReportController::class, 'downloadInventoryPdf'])->name('reports.inventory.pdf');
+        Route::get('/reports/clients/pdf', [ReportController::class, 'downloadClientsPdf'])->name('reports.clients.pdf');
+        Route::get('/reports/purchases/pdf', [ReportController::class, 'downloadPurchasesPdf'])->name('reports.purchases.pdf');
     });
 });
 

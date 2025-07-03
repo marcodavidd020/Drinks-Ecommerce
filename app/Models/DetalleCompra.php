@@ -26,7 +26,7 @@ class DetalleCompra extends Model
      */
     protected $fillable = [
         'nota_compra_id',
-        'producto_id',
+        'producto_almacen_id',
         'cantidad',
         'precio',
         'total',
@@ -61,11 +61,26 @@ class DetalleCompra extends Model
     }
 
     /**
-     * Relación con Producto
+     * Relación con ProductoAlmacen
      */
-    public function producto(): BelongsTo
+    public function productoAlmacen(): BelongsTo
     {
-        return $this->belongsTo(Producto::class);
+        return $this->belongsTo(ProductoAlmacen::class);
+    }
+
+    /**
+     * Relación con Producto a través de ProductoAlmacen
+     */
+    public function producto()
+    {
+        return $this->hasOneThrough(
+            Producto::class,
+            ProductoAlmacen::class,
+            'id', // Foreign key on ProductoAlmacen table
+            'id', // Foreign key on Producto table
+            'producto_almacen_id', // Local key on DetalleCompra table
+            'producto_id' // Local key on ProductoAlmacen table
+        );
     }
 
     /**
