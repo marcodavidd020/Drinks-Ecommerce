@@ -14,7 +14,7 @@ interface DashboardProps {
         totalOrders: number;
         totalRevenue: number;
         lowStockProducts: number;
-        pendingPqrs: number;
+
         abandonedCarts: number;
         growth: {
             users: number;
@@ -54,14 +54,7 @@ interface DashboardProps {
             cod_producto: string;
             stock_total: number;
         }>;
-        recentPqrs: Array<{
-            id: number;
-            tipo: string;
-            asunto: string;
-            estado: string;
-            created_at: string;
-            cliente_nombre: string;
-        }>;
+
     };
     alerts: Array<{
         type: 'warning' | 'info' | 'success' | 'error';
@@ -353,8 +346,8 @@ export default function Dashboard({ stats, chartData, recentActivity, alerts }: 
                         />
                     </div>
 
-                    {/* Segunda fila - Stock crítico y PQRS (2 columnas) */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Segunda fila - Stock crítico */}
+                    <div className="grid grid-cols-1">
                         <DataTable 
                             title={getTextByMode({
                                 niños: '⚠️ ¡Productos que se Están Acabando!',
@@ -376,30 +369,6 @@ export default function Dashboard({ stats, chartData, recentActivity, alerts }: 
                                 text: stats.lowStockProducts.toString(),
                                 color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
                             }}
-                        />
-
-                        <DataTable 
-                            title={getTextByMode({
-                                niños: '📝 Últimas Quejas y Sugerencias',
-                                jóvenes: '📝 PQRS Recientes',
-                                adultos: 'PQRS Recientes'
-                            })}
-                            columns={[
-                                { key: 'tipo', label: 'Tipo' },
-                                { key: 'cliente_nombre', label: 'Cliente' },
-                                { key: 'estado', label: 'Estado', format: 'badge' },
-                                { key: 'created_at', label: 'Fecha', format: 'date' }
-                            ]}
-                            data={recentActivity.recentPqrs}
-                            emptyMessage={getTextByMode({
-                                niños: '¡No hay quejas! ¡Todo está genial! 😊',
-                                jóvenes: 'No hay PQRS recientes',
-                                adultos: 'No hay PQRS recientes'
-                            })}
-                            badge={stats.pendingPqrs > 0 ? {
-                                text: `${stats.pendingPqrs} pendientes`,
-                                color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200'
-                            } : undefined}
                         />
                     </div>
                 </div>

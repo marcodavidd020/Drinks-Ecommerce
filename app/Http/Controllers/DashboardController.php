@@ -62,7 +62,6 @@ class DashboardController extends Controller
                     'totalOrders' => 0,
                     'totalRevenue' => 0,
                     'lowStockProducts' => 0,
-                    'pendingPqrs' => 0,
                     'abandonedCarts' => 0,
                     'growth' => [
                         'users' => 0,
@@ -79,7 +78,6 @@ class DashboardController extends Controller
                 'recentActivity' => [
                     'recentSales' => [],
                     'lowStockProducts' => [],
-                    'recentPqrs' => [],
                 ],
                 'alerts' => [],
             ]);
@@ -148,7 +146,6 @@ class DashboardController extends Controller
                 'totalOrders' => $totalOrders,
                 'totalRevenue' => (float) $totalRevenue,
                 'lowStockProducts' => $lowStockProducts,
-                'pendingPqrs' => 0, // Sin tabla de PQRS por ahora
                 'abandonedCarts' => $abandonedCarts,
                 'growth' => [
                     'users' => $usersGrowth,
@@ -173,7 +170,6 @@ class DashboardController extends Controller
                 'totalOrders' => 0,
                 'totalRevenue' => 0,
                 'lowStockProducts' => 0,
-                'pendingPqrs' => 0,
                 'abandonedCarts' => 0,
                 'growth' => [
                     'users' => 0,
@@ -344,7 +340,6 @@ class DashboardController extends Controller
             return [
                 'recentSales' => $recentSales,
                 'lowStockProducts' => $lowStockProducts,
-                'recentPqrs' => [], // Sin tabla de PQRS por ahora
             ];
         } catch (\Exception $e) {
             Log::error("Dashboard Recent Activity Error", [
@@ -355,7 +350,6 @@ class DashboardController extends Controller
             return [
                 'recentSales' => [],
                 'lowStockProducts' => [],
-                'recentPqrs' => [],
             ];
         }
     }
