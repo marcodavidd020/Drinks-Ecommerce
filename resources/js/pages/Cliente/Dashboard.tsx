@@ -65,7 +65,7 @@ export default function ClienteDashboard({
 
             <div className="space-y-6">
                 {/* Bienvenida */}
-                <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+                <div className="bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 rounded-lg shadow-lg p-6 text-white">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-2xl font-bold mb-2">
@@ -75,7 +75,7 @@ export default function ClienteDashboard({
                                     adultos: `Bienvenido, ${cliente.nombre}`
                                 })}
                             </h1>
-                            <p className="text-cyan-100">
+                            <p className="text-cyan-100 dark:text-cyan-200">
                                 {getTextByMode({
                                     niños: '¡Descubre las bebidas más refrescantes! 🌟',
                                     jóvenes: 'Tu tienda de bebidas favorita te espera',
@@ -91,7 +91,7 @@ export default function ClienteDashboard({
 
                 {/* Estadísticas principales */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-cyan-500">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-cyan-500 dark:border-cyan-400">
                         <div className="flex items-center">
                             <div className="text-3xl mr-3">🛒</div>
                             <div>
@@ -109,7 +109,7 @@ export default function ClienteDashboard({
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-green-500">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-green-500 dark:border-green-400">
                         <div className="flex items-center">
                             <div className="text-3xl mr-3">💰</div>
                             <div>
@@ -127,7 +127,7 @@ export default function ClienteDashboard({
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-blue-500">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-blue-500 dark:border-blue-400">
                         <div className="flex items-center">
                             <div className="text-3xl mr-3">📦</div>
                             <div>
@@ -145,7 +145,7 @@ export default function ClienteDashboard({
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-purple-500">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-l-4 border-purple-500 dark:border-purple-400">
                         <div className="flex items-center">
                             <div className="text-3xl mr-3">🌟</div>
                             <div>
@@ -220,7 +220,7 @@ export default function ClienteDashboard({
                                             </span>
                                             <Link
                                                 href="/carrito"
-                                                className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                                                className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-md hover:shadow-lg"
                                             >
                                                 {getTextByMode({
                                                     niños: '🛒 Ir al carrito',
@@ -243,7 +243,7 @@ export default function ClienteDashboard({
                                     </p>
                                     <Link
                                         href="/"
-                                        className="mt-4 inline-flex items-center px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition-colors"
+                                        className="mt-4 inline-flex items-center px-4 py-2 bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white rounded-md transition-colors shadow-md hover:shadow-lg"
                                     >
                                         {getTextByMode({
                                             niños: '🧃 Explorar bebidas',
@@ -284,7 +284,7 @@ export default function ClienteDashboard({
                             {ultimas_compras.length > 0 ? (
                                 <div className="space-y-4">
                                     {ultimas_compras.map((compra) => (
-                                        <div key={compra.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                        <div key={compra.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center">
                                                     <div className="text-2xl mr-3">📦</div>
@@ -354,7 +354,7 @@ export default function ClienteDashboard({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Link
                             href="/"
-                            className="flex items-center p-4 border-2 border-cyan-200 dark:border-cyan-700 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
+                            className="flex items-center p-4 border-2 border-cyan-200 dark:border-cyan-700 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:border-cyan-300 dark:hover:border-cyan-600 transition-all duration-200"
                         >
                             <div className="text-3xl mr-4">🧃</div>
                             <div>
@@ -377,7 +377,7 @@ export default function ClienteDashboard({
 
                         <Link
                             href="/carrito"
-                            className="flex items-center p-4 border-2 border-green-200 dark:border-green-700 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                            className="flex items-center p-4 border-2 border-green-200 dark:border-green-700 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 transition-all duration-200"
                         >
                             <div className="text-3xl mr-4">🛒</div>
                             <div>
@@ -400,7 +400,7 @@ export default function ClienteDashboard({
 
                         <Link
                             href="/cliente/compras"
-                            className="flex items-center p-4 border-2 border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            className="flex items-center p-4 border-2 border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200"
                         >
                             <div className="text-3xl mr-4">📦</div>
                             <div>

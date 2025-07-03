@@ -7,6 +7,17 @@ export default function StoreBenefits() {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
     };
 
+    const getModeClasses = () => {
+        switch (settings.ageMode) {
+            case 'niños':
+                return 'font-comic text-adaptive-kids';
+            case 'jóvenes':
+                return 'font-modern text-adaptive-teen';
+            default:
+                return 'font-classic text-adaptive-adult';
+        }
+    };
+
     const benefits = [
         {
             icon: '🚚',
@@ -89,29 +100,29 @@ export default function StoreBenefits() {
     ];
 
     const getIconStyle = () => {
-        const baseClass = "w-16 h-16 mx-auto bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-3xl";
+        const baseClass = "w-16 h-16 mx-auto bg-gradient-to-br from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 rounded-full flex items-center justify-center text-3xl shadow-lg";
         switch (settings.ageMode) {
             case 'niños':
                 return `${baseClass} group-hover:animate-bounce`;
             case 'jóvenes':
-                return `${baseClass} group-hover:scale-110 transition-transform`;
+                return `${baseClass} group-hover:scale-110 transition-transform duration-300`;
             default:
-                return `${baseClass} group-hover:scale-105 transition-transform`;
+                return `${baseClass} group-hover:scale-105 transition-transform duration-300`;
         }
     };
 
     const renderSpecialEffects = () => {
         if (settings.ageMode === 'niños') {
             return (
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-100/0 via-cyan-100/20 to-cyan-100/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-100/0 via-cyan-100/20 to-cyan-100/0 dark:from-cyan-800/0 dark:via-cyan-800/10 dark:to-cyan-800/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
             );
         }
         
         if (settings.ageMode === 'jóvenes') {
             return (
                 <>
-                    <div className="absolute inset-0 w-16 h-16 mx-auto rounded-full border-2 border-cyan-300 opacity-0 group-hover:opacity-100 group-hover:scale-125 transition-all duration-300"></div>
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:scale-150 transition-all"></div>
+                    <div className="absolute inset-0 w-16 h-16 mx-auto rounded-full border-2 border-cyan-300 dark:border-cyan-600 opacity-0 group-hover:opacity-100 group-hover:scale-125 transition-all duration-300"></div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-blue-400 dark:from-cyan-500 dark:to-blue-500 rounded-full opacity-0 group-hover:opacity-100 group-hover:scale-150 transition-all"></div>
                 </>
             );
         }
@@ -123,14 +134,14 @@ export default function StoreBenefits() {
         <section className="py-16 bg-gradient-to-br from-cyan-50 to-blue-50 dark:bg-gray-900">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h2 className="text-adaptive text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                    <h2 className={`text-adaptive text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: '✨ ¿Por Qué BebiFresh es Genial? ✨',
                             jóvenes: '🌟 Por Qué Somos Tu Best Choice',
                             adultos: 'Beneficios de BebiFresh'
                         })}
                     </h2>
-                    <p className="text-adaptive text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    <p className={`text-adaptive text-gray-600 dark:text-gray-400 max-w-2xl mx-auto ${getModeClasses()}`}>
                         {getTextByMode({
                             niños: '¡Descubre todas las cosas increíbles que hacemos para que tengas las mejores bebidas!',
                             jóvenes: 'Descubre por qué somos la mejor opción para tus bebidas favoritas',
@@ -153,12 +164,12 @@ export default function StoreBenefits() {
                             </div>
 
                             {/* Title */}
-                            <h3 className="text-adaptive text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-cyan-600 transition-colors">
+                            <h3 className={`text-adaptive text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors ${getModeClasses()}`}>
                                 {getTextByMode(benefit.title)}
                             </h3>
 
                             {/* Description */}
-                            <p className="text-adaptive text-gray-600 dark:text-gray-400 leading-relaxed">
+                            <p className={`text-adaptive text-gray-600 dark:text-gray-400 leading-relaxed ${getModeClasses()}`}>
                                 {getTextByMode(benefit.description)}
                             </p>
 
@@ -171,9 +182,9 @@ export default function StoreBenefits() {
                 {/* Additional trust indicators - temática de bebidas */}
                 <div className="mt-16 text-center">
                     <div className="inline-flex items-center space-x-8 text-gray-500 dark:text-gray-400 flex-wrap justify-center gap-4">
-                        <div className="flex items-center space-x-2">
-                            <span className="text-cyan-500">✓</span>
-                            <span className="text-adaptive text-sm">
+                        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-gray-700">
+                            <span className="text-cyan-500 dark:text-cyan-400">✓</span>
+                            <span className={`text-sm ${getModeClasses()}`}>
                                 {getTextByMode({
                                     niños: '¡Súper Frescas!',
                                     jóvenes: '100% Fresh',
@@ -181,9 +192,9 @@ export default function StoreBenefits() {
                                 })}
                             </span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <span className="text-cyan-500">✓</span>
-                            <span className="text-adaptive text-sm">
+                        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-gray-700">
+                            <span className="text-cyan-500 dark:text-cyan-400">✓</span>
+                            <span className={`text-sm ${getModeClasses()}`}>
                                 {getTextByMode({
                                     niños: '¡Miles de Amigos Sedientos!',
                                     jóvenes: '+10K Hydrated Customers',
@@ -191,9 +202,9 @@ export default function StoreBenefits() {
                                 })}
                             </span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <span className="text-cyan-500">✓</span>
-                            <span className="text-adaptive text-sm">
+                        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-gray-700">
+                            <span className="text-cyan-500 dark:text-cyan-400">✓</span>
+                            <span className={`text-sm ${getModeClasses()}`}>
                                 {getTextByMode({
                                     niños: '¡Bebidas 5 Estrellitas!',
                                     jóvenes: '5★ Rated Beverages',
@@ -201,9 +212,9 @@ export default function StoreBenefits() {
                                 })}
                             </span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <span className="text-cyan-500">🧃</span>
-                            <span className="text-adaptive text-sm">
+                        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-gray-700">
+                            <span className="text-cyan-500 dark:text-cyan-400">🧃</span>
+                            <span className={`text-sm ${getModeClasses()}`}>
                                 {getTextByMode({
                                     niños: '¡Sin Alcohol!',
                                     jóvenes: 'Non-Alcoholic Only',

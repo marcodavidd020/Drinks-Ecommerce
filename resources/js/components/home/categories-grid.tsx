@@ -33,17 +33,17 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
     // Obtener iconos emoji dinámicos según la categoría y el modo
     const getCategoryIcon = (categoria: string) => {
         const iconMap: { [key: string]: { niños: string; jóvenes: string; adultos: string } } = {
-            'tecnología': { niños: '🤖', jóvenes: '💻', adultos: '⚙️' },
-            'electrónicos': { niños: '📱', jóvenes: '🎮', adultos: '🔌' },
-            'deportes': { niños: '⚽', jóvenes: '🏀', adultos: '🏋️' },
-            'música': { niños: '🎵', jóvenes: '🎧', adultos: '🎼' },
-            'libros': { niños: '📚', jóvenes: '📖', adultos: '📰' },
-            'ropa': { niños: '👕', jóvenes: '👟', adultos: '👔' },
-            'hogar': { niños: '🏠', jóvenes: '🛏️', adultos: '🛋️' },
-            'juguetes': { niños: '🧸', jóvenes: '🎯', adultos: '🎲' },
-            'cocina': { niños: '🍰', jóvenes: '🍕', adultos: '🍽️' },
-            'automóviles': { niños: '🚗', jóvenes: '🏎️', adultos: '🚙' },
-            'default': { niños: '🎁', jóvenes: '📦', adultos: '📋' }
+            'jugos': { niños: '🧃', jóvenes: '🥤', adultos: '🍹' },
+            'sodas': { niños: '🥤', jóvenes: '🧊', adultos: '🥃' },
+            'aguas': { niños: '💧', jóvenes: '💦', adultos: '🚰' },
+            'energizantes': { niños: '⚡', jóvenes: '🔋', adultos: '⚡' },
+            'café': { niños: '☕', jóvenes: '☕', adultos: '☕' },
+            'té': { niños: '🍵', jóvenes: '🫖', adultos: '🍵' },
+            'bebidas': { niños: '🧃', jóvenes: '🥤', adultos: '🍹' },
+            'naturales': { niños: '🌿', jóvenes: '🌱', adultos: '🌿' },
+            'gaseosas': { niños: '🥤', jóvenes: '🧊', adultos: '🥃' },
+            'alcoholicas': { niños: '🚫', jóvenes: '🍻', adultos: '🍷' },
+            'default': { niños: '🧃', jóvenes: '🥤', adultos: '🍹' }
         };
 
         const nombreLower = categoria.toLowerCase();
@@ -55,32 +55,32 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
         return iconMap.default[settings.ageMode as keyof typeof iconMap.default] || iconMap.default.adultos;
     };
 
-    // Obtener colores según el modo
+    // Obtener colores según el modo y adaptados para dark/light
     const getModeColors = (index: number) => {
         const colors = {
             niños: [
-                'from-pink-400 to-purple-500',
-                'from-blue-400 to-cyan-500', 
-                'from-green-400 to-teal-500',
-                'from-yellow-400 to-orange-500',
-                'from-purple-400 to-pink-500',
-                'from-red-400 to-pink-500'
+                'from-pink-400 to-purple-500 dark:from-pink-500 dark:to-purple-600',
+                'from-blue-400 to-cyan-500 dark:from-blue-500 dark:to-cyan-600', 
+                'from-green-400 to-teal-500 dark:from-green-500 dark:to-teal-600',
+                'from-yellow-400 to-orange-500 dark:from-yellow-500 dark:to-orange-600',
+                'from-purple-400 to-pink-500 dark:from-purple-500 dark:to-pink-600',
+                'from-red-400 to-pink-500 dark:from-red-500 dark:to-pink-600'
             ],
             jóvenes: [
-                'from-indigo-500 to-purple-600',
-                'from-purple-500 to-pink-600',
-                'from-blue-500 to-indigo-600',
-                'from-green-500 to-teal-600',
-                'from-red-500 to-pink-600',
-                'from-yellow-500 to-orange-600'
+                'from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700',
+                'from-purple-500 to-pink-600 dark:from-purple-600 dark:to-pink-700',
+                'from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700',
+                'from-green-500 to-teal-600 dark:from-green-600 dark:to-teal-700',
+                'from-red-500 to-pink-600 dark:from-red-600 dark:to-pink-700',
+                'from-yellow-500 to-orange-600 dark:from-yellow-600 dark:to-orange-700'
             ],
             adultos: [
-                'from-gray-600 to-gray-800',
-                'from-blue-600 to-indigo-800',
-                'from-green-600 to-teal-800',
-                'from-purple-600 to-indigo-800',
-                'from-red-600 to-pink-800',
-                'from-yellow-600 to-orange-800'
+                'from-gray-600 to-gray-800 dark:from-gray-700 dark:to-gray-900',
+                'from-blue-600 to-indigo-800 dark:from-blue-700 dark:to-indigo-900',
+                'from-green-600 to-teal-800 dark:from-green-700 dark:to-teal-900',
+                'from-purple-600 to-indigo-800 dark:from-purple-700 dark:to-indigo-900',
+                'from-red-600 to-pink-800 dark:from-red-700 dark:to-pink-900',
+                'from-yellow-600 to-orange-800 dark:from-yellow-700 dark:to-orange-900'
             ]
         };
 
@@ -106,14 +106,14 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
                 <div className="text-6xl mb-4">
                     {settings.ageMode === 'niños' ? '😔' : '📦'}
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                     {getTextByMode({
                         niños: '¡No hay categorías todavía!',
                         jóvenes: 'No hay categorías disponibles',
                         adultos: 'No se encontraron categorías'
                     })}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-gray-300">
                     {getTextByMode({
                         niños: 'Las categorías aparecerán aquí cuando estén listas',
                         jóvenes: 'Las categorías se mostrarán cuando estén disponibles',
@@ -133,25 +133,25 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
                         href={`/productos?categoria=${categoria.id}`}
                         className={`group relative overflow-hidden rounded-2xl transition-all duration-300 ${getHoverEffect()}`}
                     >
-                        <div className={`bg-gradient-to-br ${getModeColors(index)} p-6 h-40 flex flex-col justify-between relative`}>
+                        <div className={`bg-gradient-to-br ${getModeColors(index)} p-6 h-40 flex flex-col justify-between relative shadow-lg`}>
                             {/* Efecto de fondo específico por modo */}
                             {settings.ageMode === 'niños' && (
-                                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-30 transition-opacity rounded-2xl"></div>
+                                <div className="absolute inset-0 bg-white/10 dark:bg-white/5 opacity-0 group-hover:opacity-30 transition-opacity rounded-2xl"></div>
                             )}
                             {settings.ageMode === 'jóvenes' && (
                                 <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             )}
                             {settings.ageMode === 'adultos' && (
-                                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                                <div className="absolute inset-0 bg-black/10 dark:bg-black/20 opacity-0 group-hover:opacity-20 transition-opacity"></div>
                             )}
 
                             {/* Contenido */}
                             <div className="relative z-10">
                                 <div className="flex items-center justify-between mb-3">
-                                    <span className="text-4xl">
+                                    <span className="text-4xl drop-shadow-lg">
                                         {getCategoryIcon(categoria.nombre)}
                                     </span>
-                                    <span className={`px-2 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium text-white ${getModeClasses()}`}>
+                                    <span className={`px-2 py-1 bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded-full text-xs font-medium text-white ${getModeClasses()}`}>
                                         {categoria.productos_count} {getTextByMode({
                                             niños: categoria.productos_count === 1 ? 'cosa' : 'cosas',
                                             jóvenes: categoria.productos_count === 1 ? 'item' : 'items',
@@ -160,12 +160,12 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
                                     </span>
                                 </div>
 
-                                <h3 className={`text-white font-bold text-lg mb-2 group-hover:text-yellow-100 transition-colors ${getModeClasses()}`}>
+                                <h3 className={`text-white font-bold text-lg mb-2 group-hover:text-yellow-100 transition-colors drop-shadow-md ${getModeClasses()}`}>
                                     {categoria.nombre}
                                 </h3>
 
                                 {categoria.descripcion && (
-                                    <p className={`text-white/80 text-sm line-clamp-2 ${getModeClasses()}`}>
+                                    <p className={`text-white/80 text-sm line-clamp-2 drop-shadow-sm ${getModeClasses()}`}>
                                         {categoria.descripcion}
                                     </p>
                                 )}
@@ -173,7 +173,7 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
 
                             {/* Indicador de acción */}
                             <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                                <div className="w-8 h-8 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <div className="w-8 h-8 bg-white/30 dark:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
                                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
@@ -183,26 +183,26 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
                             {/* Elementos decorativos por modo */}
                             {settings.ageMode === 'niños' && (
                                 <>
-                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-300/30 rounded-full animate-pulse"></div>
-                                    <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-pink-300/30 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-300/30 dark:bg-yellow-400/20 rounded-full animate-pulse"></div>
+                                    <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-pink-300/30 dark:bg-pink-400/20 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
                                 </>
                             )}
 
                             {settings.ageMode === 'jóvenes' && (
-                                <div className="absolute top-2 right-2 w-3 h-3 bg-white/40 rounded-full group-hover:scale-150 transition-transform"></div>
+                                <div className="absolute top-2 right-2 w-3 h-3 bg-white/40 dark:bg-white/30 rounded-full group-hover:scale-150 transition-transform"></div>
                             )}
                         </div>
                     </Link>
                 ))}
             </div>
 
-            {/* Mensaje motivacional según el modo */}
+            {/* Mensaje motivacional según el modo - Mejorado para dark/light */}
             <div className={`text-center mt-12 ${getModeClasses()}`}>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-gray-300 text-lg">
                     {getTextByMode({
-                        niños: '¡Haz clic en cualquier categoría para ver cosas súper geniales! 🎉',
-                        jóvenes: 'Explora cada categoría para descubrir productos únicos ✨',
-                        adultos: 'Seleccione una categoría para explorar nuestros productos especializados'
+                        niños: '¡Explora todas las categorías y encuentra tus bebidas favoritas! 🧃✨',
+                        jóvenes: 'Descubre la categoría perfecta para tu próxima bebida refrescante',
+                        adultos: 'Explore nuestras categorías para encontrar la bebida ideal'
                     })}
                 </p>
             </div>
