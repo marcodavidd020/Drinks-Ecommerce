@@ -225,7 +225,7 @@ export default function Home({
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                                 <Link
-                                    href="/productos"
+                                    href="/catalogo/productos"
                                     className={`bg-white text-blue-800 hover:bg-blue-50 dark:bg-blue-900 dark:text-white dark:hover:bg-blue-800 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-xl ${getModeClasses()}`}
                                 >
                                     {getTextByMode({

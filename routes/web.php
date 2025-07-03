@@ -17,6 +17,7 @@ use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\ClienteDashboardController;
 use App\Http\Controllers\ConsumirServicioController;
+use App\Http\Controllers\CatalogoController;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,6 +32,10 @@ Route::get('/modes-demo', function () {
 
 // Rutas públicas para productos (sin autenticación requerida)
 Route::get('/product/{producto}', [ProductoController::class, 'showPublic'])->name('product.show');
+
+// Rutas públicas del catálogo (accesibles sin autenticación)
+Route::get('/catalogo/productos', [CatalogoController::class, 'productos'])->name('catalogo.productos');
+Route::get('/catalogo/promociones', [CatalogoController::class, 'promociones'])->name('catalogo.promociones');
 
 // Dashboard admin - verificar permisos de manera flexible (NO para clientes solo)
 Route::get('dashboard', [DashboardController::class, 'index'])

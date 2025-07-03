@@ -131,7 +131,7 @@ export default function HeroSection({ totalProductos, totalCategorias, totalProm
                     {/* Botones de acción - Mejorados para dark/light mode */}
                     <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                         <Link
-                            href="/productos"
+                            href="/catalogo/productos"
                             className={`bg-white text-cyan-800 hover:bg-cyan-50 dark:bg-cyan-900 dark:text-white dark:hover:bg-cyan-800 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl ${getModeClasses()}`}
                         >
                             {getTextByMode({
@@ -142,7 +142,7 @@ export default function HeroSection({ totalProductos, totalCategorias, totalProm
                         </Link>
 
                         <Link
-                            href="/promociones"
+                            href="/catalogo/promociones"
                             className={`border-2 border-white text-white hover:bg-white hover:text-cyan-700 dark:hover:bg-white dark:hover:text-cyan-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm ${getModeClasses()}`}
                         >
                             {getTextByMode({
