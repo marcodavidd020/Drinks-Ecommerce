@@ -563,7 +563,7 @@ export default function CatalogoPromociones({
                                 </Button>
                             </Link>
                             <Link href="/">
-                                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-800 dark:hover:bg-gray-800 dark:hover:text-white">
                                     {getTextByMode({
                                         niños: '🏠 Volver al inicio',
                                         jóvenes: 'Back to Home',

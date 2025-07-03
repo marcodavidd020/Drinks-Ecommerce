@@ -236,7 +236,7 @@ export default function Home({
                                 </Link>
                                 <Link
                                     href="/carrito"
-                                    className={`border-2 border-white text-white hover:bg-white hover:text-blue-700 dark:hover:bg-white dark:hover:text-blue-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 ${getModeClasses()}`}
+                                    className={`border-2 border-white text-white hover:bg-white hover:text-blue-800 dark:hover:bg-gray-800 dark:hover:text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 ${getModeClasses()}`}
                                 >
                                     {getTextByMode({
                                         niños: '🛒 ¡Ver Mi Carrito!',

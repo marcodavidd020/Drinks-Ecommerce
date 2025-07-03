@@ -143,7 +143,7 @@ export default function HeroSection({ totalProductos, totalCategorias, totalProm
 
                         <Link
                             href="/catalogo/promociones"
-                            className={`border-2 border-white text-white hover:bg-white hover:text-cyan-700 dark:hover:bg-white dark:hover:text-cyan-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm ${getModeClasses()}`}
+                            className={`border-2 border-white text-white hover:bg-white hover:text-cyan-800 dark:hover:bg-gray-800 dark:hover:text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm ${getModeClasses()}`}
                         >
                             {getTextByMode({
                                 niños: '🎁 ¡Ver Ofertas!',
