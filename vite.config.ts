@@ -5,11 +5,13 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    // Set the base path for the production build
+    // base: '/inf513/grupo21sc/proyecto2/public/build/',
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             ssr: 'resources/js/ssr.tsx',
-            refresh: false,
+            refresh: true,
         }),
         react({
             jsxRuntime: 'automatic',
