@@ -105,8 +105,8 @@ class ConsumirServicioController extends Controller
                 $laQrImage = "data:image/png;base64," . $qrData->qrImage;
                 \Log::info('QR generado exitosamente');
                 
-                // Improved QR display with better styling
-                return response("
+                // Improved QR display with better styling - usando echo como en el ejemplo que funciona
+                echo "
                 <!DOCTYPE html>
                 <html lang=\"es\">
                 <head>
@@ -268,12 +268,12 @@ class ConsumirServicioController extends Controller
                         </div>
                     </div>
                 </body>
-                </html>", 200, ['Content-Type' => 'text/html']);
+                </html>";
                 
             } elseif ($request->tnTipoServicio == 2) {
                 $csrfToken = csrf_token();
 
-                return response("
+                echo "
                 <!DOCTYPE html>
                 <html lang=\"es\">
                 <head>
@@ -385,7 +385,7 @@ class ConsumirServicioController extends Controller
                         });
                     </script>
                 </body>
-                </html>", 200, ['Content-Type' => 'text/html']);
+                </html>";
             }
         } catch (\Exception $e) {
             \Log::error('Error en RecolectarDatos', [
@@ -560,7 +560,7 @@ class ConsumirServicioController extends Controller
         
         \Log::info('Generando QR simulado', ['monto' => $monto]);
         
-        return response("
+        echo "
         <!DOCTYPE html>
         <html lang=\"es\">
         <head>
@@ -841,7 +841,7 @@ class ConsumirServicioController extends Controller
                 }
             </script>
         </body>
-        </html>", 200, ['Content-Type' => 'text/html']);
+        </html>";
     }
 
     /**
@@ -851,7 +851,7 @@ class ConsumirServicioController extends Controller
     {
         \Log::info('Generando Tigo Money simulado', ['monto' => $monto]);
         
-        return response("
+        echo "
         <!DOCTYPE html>
         <html lang=\"es\">
         <head>
@@ -1166,6 +1166,6 @@ class ConsumirServicioController extends Controller
                 });
             </script>
         </body>
-        </html>", 200, ['Content-Type' => 'text/html']);
+        </html>";
     }
 }  

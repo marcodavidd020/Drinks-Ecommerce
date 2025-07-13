@@ -119,6 +119,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rutas públicas para callback (sin middleware de autenticación)
     Route::post('/consultar', [ConsumirServicioController::class, 'ConsultarEstado'])->name('consultar.estado');
     
+    // Ruta directa para servicio QR (similar al ejemplo que funciona)
+    Route::post('/consumirServicio', [ConsumirServicioController::class, 'RecolectarDatos'])->name('consumirServicio');
+    
     // Gestión de usuarios - solo para admin y usuarios con permisos específicos
     Route::middleware(['can.manage.users'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
