@@ -3,6 +3,7 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
 import { formatCurrency } from '@/lib/currency';
 import { useState } from 'react';
+import { route } from 'ziggy-js';
 
 interface TipoPago {
     id: number;
@@ -79,10 +80,9 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
         setShowQR(true);
         
         // Crear un formulario temporal para hacer POST a una nueva ventana
-        const appUrl = import.meta.env.VITE_APP_URL || '';
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `${appUrl}/checkout/generar-qr`;
+        form.action = route('checkout.generar-qr'); // Usar Ziggy para la URL
         form.target = 'qr-popup';
         form.style.display = 'none';
 
