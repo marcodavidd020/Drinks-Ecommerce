@@ -11,7 +11,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 // Define una URL base para todas las rutas generadas por Inertia
 const appUrl = import.meta.env.PROD 
-    ? '/inf513/grupo21sc/proyecto2/public' 
+    ? '/inf513/grupo21sc/Drinks-Ecommerce/public' 
     : '';
 
 // Configurar Axios para usar la URL base correcta

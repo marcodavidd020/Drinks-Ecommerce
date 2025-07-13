@@ -79,9 +79,10 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
         setShowQR(true);
         
         // Crear un formulario temporal para hacer POST a una nueva ventana
+        const appUrl = import.meta.env.VITE_APP_URL || '';
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/checkout/generar-qr';
+        form.action = `${appUrl}/checkout/generar-qr`;
         form.target = 'qr-popup';
         form.style.display = 'none';
 

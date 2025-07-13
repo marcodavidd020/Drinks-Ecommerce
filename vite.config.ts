@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
     // Set the base path for the production build
-    // base: '/inf513/grupo21sc/proyecto2/public/build/',
+    // base: '/inf513/grupo21sc/Drinks-Ecommerce/public/build/',
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
