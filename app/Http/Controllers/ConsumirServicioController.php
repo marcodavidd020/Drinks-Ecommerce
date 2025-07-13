@@ -20,8 +20,10 @@ class ConsumirServicioController extends Controller
             $lcNroPago             = uniqid();
             $lnMontoClienteEmpresa = $request->tnMonto;
             $lcCorreo              = $request->tcCorreo;
-            $lcUrlCallBack         = "http://localhost:8000/";
-            $lcUrlReturn           = "http://localhost:8000/";
+            // $lcUrlCallBack         = "http://localhost:8000/";
+            // $lcUrlReturn           = "http://localhost:8000/";
+            $lcUrlCallBack = config('app.url') . '/';
+            $lcUrlReturn   = config('app.url') . '/';
             $laPedidoDetalle       = $request->tcDetallePedido;
             $lcUrl                 = "";
 
