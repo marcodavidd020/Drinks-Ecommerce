@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
 import { formatCurrency } from '@/lib/currency';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { route } from 'ziggy-js';
 
 interface TipoPago {
@@ -54,6 +54,9 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
     const [qrConfirmed, setQrConfirmed] = useState(false);
     const isQRPayment = tipoPago.tipo_pago === 'QR';
 
+    /** 👉 referencia al iframe donde mostraremos el QR */
+    const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
     const getTextByMode = (textos: { niños: string; jóvenes: string; adultos: string }) => {
         return textos[settings.ageMode as keyof typeof textos] || textos.adultos;
     };
@@ -76,103 +79,70 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
         return '💰';
     };
 
+    /** ========  ÚNICO CAMBIO IMPORTANTE  ======== */
     const generarQR = () => {
-        setShowQR(true);
-        
-        // Crear un formulario temporal para hacer POST a una nueva ventana
+        setShowQR(true);                // provoca el re-render
+    
+        // next tick ⇒ el iframe ya está en el DOM
+        setTimeout(() => {
+        if (!iframeRef.current) return;
+    
+        // construimos y enviamos el form como antes
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = route('checkout.generar-qr'); // Usar Ziggy para la URL
-        form.target = 'qr-popup';
+        form.action = route('checkout.generar-qr');
+        form.target = 'qr-frame';
         form.style.display = 'none';
-
-        // Agregar token CSRF
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        if (csrfToken) {
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = csrfToken;
-            form.appendChild(csrfInput);
-        }
-
-        // Agregar datos del formulario
-        const fieldsToAdd = [
-            { name: 'direccion_id', value: direccion.id.toString() },
-            { name: 'tipo_pago_id', value: tipoPago.id.toString() },
-            { name: 'total', value: total.toString() }
-        ];
-
-        fieldsToAdd.forEach(field => {
+    
+        const csrf = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+        if (csrf) {
             const input = document.createElement('input');
             input.type = 'hidden';
-            input.name = field.name;
-            input.value = field.value;
+            input.name = '_token';
+            input.value = csrf;
+            form.appendChild(input);
+        }
+    
+        [
+            { name: 'direccion_id', value: String(direccion.id) },
+            { name: 'tipo_pago_id', value: String(tipoPago.id) },
+            { name: 'total',        value: String(total)       },
+        ].forEach(f => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = f.name;
+            input.value = f.value;
             form.appendChild(input);
         });
-
-        // Agregar el formulario al body y enviarlo
+    
         document.body.appendChild(form);
-        
-        // Abrir ventana popup
-        const popup = window.open('', 'qr-popup', 
-            'width=500,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
-        );
-        
-        if (popup) {
-            // Enviar el formulario
-            form.submit();
-            
-            // Limpiar el formulario
-            document.body.removeChild(form);
-            
-            // Configurar el popup
-            popup.focus();
-            
-            // Escuchar mensajes del popup
-            const messageHandler = (event: MessageEvent) => {
-                if (event.source === popup) {
-                    if (event.data.type === 'payment_success') {
-                        console.log('Pago exitoso recibido');
-                        setShowQR(false);
-                    } else if (event.data.type === 'payment_cancelled') {
-                        console.log('Pago cancelado');
-                        setShowQR(false);
-                    }
-                    
-                    // Remover el listener
-                    window.removeEventListener('message', messageHandler);
-                }
-            };
-            
-            window.addEventListener('message', messageHandler);
-            
-            // Cleanup cuando se cierre la ventana
-            const checkClosed = setInterval(() => {
-                if (popup.closed) {
-                    clearInterval(checkClosed);
-                    setShowQR(false);
-                    window.removeEventListener('message', messageHandler);
-                }
-            }, 1000);
-            
-        } else {
-            // Si no se pudo abrir la ventana (bloqueador de popups)
-            alert('No se pudo abrir la ventana del QR. Por favor, permite ventanas emergentes para este sitio.');
-            setShowQR(false);
-            document.body.removeChild(form);
-        }
+        form.submit();
+        document.body.removeChild(form);
+        }, 0); // ⟵  espera un micro-tick
     };
+  
+
+    // const confirmarPagoQR = () => {
+    //     setQrConfirmed(true);
+        
+    //     // Procesar el pago QR directamente
+    //     router.post('/checkout/procesar', {
+    //         direccion_id: direccion.id,
+    //         tipo_pago_id: tipoPago.id,
+    //         metodo_pago: 'qr',
+    //         observaciones: observaciones
+    //     });
+    // };
 
     const confirmarPagoQR = () => {
         setQrConfirmed(true);
-        
-        // Procesar el pago QR directamente
-        router.post('/checkout/procesar', {
+        router.post(route('checkout.procesar'), {
             direccion_id: direccion.id,
             tipo_pago_id: tipoPago.id,
             metodo_pago: 'qr',
-            observaciones: observaciones
+            observaciones,
         });
     };
 
@@ -384,18 +354,38 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                                                     </p>
                                                 </div>
 
-                                                {!qrConfirmed && (
-                                                    <button
-                                                        onClick={confirmarPagoQR}
-                                                        className={`w-full mt-4 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02] ${getModeClasses()}`}
-                                                    >
-                                                        {getTextByMode({
-                                                            niños: '✅ ¡Confirmar Pago QR!',
-                                                            jóvenes: '✅ Confirmar Pago',
-                                                            adultos: '✅ Confirmar Pago QR'
-                                                        })}
-                                                    </button>
+                                                {/* ► Sección QR sólo si isQRPayment === true */}
+                                                {isQRPayment && (
+                                                <div className="p-6">
+                                                    <iframe
+                                                        ref={iframeRef}
+                                                        name="qr-frame"
+                                                        id="qr-frame"
+                                                        className={`w-full h-96 rounded-xl border ${showQR ? 'block' : 'hidden'}`}
+                                                    />
+                                                    {!showQR && (
+                                                        <p className="text-center text-gray-500 mt-4">
+                                                        Pulsa “Generar QR” para obtener el código
+                                                        </p>
+                                                    )}
+                                                </div>
                                                 )}
+
+
+                                                {/* …dentro de la tarjeta QR… */}
+                                                {isQRPayment && (
+                                                <button
+                                                    onClick={procesarPedido}
+                                                    className="btn-primary w-full mt-6"
+                                                >
+                                                    {isQRPayment && !showQR
+                                                    ? '📱 Generar QR'
+                                                    : isQRPayment && showQR && !qrConfirmed
+                                                        ? '✅ Confirmar Pago QR'
+                                                        : 'Confirmar Pedido'}
+                                                </button>
+                                                )}
+
 
                                                 {qrConfirmed && (
                                                     <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4 mt-4">

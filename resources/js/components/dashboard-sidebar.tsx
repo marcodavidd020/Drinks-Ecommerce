@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 
 interface User {
     id: number;
@@ -44,7 +45,8 @@ export default function DashboardSidebar() {
         if (!isCliente) return;
         
         try {
-            const response = await fetch('/api/carrito/count', {
+            const baseUrl = axios.defaults.baseURL;
+            const response = await fetch(baseUrl + '/api/carrito/count', {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 }

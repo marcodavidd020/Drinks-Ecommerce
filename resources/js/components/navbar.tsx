@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, useCallback } from 'react';
 import { useAppMode } from '@/contexts/AppModeContext';
+import axios from 'axios';
 
 interface User {
     id: number;
@@ -61,7 +62,8 @@ export default function Navbar({ user }: NavbarProps) {
         if (!isCliente) return;
         
         try {
-            const response = await fetch('/api/carrito/count', {
+            const baseUrl = axios.defaults.baseURL;
+            const response = await fetch(baseUrl + '/api/carrito/count', {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 }

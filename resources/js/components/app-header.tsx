@@ -15,6 +15,7 @@ import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingCart } from 'lucide
 import { useState, useEffect, useCallback } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
+import axios from 'axios';
 
 const mainNavItems: NavItem[] = [
     {
@@ -59,11 +60,17 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         if (!isCliente) return;
         
         try {
-            const response = await fetch('/api/carrito/count', {
+
+            // Base URL
+            const baseUrl = axios.defaults.baseURL;
+
+            const response = await fetch(baseUrl + '/api/carrito/count', {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 }
             });
+            console.log('baseUrl', baseUrl);
+
             if (response.ok) {
                 const data = await response.json();
                 setCarritoCount(data.count || 0);
