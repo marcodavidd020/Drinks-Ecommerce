@@ -79,48 +79,44 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
         return '💰';
     };
 
-    /** ========  ÚNICO CAMBIO IMPORTANTE  ======== */
     const generarQR = () => {
-        setShowQR(true);                // provoca el re-render
-    
-        // next tick ⇒ el iframe ya está en el DOM
-        setTimeout(() => {
-        if (!iframeRef.current) return;
-    
-        // construimos y enviamos el form como antes
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = route('checkout.generar-qr');
-        form.target = 'qr-frame';
-        form.style.display = 'none';
-    
-        const csrf = document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute('content');
-        if (csrf) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = '_token';
-            input.value = csrf;
-            form.appendChild(input);
-        }
-    
-        [
-            { name: 'direccion_id', value: String(direccion.id) },
-            { name: 'tipo_pago_id', value: String(tipoPago.id) },
-            { name: 'total',        value: String(total)       },
-        ].forEach(f => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = f.name;
-            input.value = f.value;
-            form.appendChild(input);
+        setShowQR(true);
+        
+        // Usar fetch para manejar la respuesta JSON
+        fetch(route('checkout.generar-qr'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                direccion_id: direccion.id,
+                tipo_pago_id: tipoPago.id,
+                total: total
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.html && iframeRef.current) {
+                // Escribir el HTML en el iframe
+                const iframe = iframeRef.current;
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) {
+                    iframeDoc.open();
+                    iframeDoc.write(data.html);
+                    iframeDoc.close();
+                }
+                console.log('QR generado exitosamente');
+            } else {
+                console.error('Error al generar QR:', data.error || 'Error desconocido');
+                setShowQR(false);
+            }
+        })
+        .catch(error => {
+            console.error('Error al generar QR:', error);
+            setShowQR(false);
         });
-    
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-        }, 0); // ⟵  espera un micro-tick
     };
   
 
@@ -253,9 +249,12 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                                     {carrito.detalles.map((detalle: DetalleCarrito) => (
                                         <div key={detalle.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                             <img 
-                                                src={detalle.productoAlmacen?.producto?.imagen || '/images/no-image.jpg'} 
+                                                src={detalle.productoAlmacen?.producto?.imagen || `${import.meta.env.VITE_APP_URL || ''}/images/no-image.jpg`} 
                                                 alt={detalle.productoAlmacen?.producto?.nombre || 'Producto'}
                                                 className="w-16 h-16 object-cover rounded-lg"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=150&h=150&fit=crop';
+                                                }}
                                             />
                                             <div className="flex-1">
                                                 <h3 className={`font-semibold text-gray-900 dark:text-white ${getModeClasses()}`}>

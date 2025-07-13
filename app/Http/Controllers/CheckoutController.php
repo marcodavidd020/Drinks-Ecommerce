@@ -278,12 +278,10 @@ class CheckoutController extends Controller
 
             if (!$cliente) {
                 \Log::error('Usuario no es cliente');
-                return response('
-                    <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
-                        <h2>Error: Usuario no autorizado</h2>
-                        <p>Solo los clientes pueden generar códigos QR</p>
-                    </div>
-                ', 400)->header('Content-Type', 'text/html; charset=utf-8');
+                return response()->json([
+                    'error' => 'Usuario no autorizado',
+                    'message' => 'Solo los clientes pueden generar códigos QR'
+                ], 400);
             }
 
             // Obtener carrito activo
@@ -294,12 +292,10 @@ class CheckoutController extends Controller
 
             if (!$carrito || $carrito->detalles->isEmpty()) {
                 \Log::error('Carrito vacío o no encontrado');
-                return response('
-                    <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
-                        <h2>Error: Carrito vacío</h2>
-                        <p>Debe agregar productos al carrito antes de generar un QR</p>
-                    </div>
-                ', 400)->header('Content-Type', 'text/html; charset=utf-8');
+                return response()->json([
+                    'error' => 'Carrito vacío',
+                    'message' => 'Debe agregar productos al carrito antes de generar un QR'
+                ], 400);
             }
 
             // Preparar detalles del pedido para el servicio QR
@@ -344,24 +340,29 @@ class CheckoutController extends Controller
             // Si hay salida del buffer, la usamos
             if (!empty($output)) {
                 \Log::info('Retornando output del buffer');
-                return response($output, 200)
-                    ->header('Content-Type', 'text/html; charset=utf-8');
+                return response()->json([
+                    'success' => true,
+                    'html' => $output,
+                    'message' => 'QR generado exitosamente'
+                ]);
             }
 
             // Si no hay salida pero hay resultado, lo procesamos
             if (!empty($result)) {
                 \Log::info('Retornando resultado directo');
-                return $result;
+                return response()->json([
+                    'success' => true,
+                    'result' => $result,
+                    'message' => 'QR generado exitosamente'
+                ]);
             }
 
             // Si no hay nada, retornamos error
             \Log::error('No se generó ningún resultado');
-            return response('
-                <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
-                    <h2>Error: No se pudo generar el QR</h2>
-                    <p>Hubo un problema al conectar con el servicio de pagos</p>
-                </div>
-            ', 500)->header('Content-Type', 'text/html; charset=utf-8');
+            return response()->json([
+                'error' => 'No se pudo generar el QR',
+                'message' => 'Hubo un problema al conectar con el servicio de pagos'
+            ], 500);
 
         } catch (\Exception $e) {
             \Log::error('Error en generarQR', [
@@ -369,12 +370,10 @@ class CheckoutController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return response('
-                <div style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
-                    <h2>Error: ' . htmlspecialchars($e->getMessage()) . '</h2>
-                    <p>Hubo un error al procesar la solicitud</p>
-                </div>
-            ', 500)->header('Content-Type', 'text/html; charset=utf-8');
+            return response()->json([
+                'error' => 'Error al procesar la solicitud',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
