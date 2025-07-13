@@ -94,22 +94,37 @@ Verificar que las siguientes URLs funcionen:
 - ✅ `https://www.tecnoweb.org.bo/inf513/grupo21sc/Drinks-Ecommerce/public`
 - ✅ `https://www.tecnoweb.org.bo/inf513/grupo21sc/Drinks-Ecommerce/public/images/no-image.jpg`
 - ✅ `https://www.tecnoweb.org.bo/inf513/grupo21sc/Drinks-Ecommerce/public/checkout/generar-qr`
+- ✅ `https://www.tecnoweb.org.bo/inf513/grupo21sc/Drinks-Ecommerce/public/server-info.php` (diagnóstico)
+- ✅ `https://www.tecnoweb.org.bo/inf513/grupo21sc/Drinks-Ecommerce/public/test.html` (prueba)
 
 ## Estructura de Archivos Importante
 
 ```
 /inf513/grupo21sc/Drinks-Ecommerce/
-├── public/                    # Document root del servidor web
-│   ├── index.php             # Punto de entrada
+├── .htaccess                 # Redirige a public/
+├── index.php                 # Redirige a public/index.php
+├── public/                   # Document root del servidor web
+│   ├── .htaccess            # Configuración de Laravel
+│   ├── index.php            # Punto de entrada
+│   ├── server-info.php      # Archivo de diagnóstico
+│   ├── test.html            # Archivo de prueba
 │   ├── images/
-│   │   └── no-image.jpg      # Imagen placeholder
-│   └── build/                # Assets compilados
-├── storage/                  # Archivos de sesión y logs
-├── bootstrap/cache/          # Caché de Laravel
-└── .env                      # Variables de entorno
+│   │   └── no-image.jpg     # Imagen placeholder
+│   └── build/               # Assets compilados
+├── storage/                 # Archivos de sesión y logs
+├── bootstrap/cache/         # Caché de Laravel
+└── .env                     # Variables de entorno
 ```
 
 ## Troubleshooting
+
+### Error 405 (Method Not Allowed)
+- **Causa**: El servidor web no está configurado para manejar las rutas de Laravel
+- **Solución**:
+  - Verificar que `mod_rewrite` esté habilitado en el servidor
+  - Asegurar que los archivos `.htaccess` e `index.php` estén en el directorio raíz
+  - Verificar que `AllowOverride` esté configurado como `All` en el servidor
+  - Probar el archivo de diagnóstico: `/public/server-info.php`
 
 ### Error 419 (Page Expired)
 - Verificar que `SESSION_PATH` esté configurado correctamente
