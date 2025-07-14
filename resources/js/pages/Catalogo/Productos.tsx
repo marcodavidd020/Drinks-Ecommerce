@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/currency';
 import { Search, Filter, Star, ShoppingCart } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 
 interface Producto {
     id: number;
@@ -79,6 +80,19 @@ export default function CatalogoProductos({
     const { getTextByMode } = useAppModeText();
     const [busquedaLocal, setBusquedaLocal] = useState(filtros.busqueda || '');
     const [filtrosVisibles, setFiltrosVisibles] = useState(false);
+    // Estado para feedback de agregar al carrito
+    const [addingToCart, setAddingToCart] = useState<number[]>([]);
+    const [showSuccessMessage, setShowSuccessMessage] = useState<number | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    // Lógica de roles y autenticación (puedes adaptar según tu contexto)
+    const page = typeof usePage === 'function' ? usePage() : { props: {} };
+    const auth = (page.props as any)?.auth || {};
+    const isAuthenticated = !!auth.user;
+    const userRoles = (auth.user?.roles as Array<{ name: string }>) || [];
+    const hasRole = (role: string): boolean => userRoles.some(r => r.name === role);
+    const hasAnyRole = (roles: string[]): boolean => roles.some(role => hasRole(role));
+    const isCliente = auth.user && hasRole('cliente') && !hasAnyRole(['admin', 'empleado', 'organizador', 'vendedor', 'almacenista']);
 
     const getModeClasses = () => {
         // Obtener el modo desde localStorage o contexto
@@ -138,6 +152,49 @@ export default function CatalogoProductos({
         } else {
             return <Badge variant="default">Disponible</Badge>;
         }
+    };
+
+    const agregarAlCarrito = (productoId: number, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAuthenticated) {
+            window.location.href = '/login';
+            return;
+        }
+        if (!isCliente) {
+            alert(getTextByMode({
+                niños: '🔒 Solo los clientes pueden agregar productos al carrito',
+                jóvenes: 'Esta función es solo para clientes',
+                adultos: 'Funcionalidad disponible solo para clientes'
+            }));
+            return;
+        }
+        if (addingToCart.includes(productoId)) return;
+        setAddingToCart(prev => [...prev, productoId]);
+        setErrorMessage(null);
+        setShowSuccessMessage(null);
+        router.post(
+            '/carrito/agregar',
+            { producto_id: productoId, cantidad: 1 },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowSuccessMessage(productoId);
+                    setTimeout(() => setShowSuccessMessage(null), 1200);
+                },
+                onError: (errors) => {
+                    setErrorMessage(errors.producto_id || errors.cantidad || 'Error al agregar producto al carrito');
+                    alert(getTextByMode({
+                        niños: '😰 ¡Ups! No se pudo agregar al carrito. ¡Intenta de nuevo!',
+                        jóvenes: 'Error al agregar al carrito. Intenta nuevamente.',
+                        adultos: 'Error al agregar producto al carrito. Intente nuevamente.'
+                    }));
+                },
+                onFinish: () => {
+                    setAddingToCart(prev => prev.filter(id => id !== productoId));
+                }
+            }
+        );
     };
 
     return (
@@ -417,7 +474,7 @@ export default function CatalogoProductos({
                                 <CardFooter className="p-4 pt-0">
                                     <div className="flex gap-2 w-full">
                                         <Link
-                                            href={route('productos.show', producto.id)}
+                                            href={`/product/${producto.id}`}
                                             className="flex-1"
                                         >
                                             <Button variant="outline" className="w-full">
@@ -430,13 +487,18 @@ export default function CatalogoProductos({
                                         </Link>
                                         
                                         {producto.stock_total > 0 && (
-                                            <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
-                                                <ShoppingCart className="h-4 w-4 mr-2" />
-                                                {getTextByMode({
+                                            <Button
+                                                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                                                onClick={(e) => agregarAlCarrito(producto.id, e)}
+                                                disabled={addingToCart.includes(producto.id)}
+                                            >
+                                                {addingToCart.includes(producto.id) ? (
+                                                    <span className="flex items-center"><span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></span>...</span>
+                                                ) : <><ShoppingCart className="h-4 w-4 mr-2" />{getTextByMode({
                                                     niños: '🛒 Agregar',
                                                     jóvenes: 'Agregar',
                                                     adultos: 'Al carrito'
-                                                })}
+                                                })}</>}
                                             </Button>
                                         )}
                                     </div>

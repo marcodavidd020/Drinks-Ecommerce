@@ -1,8 +1,8 @@
 import { useAppMode } from '@/contexts/AppModeContext';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/currency';
 import { type SharedData } from '@/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Producto {
     id: number;
@@ -32,7 +32,8 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
     const page = usePage();
     const [addingToCart, setAddingToCart] = useState<number[]>([]);
     const [showSuccessMessage, setShowSuccessMessage] = useState<number | null>(null);
-
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    
     // Verificar si el usuario está autenticado y es cliente
     const { auth } = page.props as unknown as SharedData;
     const isAuthenticated = !!auth.user;
@@ -65,17 +66,15 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
         }
     };
 
-    // Función para agregar producto al carrito
+    // Función para agregar producto al carrito usando Inertia
     const agregarAlCarrito = async (productoId: number, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
         if (!isAuthenticated) {
-            // Redirigir a login si no está autenticado
             window.location.href = '/login';
             return;
         }
-
         if (!isCliente) {
             alert(getTextByMode({
                 niños: '🔒 Solo los clientes pueden agregar productos al carrito',
@@ -84,98 +83,40 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
             }));
             return;
         }
-
+        if (addingToCart.includes(productoId)) return;
         setAddingToCart(prev => [...prev, productoId]);
-
-        try {
-            // Obtener el CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (!csrfToken) {
-                throw new Error('Token de seguridad no encontrado');
-            }
-
-            // Agregar al carrito directamente con producto_id
-            const carritoResponse = await fetch('/carrito/agregar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+        setErrorMessage(null);
+        setShowSuccessMessage(null);
+        router.post(
+            '/carrito/agregar',
+            { producto_id: productoId, cantidad: 1 },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowSuccessMessage(productoId);
+                    setTimeout(() => setShowSuccessMessage(null), 1200);
                 },
-                body: JSON.stringify({
-                    producto_id: productoId,
-                    cantidad: 1
-                })
-            });
-
-            // Verificar si la respuesta es JSON antes de intentar parsearla
-            const contentType = carritoResponse.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                // Si no es JSON, probablemente es un error 419 o 500
-                if (carritoResponse.status === 419) {
-                    throw new Error('Error de autenticación CSRF. Por favor, recarga la página e intenta nuevamente.');
-                } else if (carritoResponse.status === 500) {
-                    throw new Error('Error interno del servidor. Por favor, intenta más tarde.');
-                } else {
-                    throw new Error(`Error del servidor (${carritoResponse.status}). Por favor, intenta nuevamente.`);
+                onError: (errors) => {
+                    setErrorMessage(errors.producto_id || errors.cantidad || 'Error al agregar producto al carrito');
+                    alert(getTextByMode({
+                        niños: '😰 ¡Ups! No se pudo agregar al carrito. ¡Intenta de nuevo!',
+                        jóvenes: 'Error al agregar al carrito. Intenta nuevamente.',
+                        adultos: 'Error al agregar producto al carrito. Intente nuevamente.'
+                    }));
+                },
+                onFinish: () => {
+                    setAddingToCart(prev => prev.filter(id => id !== productoId));
                 }
             }
-
-            const responseData = await carritoResponse.json();
-
-            if (carritoResponse.ok) {
-                // Mostrar mensaje de éxito
-                setShowSuccessMessage(productoId);
-                setTimeout(() => setShowSuccessMessage(null), 3000);
-
-                // Disparar evento para actualizar contador en header
-                window.dispatchEvent(new CustomEvent('carrito-updated', {
-                    detail: {
-                        count: responseData.carrito_items,
-                        total: responseData.carrito_total
-                    }
-                }));
-
-                console.log(getTextByMode({
-                    niños: '🎉 ¡Producto agregado al carrito!',
-                    jóvenes: 'Producto agregado exitosamente',
-                    adultos: 'Producto agregado al carrito'
-                }));
-            } else {
-                throw new Error(responseData.error || 'Error al agregar producto al carrito');
-            }
-        } catch (error) {
-            console.error('Error agregando al carrito:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-            
-            // Mostrar mensaje específico según el tipo de error
-            let userMessage = errorMessage;
-            if (errorMessage.includes('CSRF')) {
-                userMessage = getTextByMode({
-                    niños: '🔒 Error de seguridad. ¡Recarga la página e intenta de nuevo!',
-                    jóvenes: 'Error de seguridad. Recarga la página e intenta nuevamente.',
-                    adultos: 'Error de autenticación. Por favor, recarga la página e intenta nuevamente.'
-                });
-            } else if (errorMessage.includes('500')) {
-                userMessage = getTextByMode({
-                    niños: '😰 El servidor está ocupado. ¡Intenta en unos minutos!',
-                    jóvenes: 'Error del servidor. Intenta más tarde.',
-                    adultos: 'Error interno del servidor. Intente más tarde.'
-                });
-            } else if (errorMessage.includes('Token de seguridad')) {
-                userMessage = getTextByMode({
-                    niños: '🔐 Problema de seguridad. ¡Recarga la página!',
-                    jóvenes: 'Error de token de seguridad. Recarga la página.',
-                    adultos: 'Error de token de seguridad. Recargue la página.'
-                });
-            }
-            
-            alert(userMessage);
-        } finally {
-            setAddingToCart(prev => prev.filter(id => id !== productoId));
-        }
+        );
     };
+
+    // Manejar éxito y error del formulario
+    useEffect(() => {
+        if (errorMessage) {
+            console.error('Error agregando al carrito:', errorMessage);
+        }
+    }, [errorMessage]);
 
     // Obtener imagen por defecto según la categoría para bebidas
     const getDefaultImage = (producto: Producto) => {
@@ -298,7 +239,9 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                                         alt={producto.nombre}
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                         onError={(e) => {
-                                            e.currentTarget.src = getDefaultImage(producto);
+                                            if (e.currentTarget.src !== getDefaultImage(producto)) {
+                                                e.currentTarget.src = getDefaultImage(producto);
+                                            }
                                         }}
                                     />
                                     
@@ -341,7 +284,7 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                                     )}
 
                                     {/* Mensaje de éxito */}
-                                    {showSuccess && (
+                                    {showSuccessMessage === producto.id && (
                                         <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center">
                                             <div className="text-white text-center">
                                                 <div className="text-2xl mb-1">✅</div>
@@ -410,9 +353,9 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                                     {/* Botón de agregar al carrito */}
                                     <button 
                                         onClick={(e) => agregarAlCarrito(producto.id, e)}
-                                        disabled={producto.stock_total === 0 || isProcessing}
+                                        disabled={producto.stock_total === 0 || addingToCart.includes(producto.id)}
                                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all disabled:cursor-not-allowed ${
-                                            producto.stock_total > 0 && !isProcessing
+                                            producto.stock_total > 0 && !addingToCart.includes(producto.id)
                                                 ? settings.ageMode === 'niños'
                                                     ? 'bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg hover:shadow-xl'
                                                     : settings.ageMode === 'jóvenes'
@@ -421,7 +364,7 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                                         } ${getModeClasses()}`}
                                     >
-                                        {isProcessing ? (
+                                        {addingToCart.includes(producto.id) ? (
                                             <div className="flex items-center">
                                                 <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></div>
                                                 {getTextByMode({
