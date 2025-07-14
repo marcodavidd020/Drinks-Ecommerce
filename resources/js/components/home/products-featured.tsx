@@ -109,6 +109,19 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
                 })
             });
 
+            // Verificar si la respuesta es JSON antes de intentar parsearla
+            const contentType = carritoResponse.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // Si no es JSON, probablemente es un error 419 o 500
+                if (carritoResponse.status === 419) {
+                    throw new Error('Error de autenticación CSRF. Por favor, recarga la página e intenta nuevamente.');
+                } else if (carritoResponse.status === 500) {
+                    throw new Error('Error interno del servidor. Por favor, intenta más tarde.');
+                } else {
+                    throw new Error(`Error del servidor (${carritoResponse.status}). Por favor, intenta nuevamente.`);
+                }
+            }
+
             const responseData = await carritoResponse.json();
 
             if (carritoResponse.ok) {
@@ -135,11 +148,30 @@ export default function ProductsFeatured({ productos }: ProductsFeaturedProps) {
         } catch (error) {
             console.error('Error agregando al carrito:', error);
             const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-            alert(getTextByMode({
-                niños: `😰 ${errorMessage || 'Algo salió mal, intenta de nuevo'}`,
-                jóvenes: `Error: ${errorMessage || 'Error de conexión'}`,
-                adultos: `Error: ${errorMessage || 'Error de conexión. Intente nuevamente.'}`
-            }));
+            
+            // Mostrar mensaje específico según el tipo de error
+            let userMessage = errorMessage;
+            if (errorMessage.includes('CSRF')) {
+                userMessage = getTextByMode({
+                    niños: '🔒 Error de seguridad. ¡Recarga la página e intenta de nuevo!',
+                    jóvenes: 'Error de seguridad. Recarga la página e intenta nuevamente.',
+                    adultos: 'Error de autenticación. Por favor, recarga la página e intenta nuevamente.'
+                });
+            } else if (errorMessage.includes('500')) {
+                userMessage = getTextByMode({
+                    niños: '😰 El servidor está ocupado. ¡Intenta en unos minutos!',
+                    jóvenes: 'Error del servidor. Intenta más tarde.',
+                    adultos: 'Error interno del servidor. Intente más tarde.'
+                });
+            } else if (errorMessage.includes('Token de seguridad')) {
+                userMessage = getTextByMode({
+                    niños: '🔐 Problema de seguridad. ¡Recarga la página!',
+                    jóvenes: 'Error de token de seguridad. Recarga la página.',
+                    adultos: 'Error de token de seguridad. Recargue la página.'
+                });
+            }
+            
+            alert(userMessage);
         } finally {
             setAddingToCart(prev => prev.filter(id => id !== productoId));
         }

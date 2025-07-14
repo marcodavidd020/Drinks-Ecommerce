@@ -82,12 +82,26 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
     const generarQR = () => {
         setShowQR(true);
         
+        // Obtener el CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (!csrfToken) {
+            console.error('Token de seguridad no encontrado');
+            setShowQR(false);
+            alert(getTextByMode({
+                niños: '🔐 Problema de seguridad. ¡Recarga la página!',
+                jóvenes: 'Error de token de seguridad. Recarga la página.',
+                adultos: 'Error de token de seguridad. Recargue la página.'
+            }));
+            return;
+        }
+        
         // Usar fetch para manejar la respuesta JSON
         fetch(route('checkout.generar-qr'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
             },
             body: JSON.stringify({
@@ -96,7 +110,21 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
                 total: total
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            // Verificar si la respuesta es JSON antes de intentar parsearla
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // Si no es JSON, probablemente es un error 419 o 500
+                if (response.status === 419) {
+                    throw new Error('Error de autenticación CSRF. Por favor, recarga la página e intenta nuevamente.');
+                } else if (response.status === 500) {
+                    throw new Error('Error interno del servidor. Por favor, intenta más tarde.');
+                } else {
+                    throw new Error(`Error del servidor (${response.status}). Por favor, intenta nuevamente.`);
+                }
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success && data.html && iframeRef.current) {
                 // Escribir el HTML en el iframe
@@ -111,11 +139,40 @@ export default function CheckoutConfirmar({ carrito, direccion, tipoPago, total 
             } else {
                 console.error('Error al generar QR:', data.error || 'Error desconocido');
                 setShowQR(false);
+                alert(getTextByMode({
+                    niños: `😰 Error al generar QR: ${data.error || 'Error desconocido'}`,
+                    jóvenes: `Error al generar QR: ${data.error || 'Error desconocido'}`,
+                    adultos: `Error al generar QR: ${data.error || 'Error desconocido'}`
+                }));
             }
         })
         .catch(error => {
             console.error('Error al generar QR:', error);
             setShowQR(false);
+            
+            // Mostrar mensaje específico según el tipo de error
+            let userMessage = error.message;
+            if (error.message.includes('CSRF')) {
+                userMessage = getTextByMode({
+                    niños: '🔒 Error de seguridad. ¡Recarga la página e intenta de nuevo!',
+                    jóvenes: 'Error de seguridad. Recarga la página e intenta nuevamente.',
+                    adultos: 'Error de autenticación. Por favor, recarga la página e intenta nuevamente.'
+                });
+            } else if (error.message.includes('500')) {
+                userMessage = getTextByMode({
+                    niños: '😰 El servidor está ocupado. ¡Intenta en unos minutos!',
+                    jóvenes: 'Error del servidor. Intenta más tarde.',
+                    adultos: 'Error interno del servidor. Intente más tarde.'
+                });
+            } else if (error.message.includes('Token de seguridad')) {
+                userMessage = getTextByMode({
+                    niños: '🔐 Problema de seguridad. ¡Recarga la página!',
+                    jóvenes: 'Error de token de seguridad. Recarga la página.',
+                    adultos: 'Error de token de seguridad. Recargue la página.'
+                });
+            }
+            
+            alert(userMessage);
         });
     };
   

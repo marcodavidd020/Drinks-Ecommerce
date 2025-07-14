@@ -9,115 +9,101 @@ if [ ! -f "artisan" ]; then
     exit 1
 fi
 
-echo "📋 Paso 1: Crear tabla de sesiones..."
-echo "------------------------------------"
+echo "📋 Paso 1: Verificar configuración actual de sesiones..."
+echo "--------------------------------------------------------"
 
-# Crear migración de sesiones si no existe
-if [ ! -f "database/migrations/*_create_sessions_table.php" ]; then
-    echo "📝 Creando migración de sesiones..."
-    php artisan session:table
-    
-    # Buscar el archivo de migración creado
-    SESSION_MIGRATION=$(find database/migrations -name "*_create_sessions_table.php" | head -1)
-    if [ -n "$SESSION_MIGRATION" ]; then
-        echo "✅ Migración creada: $SESSION_MIGRATION"
-    else
-        echo "❌ Error: No se pudo crear la migración de sesiones"
-        exit 1
-    fi
-else
-    echo "✅ Migración de sesiones ya existe"
-fi
+# Verificar configuración actual
+echo "🔍 Configuración actual:"
+php artisan tinker --execute="echo 'SESSION_DRIVER: ' . config('session.driver') . PHP_EOL;"
+php artisan tinker --execute="echo 'SESSION_PATH: ' . config('session.path') . PHP_EOL;"
+php artisan tinker --execute="echo 'SESSION_DOMAIN: ' . config('session.domain') . PHP_EOL;"
+php artisan tinker --execute="echo 'APP_URL: ' . config('app.url') . PHP_EOL;"
 
 echo ""
-echo "📋 Paso 2: Ejecutar migración de sesiones..."
-echo "-------------------------------------------"
+echo "📋 Paso 2: Verificar tabla de sesiones..."
+echo "----------------------------------------"
 
-# Ejecutar migración
-echo "🔄 Ejecutando migración de sesiones..."
-php artisan migrate --force
+# Verificar si existe la tabla de sesiones
+echo "🔍 Verificando si la tabla sessions existe..."
+if php artisan tinker --execute="echo Schema::hasTable('sessions');" 2>/dev/null | grep -q "1"; then
+    echo "✅ Tabla de sesiones ya existe en la base de datos"
+else
+    echo "❌ Tabla de sesiones NO existe"
+    echo "📝 Creando migración de sesiones..."
+    php artisan session:table 2>/dev/null || echo "⚠️  Migración ya existe, continuando..."
+    echo "🔄 Ejecutando migración de sesiones..."
+    php artisan migrate --force
+    echo "✅ Migración de sesiones ejecutada"
+fi
 
 echo ""
 echo "📋 Paso 3: Limpiar cache completo..."
 echo "-----------------------------------"
 
 # Limpiar todos los caches
-echo "🧹 Limpiando cache de configuración..."
 php artisan config:clear
-
-echo "🧹 Limpiando cache de rutas..."
 php artisan route:clear
-
-echo "🧹 Limpiando cache de vistas..."
 php artisan view:clear
-
-echo "🧹 Limpiando cache de aplicación..."
 php artisan cache:clear
+php artisan optimize:clear
 
-echo "🧹 Limpiando cache de sesiones..."
-php artisan session:table 2>/dev/null || true
-
-echo ""
-echo "📋 Paso 4: Verificar configuración de sesiones..."
-echo "------------------------------------------------"
-
-# Verificar configuración actual
-echo "🔍 Configuración actual de sesiones:"
-php artisan tinker --execute="echo 'SESSION_DRIVER: ' . config('session.driver') . PHP_EOL;"
-php artisan tinker --execute="echo 'SESSION_LIFETIME: ' . config('session.lifetime') . PHP_EOL;"
-php artisan tinker --execute="echo 'SESSION_PATH: ' . config('session.path') . PHP_EOL;"
-php artisan tinker --execute="echo 'SESSION_DOMAIN: ' . config('session.domain') . PHP_EOL;"
-php artisan tinker --execute="echo 'SESSION_SECURE: ' . (config('session.secure') ? 'true' : 'false') . PHP_EOL;"
-php artisan tinker --execute="echo 'SESSION_SAME_SITE: ' . config('session.same_site') . PHP_EOL;"
+echo "✅ Cache limpiado"
 
 echo ""
-echo "📋 Paso 5: Verificar tabla de sesiones..."
-echo "----------------------------------------"
+echo "📋 Paso 4: Verificar middleware CSRF..."
+echo "--------------------------------------"
 
-# Verificar si la tabla existe
-echo "🔍 Verificando tabla de sesiones..."
-php artisan tinker --execute="echo 'Tabla sessions existe: ' . (Schema::hasTable('sessions') ? 'SÍ' : 'NO') . PHP_EOL;"
-
-if php artisan tinker --execute="echo Schema::hasTable('sessions');" 2>/dev/null | grep -q "1"; then
-    echo "✅ Tabla de sesiones creada correctamente"
+# Verificar que el middleware CSRF esté configurado
+if [ -f "app/Http/Middleware/VerifyCsrfToken.php" ]; then
+    echo "✅ Middleware VerifyCsrfToken existe"
+    if grep -q "except" app/Http/Middleware/VerifyCsrfToken.php; then
+        echo "⚠️  Verificar si las rutas de auth están excluidas del CSRF"
+    else
+        echo "✅ Middleware CSRF configurado correctamente"
+    fi
 else
-    echo "❌ Error: La tabla de sesiones no se creó correctamente"
-    echo "🔄 Intentando crear la tabla manualmente..."
-    php artisan migrate --force
+    echo "❌ Middleware VerifyCsrfToken no encontrado"
 fi
 
 echo ""
-echo "📋 Paso 6: Verificar token CSRF..."
-echo "---------------------------------"
-
-# Verificar que el token CSRF se esté generando
-echo "🔍 Verificando generación de token CSRF..."
-php artisan tinker --execute="echo 'CSRF Token generado: ' . (strlen(csrf_token()) > 0 ? 'SÍ' : 'NO') . PHP_EOL;"
-
-echo ""
-echo "📋 Paso 7: Optimizar aplicación..."
-echo "--------------------------------"
-
-# Optimizar la aplicación
-echo "⚡ Optimizando aplicación..."
-php artisan optimize:clear
-
-echo ""
-echo "📋 Paso 8: Verificar configuración de cookies..."
+echo "📋 Paso 5: Verificar configuración de Inertia..."
 echo "-----------------------------------------------"
 
-# Verificar configuración de cookies
-echo "🔍 Verificando configuración de cookies..."
-php artisan tinker --execute="echo 'APP_URL: ' . config('app.url') . PHP_EOL;"
-php artisan tinker --execute="echo 'ASSET_URL: ' . config('app.asset_url') . PHP_EOL;"
+# Verificar configuración de Inertia
+if [ -f "app/Http/Middleware/HandleInertiaRequests.php" ]; then
+    echo "✅ Middleware HandleInertiaRequests existe"
+    if grep -q "csrf_token" app/Http/Middleware/HandleInertiaRequests.php; then
+        echo "✅ CSRF token configurado en Inertia"
+    else
+        echo "❌ CSRF token no configurado en Inertia"
+    fi
+else
+    echo "❌ Middleware HandleInertiaRequests no encontrado"
+fi
 
 echo ""
-echo "📋 Paso 9: Crear archivo de configuración recomendado..."
-echo "------------------------------------------------------"
+echo "📋 Paso 6: Verificar archivo .htaccess..."
+echo "----------------------------------------"
 
-# Crear archivo con configuración recomendada
-cat > configuracion-sesiones-recomendada.env << 'EOF'
-# Configuración recomendada para sesiones en subdirectorio
+# Verificar configuración de .htaccess
+if [ -f "public/.htaccess" ]; then
+    echo "✅ Archivo public/.htaccess existe"
+    if grep -q "X-XSRF-Token" public/.htaccess; then
+        echo "✅ Configuración X-XSRF-Token encontrada"
+    else
+        echo "❌ Configuración X-XSRF-Token no encontrada"
+    fi
+else
+    echo "❌ Archivo public/.htaccess no encontrado"
+fi
+
+echo ""
+echo "📋 Paso 7: Crear configuración específica para auth..."
+echo "-----------------------------------------------------"
+
+# Crear archivo de configuración específica para auth
+cat > configuracion-auth-csrf.env << 'EOF'
+# Configuración específica para rutas de autenticación en subdirectorio
 SESSION_DRIVER=database
 SESSION_LIFETIME=120
 SESSION_PATH=/inf513/grupo21sc/Drinks-Ecommerce/public
@@ -129,61 +115,82 @@ SESSION_HTTP_ONLY=true
 # Configuración de la aplicación
 APP_URL=https://www.tecnoweb.org.bo/inf513/grupo21sc/Drinks-Ecommerce/public
 ASSET_URL=https://www.tecnoweb.org.bo/inf513/grupo21sc/Drinks-Ecommerce/public
+
+# Configuración específica para CSRF
+CSRF_TRUSTED_ORIGINS=https://www.tecnoweb.org.bo
 EOF
 
-echo "✅ Archivo de configuración recomendada creado: configuracion-sesiones-recomendada.env"
+echo "✅ Archivo de configuración específica creado: configuracion-auth-csrf.env"
 
 echo ""
-echo "📋 Paso 10: Verificar archivos críticos..."
-echo "-----------------------------------------"
+echo "📋 Paso 8: Verificar rutas de autenticación..."
+echo "---------------------------------------------"
 
-# Verificar archivos críticos
-if [ -f "public/.htaccess" ]; then
-    echo "✅ Archivo public/.htaccess existe"
-    if grep -q "X-XSRF-Token" public/.htaccess; then
-        echo "✅ Configuración X-XSRF-Token encontrada en .htaccess"
-    else
-        echo "⚠️  Configuración X-XSRF-Token no encontrada en .htaccess"
-    fi
-else
-    echo "❌ Archivo public/.htaccess no encontrado"
-fi
-
-if [ -f "app/Http/Middleware/HandleInertiaRequests.php" ]; then
-    echo "✅ Middleware HandleInertiaRequests existe"
-    if grep -q "csrf_token" app/Http/Middleware/HandleInertiaRequests.php; then
-        echo "✅ CSRF token configurado en Inertia"
-    else
-        echo "⚠️  CSRF token no configurado en Inertia"
-    fi
-else
-    echo "❌ Middleware HandleInertiaRequests no encontrado"
-fi
+# Verificar que las rutas de auth estén registradas
+echo "🔍 Verificando rutas de autenticación..."
+php artisan route:list --name=login
+php artisan route:list --name=register
 
 echo ""
-echo "📋 Paso 11: Verificar logs de errores..."
+echo "📋 Paso 9: Verificar logs de errores..."
 echo "---------------------------------------"
 
-# Verificar si hay errores en los logs
+# Verificar logs de errores
 if [ -f "storage/logs/laravel.log" ]; then
-    echo "🔍 Últimos errores en el log:"
-    tail -10 storage/logs/laravel.log | grep -i "error\|exception\|419" || echo "No se encontraron errores recientes"
+    echo "🔍 Últimos errores relacionados con CSRF:"
+    tail -20 storage/logs/laravel.log | grep -i "csrf\|419\|token" || echo "No se encontraron errores relacionados con CSRF"
 else
     echo "📝 Archivo de log no encontrado"
 fi
 
 echo ""
+echo "📋 Paso 10: Crear script de prueba..."
+echo "------------------------------------"
+
+# Crear script de prueba para verificar CSRF
+cat > test-csrf.php << 'EOF'
+<?php
+// Script de prueba para verificar CSRF token
+require_once 'vendor/autoload.php';
+
+$app = require_once 'bootstrap/app.php';
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+
+echo "=== Prueba de CSRF Token ===\n";
+echo "CSRF Token generado: " . csrf_token() . "\n";
+echo "Longitud del token: " . strlen(csrf_token()) . "\n";
+echo "Session ID: " . session()->getId() . "\n";
+echo "Session Driver: " . config('session.driver') . "\n";
+echo "Session Path: " . config('session.path') . "\n";
+echo "Session Domain: " . config('session.domain') . "\n";
+echo "APP URL: " . config('app.url') . "\n";
+echo "===========================\n";
+EOF
+
+echo "✅ Script de prueba creado: test-csrf.php"
+
+echo ""
+echo "📋 Paso 11: Ejecutar prueba de CSRF..."
+echo "-------------------------------------"
+
+# Ejecutar prueba de CSRF
+echo "🔍 Ejecutando prueba de CSRF..."
+php test-csrf.php
+
+echo ""
 echo "🎯 Resumen de la solución:"
 echo "=========================="
-echo "✅ Tabla de sesiones creada/verificada"
+echo "✅ Tabla de sesiones verificada"
 echo "✅ Cache limpiado"
-echo "✅ Configuración optimizada"
-echo "✅ Archivo de configuración recomendada creado"
+echo "✅ Configuración de middleware verificada"
+echo "✅ Archivo de configuración específica creado"
+echo "✅ Script de prueba creado"
 echo ""
 echo "📝 Próximos pasos:"
-echo "1. Copia la configuración de configuracion-sesiones-recomendada.env a tu .env"
-echo "2. Reinicia el servidor web si es necesario"
-echo "3. Prueba el login nuevamente"
-echo "4. Si el problema persiste, revisa los logs en storage/logs/laravel.log"
+echo "1. Copia la configuración de configuracion-auth-csrf.env a tu .env"
+echo "2. Reinicia el servidor web"
+echo "3. Prueba el login/register nuevamente"
+echo "4. Si el problema persiste, ejecuta: php test-csrf.php"
+echo "5. Revisa los logs en storage/logs/laravel.log"
 echo ""
 echo "🔧 Script completado exitosamente." 
