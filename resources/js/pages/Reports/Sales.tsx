@@ -2,11 +2,11 @@ import { Head, Link, router } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
 import { useState } from 'react';
-import { 
-    BarChart3, 
-    Download, 
-    TrendingUp, 
-    ShoppingCart, 
+import {
+    BarChart3,
+    Download,
+    TrendingUp,
+    ShoppingCart,
     DollarSign,
     ArrowLeft,
     Filter
@@ -14,6 +14,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+
+// Helper function to generate correct URLs for production
+const getAppUrl = (path: string) => {
+    const appUrl = import.meta.env.PROD 
+        ? '/inf513/grupo21sc/Drinks-Ecommerce/public' 
+        : '';
+    return appUrl + path;
+};
 
 interface Sale {
     id: number;
@@ -49,6 +57,7 @@ interface CategorySale {
 interface Filters {
     start_date: string;
     end_date: string;
+    [key: string]: string; // Add index signature for TypeScript compatibility
 }
 
 interface SalesReportProps {
@@ -58,11 +67,11 @@ interface SalesReportProps {
     filters: Filters;
 }
 
-export default function SalesReport({ 
-    sales, 
-    salesStats, 
-    salesByCategory, 
-    filters 
+export default function SalesReport({
+    sales,
+    salesStats,
+    salesByCategory,
+    filters
 }: SalesReportProps) {
     const { settings } = useAppMode();
     const [localFilters, setLocalFilters] = useState(filters);
@@ -87,7 +96,7 @@ export default function SalesReport({
     };
 
     const applyFilters = () => {
-        router.get('/reports/sales', localFilters, {
+        router.get(getAppUrl('/reports/sales'), localFilters, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -101,15 +110,15 @@ export default function SalesReport({
             end_date: today.toISOString().split('T')[0],
         };
         setLocalFilters(resetFilters);
-        router.get('/reports/sales', resetFilters, {
+        router.get(getAppUrl('/reports/sales'), resetFilters, {
             preserveState: true,
             preserveScroll: true,
         });
     };
 
     const downloadPDF = () => {
-        const params = new URLSearchParams(localFilters);
-        window.open(`/reports/sales/pdf?${params.toString()}`, '_blank');
+        const params = new URLSearchParams(localFilters as Record<string, string>);
+        window.open(`${getAppUrl('/reports/sales/pdf')}?${params.toString()}`, '_blank');
     };
 
     const formatDate = (dateString: string) => {
@@ -122,10 +131,10 @@ export default function SalesReport({
             pendiente: { label: 'Pendiente', variant: 'secondary' as const },
             cancelada: { label: 'Cancelada', variant: 'destructive' as const },
         };
-        
-        const statusInfo = statusMap[status as keyof typeof statusMap] || 
-                          { label: status, variant: 'secondary' as const };
-        
+
+        const statusInfo = statusMap[status as keyof typeof statusMap] ||
+            { label: status, variant: 'secondary' as const };
+
         return (
             <Badge variant={statusInfo.variant}>
                 {statusInfo.label}
@@ -146,7 +155,7 @@ export default function SalesReport({
                 jóvenes: 'Reportes de Ventas',
                 adultos: 'Reportes de Ventas'
             })} />
-            
+
             <div className={`space-y-6 ${getModeClasses()}`}>
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -318,8 +327,8 @@ export default function SalesReport({
                                     </div>
                                     <div className="mt-2">
                                         <div className="text-sm text-gray-500">
-                                            {salesStats.total_sales > 0 ? 
-                                                ((category.total / salesStats.total_sales) * 100).toFixed(1) 
+                                            {salesStats.total_sales > 0 ?
+                                                ((category.total / salesStats.total_sales) * 100).toFixed(1)
                                                 : 0}% del total
                                         </div>
                                     </div>
@@ -340,7 +349,7 @@ export default function SalesReport({
                             })}
                         </h3>
                     </div>
-                    
+
                     {sales.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

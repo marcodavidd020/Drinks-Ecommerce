@@ -30,7 +30,7 @@ class ReportController extends Controller
     {
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        
+
         $sales = NotaVenta::with(['cliente', 'detalles.productoAlmacen.producto'])
             ->whereBetween('fecha', [$startDate, $endDate])
             ->orderBy('fecha', 'desc')
@@ -55,7 +55,7 @@ class ReportController extends Controller
     public function inventory(Request $request)
     {
         $lowStockThreshold = $request->input('low_stock_threshold', 10);
-        
+
         $inventory = ProductoAlmacen::with(['producto.categoria', 'almacen'])
             ->join('producto', 'producto_almacen.producto_id', '=', 'producto.id')
             ->select('producto_almacen.*', 'producto.nombre as producto_nombre', 'producto.precio_venta')
@@ -83,38 +83,38 @@ class ReportController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         $clients = Cliente::with(['user'])
-        ->withCount(['notasVenta as numero_compras' => function($query) use ($startDate, $endDate) {
-            $query->whereBetween('fecha', [$startDate, $endDate]);
-        }])
-        ->withSum(['notasVenta as total_compras' => function($query) use ($startDate, $endDate) {
-            $query->whereBetween('fecha', [$startDate, $endDate]);
-        }], 'total')
-        ->addSelect([
-            'fecha_ultima_compra' => NotaVenta::select('fecha')
-                ->whereColumn('cliente_id', 'cliente.id')
-                ->whereBetween('fecha', [$startDate, $endDate])
-                ->orderBy('fecha', 'desc')
-                ->limit(1)
-        ])
-        ->get()
-        ->map(function($cliente) {
-            return [
-                'id' => $cliente->id,
-                'nombre' => $cliente->user->nombre ?? 'Sin nombre',
-                'email' => $cliente->user->email ?? 'Sin email',
-                'telefono' => $cliente->telefono ?? '',
-                'direccion' => $cliente->direccion ?? '',
-                'total_compras' => $cliente->total_compras ?? 0,
-                'numero_compras' => $cliente->numero_compras ?? 0,
-                'promedio_compra' => $cliente->numero_compras > 0 ? ($cliente->total_compras / $cliente->numero_compras) : 0,
-                'fecha_ultima_compra' => $cliente->fecha_ultima_compra ?? Carbon::now()->format('Y-m-d'),
-            ];
-        })
-        ->filter(function($cliente) {
-            return $cliente['numero_compras'] > 0;
-        })
-        ->sortByDesc('total_compras')
-        ->values();
+            ->withCount(['notasVenta as numero_compras' => function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('fecha', [$startDate, $endDate]);
+            }])
+            ->withSum(['notasVenta as total_compras' => function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('fecha', [$startDate, $endDate]);
+            }], 'total')
+            ->addSelect([
+                'fecha_ultima_compra' => NotaVenta::select('fecha')
+                    ->whereColumn('cliente_id', 'cliente.id')
+                    ->whereBetween('fecha', [$startDate, $endDate])
+                    ->orderBy('fecha', 'desc')
+                    ->limit(1)
+            ])
+            ->get()
+            ->map(function ($cliente) {
+                return [
+                    'id' => $cliente->id,
+                    'nombre' => $cliente->user->nombre ?? 'Sin nombre',
+                    'email' => $cliente->user->email ?? 'Sin email',
+                    'telefono' => $cliente->telefono ?? '',
+                    'direccion' => $cliente->direccion ?? '',
+                    'total_compras' => $cliente->total_compras ?? 0,
+                    'numero_compras' => $cliente->numero_compras ?? 0,
+                    'promedio_compra' => $cliente->numero_compras > 0 ? ($cliente->total_compras / $cliente->numero_compras) : 0,
+                    'fecha_ultima_compra' => $cliente->fecha_ultima_compra ?? Carbon::now()->format('Y-m-d'),
+                ];
+            })
+            ->filter(function ($cliente) {
+                return $cliente['numero_compras'] > 0;
+            })
+            ->sortByDesc('total_compras')
+            ->values();
 
         return Inertia::render('Reports/Clients', [
             'clientes' => $clients,
@@ -155,7 +155,7 @@ class ReportController extends Controller
     {
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        
+
         $sales = NotaVenta::with(['cliente', 'detalles.productoAlmacen.producto'])
             ->whereBetween('fecha', [$startDate, $endDate])
             ->orderBy('fecha', 'desc')
@@ -165,14 +165,14 @@ class ReportController extends Controller
         $salesByCategory = $this->getSalesByCategory($startDate, $endDate);
 
         $pdf = Pdf::loadView('reports.sales', compact('sales', 'salesStats', 'salesByCategory', 'startDate', 'endDate'));
-        
+
         return $pdf->download('reporte-ventas-' . $startDate . '-' . $endDate . '.pdf');
     }
 
     public function downloadInventoryPdf(Request $request)
     {
         $lowStockThreshold = $request->input('low_stock_threshold', 10);
-        
+
         $inventory = ProductoAlmacen::with(['producto.categoria', 'almacen'])
             ->join('producto', 'producto_almacen.producto_id', '=', 'producto.id')
             ->select('producto_almacen.*', 'producto.nombre as producto_nombre', 'producto.precio_venta')
@@ -184,7 +184,7 @@ class ReportController extends Controller
         $lowStockProducts = $inventory->where('stock', '<=', $lowStockThreshold);
 
         $pdf = Pdf::loadView('reports.inventory', compact('inventory', 'inventoryStats', 'stockByCategory', 'lowStockProducts', 'lowStockThreshold'));
-        
+
         return $pdf->download('reporte-inventario-' . Carbon::now()->format('Y-m-d') . '.pdf');
     }
 
@@ -193,22 +193,22 @@ class ReportController extends Controller
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
-        $clients = Cliente::with(['user', 'notasVenta' => function($query) use ($startDate, $endDate) {
+        $clients = Cliente::with(['user', 'notasVenta' => function ($query) use ($startDate, $endDate) {
             $query->whereBetween('fecha', [$startDate, $endDate]);
         }])
-        ->withCount(['notasVenta as total_compras' => function($query) use ($startDate, $endDate) {
-            $query->whereBetween('fecha', [$startDate, $endDate]);
-        }])
-        ->withSum(['notasVenta as total_gastado' => function($query) use ($startDate, $endDate) {
-            $query->whereBetween('fecha', [$startDate, $endDate]);
-        }], 'total')
-        ->orderBy('total_gastado', 'desc')
-        ->get();
+            ->withCount(['notasVenta as total_compras' => function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('fecha', [$startDate, $endDate]);
+            }])
+            ->withSum(['notasVenta as total_gastado' => function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('fecha', [$startDate, $endDate]);
+            }], 'total')
+            ->orderBy('total_gastado', 'desc')
+            ->get();
 
         $clientStats = $this->getClientStats($startDate, $endDate);
 
         $pdf = Pdf::loadView('reports.clients', compact('clients', 'clientStats', 'startDate', 'endDate'));
-        
+
         return $pdf->download('reporte-clientes-' . $startDate . '-' . $endDate . '.pdf');
     }
 
@@ -226,7 +226,7 @@ class ReportController extends Controller
         $purchasesByCategory = $this->getPurchasesByCategory($startDate, $endDate);
 
         $pdf = Pdf::loadView('reports.purchases', compact('purchases', 'purchaseStats', 'purchasesByCategory', 'startDate', 'endDate'));
-        
+
         return $pdf->download('reporte-compras-' . $startDate . '-' . $endDate . '.pdf');
     }
 
@@ -313,7 +313,7 @@ class ReportController extends Controller
     private function getClientStats($startDate, $endDate)
     {
         $totalClients = Cliente::count();
-        $activeClients = Cliente::whereHas('notasVenta', function($query) use ($startDate, $endDate) {
+        $activeClients = Cliente::whereHas('notasVenta', function ($query) use ($startDate, $endDate) {
             $query->whereBetween('fecha', [$startDate, $endDate]);
         })->count();
         $newClients = Cliente::whereBetween('created_at', [$startDate, $endDate])->count();
@@ -351,4 +351,4 @@ class ReportController extends Controller
             ->orderBy('total', 'desc')
             ->get();
     }
-} 
+}

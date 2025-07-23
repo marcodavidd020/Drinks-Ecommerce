@@ -8,6 +8,14 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import { formatCurrency } from '@/lib/currency';
 
+// Helper function to generate correct URLs for production
+const getAppUrl = (path: string) => {
+    const appUrl = import.meta.env.PROD 
+        ? '/inf513/grupo21sc/Drinks-Ecommerce/public' 
+        : '';
+    return appUrl + path;
+};
+
 interface Proveedor {
   id: number;
   nombre: string;
@@ -79,7 +87,7 @@ export default function Purchases({
     if (filters.startDate) params.append('start_date', filters.startDate);
     if (filters.endDate) params.append('end_date', filters.endDate);
     
-    window.location.href = `/reports/purchases?${params.toString()}`;
+    window.location.href = `${getAppUrl('/reports/purchases')}?${params.toString()}`;
   };
 
   const downloadPDF = () => {
@@ -87,7 +95,7 @@ export default function Purchases({
     if (filters.startDate) params.append('start_date', filters.startDate);
     if (filters.endDate) params.append('end_date', filters.endDate);
     
-    window.open(`/reports/purchases/pdf?${params.toString()}`, '_blank');
+    window.open(`${getAppUrl('/reports/purchases/pdf')}?${params.toString()}`, '_blank');
   };
 
   const formatDate = (dateString: string) => {

@@ -1,7 +1,23 @@
 import { Head, Link } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
-import { BarChart3, Package, Users, ShoppingCart, TrendingUp, Download, Eye } from 'lucide-react';
+import {
+    BarChart3,
+    Package,
+    Users,
+    ShoppingCart,
+    Download,
+    ArrowRight
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+// Helper function to generate correct URLs for production
+const getAppUrl = (path: string) => {
+    const appUrl = import.meta.env.PROD 
+        ? '/inf513/grupo21sc/Drinks-Ecommerce/public' 
+        : '';
+    return appUrl + path;
+};
 
 interface Stats {
     total_sales: number;
@@ -36,7 +52,7 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
     const reports = [
         {
             title: getTextByMode({
-                niños: '💰 Reportes de Ventas Geniales',
+                niños: '💰 Ventas de Bebidas',
                 jóvenes: '💰 Reportes de Ventas',
                 adultos: 'Reportes de Ventas'
             }),
@@ -49,8 +65,8 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
             color: 'from-blue-500 to-blue-600',
             bgColor: 'bg-blue-50 dark:bg-blue-900/20',
             borderColor: 'border-blue-200 dark:border-blue-800',
-            viewHref: '/reports/sales',
-            pdfHref: '/reports/sales/pdf',
+            viewHref: getAppUrl('/reports/sales'),
+            pdfHref: getAppUrl('/reports/sales/pdf'),
             stats: `$${stats.total_sales.toLocaleString()}`,
             statsLabel: getTextByMode({
                 niños: 'Total de Ventas',
@@ -73,8 +89,8 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
             color: 'from-green-500 to-green-600',
             bgColor: 'bg-green-50 dark:bg-green-900/20',
             borderColor: 'border-green-200 dark:border-green-800',
-            viewHref: '/reports/inventory',
-            pdfHref: '/reports/inventory/pdf',
+            viewHref: getAppUrl('/reports/inventory'),
+            pdfHref: getAppUrl('/reports/inventory/pdf'),
             stats: stats.total_products.toLocaleString(),
             statsLabel: getTextByMode({
                 niños: 'Productos',
@@ -98,8 +114,8 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
             color: 'from-purple-500 to-purple-600',
             bgColor: 'bg-purple-50 dark:bg-purple-900/20',
             borderColor: 'border-purple-200 dark:border-purple-800',
-            viewHref: '/reports/clients',
-            pdfHref: '/reports/clients/pdf',
+            viewHref: getAppUrl('/reports/clients'),
+            pdfHref: getAppUrl('/reports/clients/pdf'),
             stats: stats.total_clients.toLocaleString(),
             statsLabel: getTextByMode({
                 niños: 'Clientes',
@@ -122,8 +138,8 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
             color: 'from-red-500 to-red-600',
             bgColor: 'bg-red-50 dark:bg-red-900/20',
             borderColor: 'border-red-200 dark:border-red-800',
-            viewHref: '/reports/purchases',
-            pdfHref: '/reports/purchases/pdf',
+            viewHref: getAppUrl('/reports/purchases'),
+            pdfHref: getAppUrl('/reports/purchases/pdf'),
             stats: `$${stats.total_purchases.toLocaleString()}`,
             statsLabel: getTextByMode({
                 niños: 'Total Compras',

@@ -16,6 +16,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
+// Helper function to generate correct URLs for production
+const getAppUrl = (path: string) => {
+    const appUrl = import.meta.env.PROD 
+        ? '/inf513/grupo21sc/Drinks-Ecommerce/public' 
+        : '';
+    return appUrl + path;
+};
+
 interface InventoryItem {
     id: number;
     stock: number;
@@ -88,7 +96,7 @@ export default function InventoryReport({
         const params = {
             low_stock_threshold: localFilters.low_stock_threshold
         };
-        router.get('/reports/inventory', params, {
+        router.get(getAppUrl('/reports/inventory'), params, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -97,7 +105,7 @@ export default function InventoryReport({
     const resetFilters = () => {
         const resetFilters = { low_stock_threshold: 10 };
         setLocalFilters(resetFilters);
-        router.get('/reports/inventory', resetFilters, {
+        router.get(getAppUrl('/reports/inventory'), resetFilters, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -107,7 +115,7 @@ export default function InventoryReport({
         const params = new URLSearchParams({
             low_stock_threshold: localFilters.low_stock_threshold.toString()
         });
-        window.open(`/reports/inventory/pdf?${params.toString()}`, '_blank');
+        window.open(`${getAppUrl('/reports/inventory/pdf')}?${params.toString()}`, '_blank');
     };
 
     const getStockBadge = (stock: number, threshold: number) => {
@@ -155,7 +163,7 @@ export default function InventoryReport({
                     <div>
                         <div className="flex items-center space-x-3 mb-2">
                             <Link
-                                href="/reports"
+                                href={getAppUrl('/reports')}
                                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                             >
                                 <ArrowLeft className="h-5 w-5" />
