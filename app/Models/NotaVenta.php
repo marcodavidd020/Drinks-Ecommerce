@@ -57,7 +57,8 @@ class NotaVenta extends Model
      */
     public function calcularTotal(): float
     {
-        return $this->detalles()->sum('total');
+        $total = $this->detalles()->sum('total');
+        return $total ? (float) $total : 0.0;
     }
 
     /**
@@ -73,7 +74,8 @@ class NotaVenta extends Model
      */
     public function getTotalProductosAttribute(): int
     {
-        return $this->detalles()->sum('cantidad');
+        $total = $this->detalles()->sum('cantidad');
+        return $total ? (int) $total : 0;
     }
 
     /**

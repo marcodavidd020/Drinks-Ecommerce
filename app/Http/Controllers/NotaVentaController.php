@@ -291,6 +291,162 @@ class NotaVentaController extends Controller
     }
 
     /**
+     * Mostrar formulario para editar una nota de venta.
+     */
+    public function edit(NotaVenta $venta)
+    {
+        // Verificar que la venta esté en estado pendiente
+        if ($venta->estado !== 'pendiente') {
+            return redirect()->route('ventas.show', $venta->id)
+                ->with('error', 'Solo se pueden editar ventas en estado pendiente.');
+        }
+
+        // Cargar las relaciones necesarias
+        $venta->load(['detalles.productoAlmacen.producto.categoria', 'cliente.user']);
+        
+        // Obtener productos con stock disponible
+        $productos = Producto::with(['categoria'])
+            ->whereHas('productoAlmacenes', function ($query) {
+                $query->where('stock', '>', 0);
+            })
+            ->get()
+            ->map(function ($producto) {
+                // Calcular stock total disponible entre todos los almacenes
+                $stockTotal = $producto->productoAlmacenes->sum('stock');
+                
+                return [
+                    'id' => $producto->id,
+                    'nombre' => $producto->nombre,
+                    'cod_producto' => $producto->cod_producto,
+                    'precio_venta' => $producto->precio_venta,
+                    'stock_disponible' => $stockTotal,
+                    'categoria' => $producto->categoria ? [
+                        'id' => $producto->categoria->id,
+                        'nombre' => $producto->categoria->nombre,
+                    ] : null,
+                ];
+            });
+
+        // Obtener clientes disponibles
+        $clientes = \App\Models\Cliente::with('user')
+            ->get()
+            ->map(function ($cliente) {
+                return [
+                    'id' => $cliente->id,
+                    'nombre' => $cliente->user->nombre,
+                    'email' => $cliente->user->email,
+                    'nit' => $cliente->nit,
+                ];
+            });
+
+        // Transformar datos de la venta para la vista
+        $detalles = $venta->detalles->map(function ($detalle) {
+            return [
+                'id' => $detalle->id,
+                'producto_id' => $detalle->productoAlmacen->producto->id,
+                'producto' => [
+                    'id' => $detalle->productoAlmacen->producto->id,
+                    'nombre' => $detalle->productoAlmacen->producto->nombre,
+                    'cod_producto' => $detalle->productoAlmacen->producto->cod_producto,
+                    'precio_venta' => $detalle->productoAlmacen->producto->precio_venta,
+                    'categoria' => $detalle->productoAlmacen->producto->categoria ? [
+                        'id' => $detalle->productoAlmacen->producto->categoria->id,
+                        'nombre' => $detalle->productoAlmacen->producto->categoria->nombre,
+                    ] : null,
+                ],
+                'cantidad' => $detalle->cantidad,
+                'total' => $detalle->total,
+            ];
+        });
+
+        $ventaData = [
+            'id' => $venta->id,
+            'cliente_id' => $venta->cliente_id,
+            'fecha' => $venta->fecha->format('Y-m-d'),
+            'estado' => $venta->estado,
+            'observaciones' => $venta->observaciones,
+            'total' => $venta->total,
+            'detalles' => $detalles,
+            'cliente' => [
+                'id' => $venta->cliente->id,
+                'nombre' => $venta->cliente->user->nombre,
+                'email' => $venta->cliente->user->email,
+                'nit' => $venta->cliente->nit,
+            ],
+        ];
+
+        return Inertia::render('Ventas/Edit', [
+            'venta' => $ventaData,
+            'productos' => $productos,
+            'clientes' => $clientes,
+        ]);
+    }
+
+    /**
+     * Actualizar una nota de venta.
+     */
+    public function update(Request $request, NotaVenta $venta)
+    {
+        // Verificar que la venta esté en estado pendiente
+        if ($venta->estado !== 'pendiente') {
+            return redirect()->route('ventas.show', $venta->id)
+                ->with('error', 'Solo se pueden editar ventas en estado pendiente.');
+        }
+
+        // Validar datos de entrada
+        $validated = $request->validate([
+            'cliente_id' => 'required|exists:cliente,id',
+            'fecha' => 'required|date',
+            'observaciones' => 'nullable|string|max:500',
+            'detalles' => 'required|array|min:1',
+            'detalles.*.producto_id' => 'required|exists:producto,id',
+            'detalles.*.cantidad' => 'required|integer|min:1',
+            'detalles.*.total' => 'required|numeric|min:0',
+        ]);
+
+        // Iniciar transacción para garantizar integridad
+        return DB::transaction(function () use ($request, $venta, $validated) {
+            // Actualizar datos básicos de la venta
+            $venta->update([
+                'cliente_id' => $validated['cliente_id'],
+                'fecha' => $validated['fecha'],
+                'observaciones' => $validated['observaciones'],
+            ]);
+
+            // Eliminar detalles existentes
+            $venta->detalles()->delete();
+
+            // Crear nuevos detalles
+            $totalVenta = 0;
+            foreach ($validated['detalles'] as $detalle) {
+                // Obtener el producto almacén con stock disponible
+                $productoAlmacen = ProductoAlmacen::where('producto_id', $detalle['producto_id'])
+                    ->where('stock', '>=', $detalle['cantidad'])
+                    ->first();
+
+                if (!$productoAlmacen) {
+                    throw new \Exception("Stock insuficiente para el producto ID: {$detalle['producto_id']}");
+                }
+
+                // Crear el detalle
+                $venta->detalles()->create([
+                    'producto_almacen_id' => $productoAlmacen->id,
+                    'cantidad' => $detalle['cantidad'],
+                    'total' => $detalle['total'],
+                ]);
+
+                $totalVenta += $detalle['total'];
+            }
+
+            // Actualizar el total de la venta
+            $venta->update(['total' => $totalVenta]);
+
+            return redirect()->route('ventas.show', $venta->id)
+                ->with('success', 'Venta actualizada correctamente.');
+        });
+    }
+
+    /**
      * Actualizar el estado de una nota de venta.
      */
     public function updateEstado(Request $request, NotaVenta $venta)

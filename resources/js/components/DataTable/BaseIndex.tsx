@@ -309,7 +309,7 @@ export default function BaseIndex<T extends BaseEntity>({
     const tableActions = [
         ...actions.map(action => ({
             type: action.href ? (action.href.toString().includes('edit') ? 'edit' as const : 'view' as const) : ('custom' as const),
-            href: action.href ? (typeof action.href === 'function' ? `/${routeName}/:id` : action.href) : undefined,
+            href: action.href ? (typeof action.href === 'function' ? action.href : action.href) : undefined,
             onClick: action.onClick,
             icon: action.icon,
             title: getTextByMode(action.label),

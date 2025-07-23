@@ -189,6 +189,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/ventas/create', [NotaVentaController::class, 'create'])->name('ventas.create');
         Route::post('/ventas', [NotaVentaController::class, 'store'])->name('ventas.store');
         Route::get('/ventas/{venta}', [NotaVentaController::class, 'show'])->name('ventas.show');
+        Route::get('/ventas/{venta}/edit', [NotaVentaController::class, 'edit'])->name('ventas.edit');
+        Route::put('/ventas/{venta}', [NotaVentaController::class, 'update'])->name('ventas.update');
         Route::post('/ventas/{venta}/estado', [NotaVentaController::class, 'updateEstado'])->name('ventas.update-estado');
     });
 

@@ -10,7 +10,7 @@ interface Column {
 
 interface Action {
     type: 'view' | 'edit' | 'delete' | 'toggle' | 'custom';
-    href?: string;
+    href?: string | ((item: Record<string, unknown>) => string);
     onClick?: (item: Record<string, unknown>) => void;
     icon: string;
     title: string;
@@ -64,16 +64,18 @@ export default function DataTable({ data, columns, actions, emptyState, getItemK
         const baseClasses = action.className || 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300';
 
         if (action.type === 'view') {
+            const href = typeof action.href === 'function' ? action.href(item) : action.href?.replace(':id', String(item.id)) || '';
             return (
-                <Link key={index} href={action.href?.replace(':id', String(item.id)) || ''} className={baseClasses} title={action.title}>
+                <Link key={index} href={href} className={baseClasses} title={action.title}>
                     {action.icon}
                 </Link>
             );
         }
 
         if (action.type === 'edit') {
+            const href = typeof action.href === 'function' ? action.href(item) : action.href?.replace(':id', String(item.id)) || '';
             return (
-                <Link key={index} href={action.href?.replace(':id', String(item.id)) || ''} className={baseClasses} title={action.title}>
+                <Link key={index} href={href} className={baseClasses} title={action.title}>
                     {action.icon}
                 </Link>
             );
