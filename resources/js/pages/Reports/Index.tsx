@@ -7,7 +7,9 @@ import {
     Users,
     ShoppingCart,
     Download,
-    ArrowRight
+    ArrowRight,
+    TrendingUp,
+    Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
