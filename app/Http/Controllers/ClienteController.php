@@ -63,8 +63,8 @@ class ClienteController extends Controller
                 'celular' => $cliente->user->celular,
                 'estado' => $cliente->user->estado ?? 'inactivo',
                 'ventas_count' => $cliente->carritos_count ?? 0,
-                'created_at' => $cliente->created_at->toISOString(),
-                'updated_at' => $cliente->updated_at->toISOString(),
+                'created_at' => $cliente->created_at ? $cliente->created_at->toISOString() : null,
+                'updated_at' => $cliente->updated_at ? $cliente->updated_at->toISOString() : null,
                 'nit' => $cliente->nit,
                 // Mantener las relaciones por si las necesitamos
                 'user' => $cliente->user,

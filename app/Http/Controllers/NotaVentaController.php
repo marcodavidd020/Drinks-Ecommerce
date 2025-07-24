@@ -281,8 +281,8 @@ class NotaVentaController extends Controller
                 'nit' => $venta->cliente->nit,
             ],
             'detalles' => $detalles,
-            'created_at' => $venta->created_at->toISOString(),
-            'updated_at' => $venta->updated_at->toISOString(),
+            'created_at' => $venta->created_at ? $venta->created_at->toISOString() : null,
+            'updated_at' => $venta->updated_at ? $venta->updated_at->toISOString() : null,
         ];
         
         return Inertia::render('Ventas/Show', [

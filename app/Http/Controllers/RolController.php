@@ -45,8 +45,8 @@ class RolController extends Controller
                 'description' => $role->description,
                 'permissions_count' => $role->permissions_count ?? 0,
                 'users_count' => $role->users_count ?? 0,
-                'created_at' => $role->created_at->toISOString(),
-                'updated_at' => $role->updated_at->toISOString(),
+                'created_at' => $role->created_at ? $role->created_at->toISOString() : null,
+                'updated_at' => $role->updated_at ? $role->updated_at->toISOString() : null,
                 'is_system_role' => $role->is_system,
             ];
         });
@@ -135,8 +135,8 @@ class RolController extends Controller
                 'nombre' => $role->name, // Mapear para consistencia
                 'name' => $role->name,
                 'guard_name' => $role->guard_name,
-                'created_at' => $role->created_at->toISOString(),
-                'updated_at' => $role->updated_at->toISOString(),
+                'created_at' => $role->created_at ? $role->created_at->toISOString() : null,
+                'updated_at' => $role->updated_at ? $role->updated_at->toISOString() : null,
                 'users_count' => $role->users->count(),
                 'permissions' => $role->permissions->map(function ($permission) {
                     return [

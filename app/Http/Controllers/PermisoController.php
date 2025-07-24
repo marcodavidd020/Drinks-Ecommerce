@@ -43,8 +43,8 @@ class PermisoController extends Controller
                 'nombre' => $permission->name, // Mapear name a nombre para consistencia
                 'name' => $permission->name,
                 'roles_count' => $permission->roles_count ?? 0,
-                'created_at' => $permission->created_at->toISOString(),
-                'updated_at' => $permission->updated_at->toISOString(),
+                'created_at' => $permission->created_at ? $permission->created_at->toISOString() : null,
+                'updated_at' => $permission->updated_at ? $permission->updated_at->toISOString() : null,
                 'guard_name' => $permission->guard_name,
                 'category' => $this->getPermissionCategory($permission->name),
                 'is_system_permission' => $this->isSystemPermission($permission->name),
@@ -105,8 +105,8 @@ class PermisoController extends Controller
                 'nombre' => $permission->name, // Mapear para consistencia
                 'name' => $permission->name,
                 'guard_name' => $permission->guard_name,
-                'created_at' => $permission->created_at->toISOString(),
-                'updated_at' => $permission->updated_at->toISOString(),
+                'created_at' => $permission->created_at ? $permission->created_at->toISOString() : null,
+                'updated_at' => $permission->updated_at ? $permission->updated_at->toISOString() : null,
                 'category' => $this->getPermissionCategory($permission->name),
                 'is_system_permission' => $this->isSystemPermission($permission->name),
                 'roles' => $permission->roles->map(function ($role) {
