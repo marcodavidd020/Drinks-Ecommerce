@@ -7,6 +7,21 @@ import { Download, Calendar, TrendingUp, Package, DollarSign } from 'lucide-reac
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import { formatCurrency } from '@/lib/currency';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+);
 
 // Helper function to generate correct URLs for production
 const getAppUrl = (path: string) => {
@@ -76,7 +91,7 @@ export default function Purchases({
     endDate: endDate || ''
   });
 
-  const { getTextByMode } = useAppModeText();
+  const { getTextByMode, getModeClasses } = useAppModeText();
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -106,26 +121,160 @@ export default function Purchases({
     });
   };
 
+  // Preparar datos para las gráficas
+  const categoryChartData = {
+    labels: purchasesByCategory.map(cat => cat.categoria),
+    datasets: [
+      {
+        label: getTextByMode({
+          niños: 'Compras por Categoría',
+          jóvenes: 'Compras por Categoría',
+          adultos: 'Compras por Categoría'
+        }),
+        data: purchasesByCategory.map(cat => parseFloat(cat.total)),
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)',
+          'rgba(139, 92, 246, 0.8)',
+          'rgba(236, 72, 153, 0.8)',
+        ],
+        borderColor: [
+          'rgba(59, 130, 246, 1)',
+          'rgba(16, 185, 129, 1)',
+          'rgba(245, 158, 11, 1)',
+          'rgba(239, 68, 68, 1)',
+          'rgba(139, 92, 246, 1)',
+          'rgba(236, 72, 153, 1)',
+        ],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  // Gráfico de tendencias de compras por fecha
+  const purchasesByDate = notas.reduce((acc, nota) => {
+    const date = formatDate(nota.fecha);
+    acc[date] = (acc[date] || 0) + parseFloat(nota.total);
+    return acc;
+  }, {} as Record<string, number>);
+
+  const trendChartData = {
+    labels: Object.keys(purchasesByDate).slice(-10), // Últimas 10 fechas
+    datasets: [
+      {
+        label: getTextByMode({
+          niños: 'Tendencia de Compras',
+          jóvenes: 'Tendencia de Compras',
+          adultos: 'Tendencia de Compras'
+        }),
+        data: Object.values(purchasesByDate).slice(-10),
+        borderColor: 'rgba(16, 185, 129, 1)',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  // Gráfico de dona para distribución por proveedor
+  const purchasesByProvider = notas.reduce((acc, nota) => {
+    acc[nota.proveedor.nombre] = (acc[nota.proveedor.nombre] || 0) + parseFloat(nota.total);
+    return acc;
+  }, {} as Record<string, number>);
+
+  const providerChartData = {
+    labels: Object.keys(purchasesByProvider),
+    datasets: [
+      {
+        data: Object.values(purchasesByProvider),
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)',
+          'rgba(139, 92, 246, 0.8)',
+        ],
+        borderColor: [
+          'rgba(59, 130, 246, 1)',
+          'rgba(16, 185, 129, 1)',
+          'rgba(245, 158, 11, 1)',
+          'rgba(239, 68, 68, 1)',
+          'rgba(139, 92, 246, 1)',
+        ],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: '#374151', // Color fijo para mejor legibilidad
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: '#374151',
+        },
+        grid: {
+          color: '#e5e7eb',
+        },
+      },
+      x: {
+        ticks: {
+          color: '#374151',
+        },
+        grid: {
+          color: '#e5e7eb',
+        },
+      },
+    },
+  };
+
+  const lineChartOptions = {
+    ...chartOptions,
+    scales: {
+      ...chartOptions.scales,
+      y: {
+        ...chartOptions.scales.y,
+        ticks: {
+          ...chartOptions.scales.y.ticks,
+          callback: function(value: any) {
+            return '$' + value.toLocaleString();
+          }
+        }
+      }
+    }
+  };
+
   const title = getTextByMode({
-    niños: 'Reportes de Compras',
-    jóvenes: 'Reportes de Compras',
-    adultos: 'Reportes de Compras'
+    niños: '📦 Reporte de Compras',
+    jóvenes: '📦 Reporte de Compras',
+    adultos: 'Reporte de Compras'
   });
 
   return (
-    <DashboardLayout
-      title={title}
-    >
+    <DashboardLayout title={title}>
       <Head title={title} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{title}</h1>
-          <p className="text-muted-foreground">
+          <h1 className={`text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>{title}</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             {getTextByMode({
-              niños: 'Mira todas las compras que hemos hecho',
-              jóvenes: 'Revisa los reportes de compras del negocio',
-              adultos: 'Análisis detallado de compras y proveedores'
+              niños: '¡Mira cuántas bebidas hemos comprado!',
+              jóvenes: 'Análisis detallado de las compras',
+              adultos: 'Análisis detallado de las compras realizadas'
             })}
           </p>
         </div>
@@ -183,9 +332,9 @@ export default function Purchases({
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {getTextByMode({
-                  niños: 'Total gastado',
-                  jóvenes: 'Total en compras',
-                  adultos: 'Total invertido'
+                  niños: 'Total Gastado',
+                  jóvenes: 'Total Gastado',
+                  adultos: 'Total Gastado'
                 })}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -199,9 +348,9 @@ export default function Purchases({
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {getTextByMode({
-                  niños: 'Compras hechas',
-                  jóvenes: 'Número de compras',
-                  adultos: 'Órdenes de compra'
+                  niños: 'Compras Realizadas',
+                  jóvenes: 'Total de Compras',
+                  adultos: 'Total de Compras'
                 })}
               </CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
@@ -215,9 +364,9 @@ export default function Purchases({
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {getTextByMode({
-                  niños: 'Promedio por compra',
-                  jóvenes: 'Compra promedio',
-                  adultos: 'Ticket promedio'
+                  niños: 'Promedio por Compra',
+                  jóvenes: 'Promedio por Compra',
+                  adultos: 'Promedio por Compra'
                 })}
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -228,27 +377,110 @@ export default function Purchases({
           </Card>
         </div>
 
-        {/* Compras por categoría */}
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Gráfico de barras - Compras por categoría */}
+          <Card>
+            <CardHeader>
+              <CardTitle className={`flex items-center gap-2 ${getModeClasses()}`}>
+                📊 {getTextByMode({
+                  niños: 'Compras por Tipo de Bebida',
+                  jóvenes: 'Compras por Categoría',
+                  adultos: 'Compras por Categoría'
+                })}
+              </CardTitle>
+              <CardDescription>
+                Distribución de compras según categoría de productos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <Bar data={categoryChartData} options={chartOptions} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Gráfico de línea - Tendencia de compras */}
+          <Card>
+            <CardHeader>
+              <CardTitle className={`flex items-center gap-2 ${getModeClasses()}`}>
+                📈 {getTextByMode({
+                  niños: 'Tendencia de Compras',
+                  jóvenes: 'Tendencia de Compras',
+                  adultos: 'Tendencia de Compras'
+                })}
+              </CardTitle>
+              <CardDescription>
+                Evolución de las compras en el tiempo
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <Line data={trendChartData} options={lineChartOptions} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Gráfico de dona - Distribución por proveedor */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className={`flex items-center gap-2 ${getModeClasses()}`}>
+              🍩 {getTextByMode({
+                niños: 'Compras por Proveedor',
+                jóvenes: 'Distribución por Proveedor',
+                adultos: 'Distribución por Proveedor'
+              })}
+            </CardTitle>
+            <CardDescription>
+              Proporción de compras realizadas a cada proveedor
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-center">
+              <div className="w-80 h-80">
+                <Doughnut data={providerChartData} options={chartOptions} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Purchases by Category Cards */}
         {purchasesByCategory.length > 0 && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>
+              <CardTitle className={getModeClasses()}>
                 {getTextByMode({
-                  niños: 'Compras por tipo',
-                  jóvenes: 'Compras por categoría',
-                  adultos: 'Distribución por categoría'
+                  niños: '🏷️ Detalle por Tipo de Bebida',
+                  jóvenes: '🏷️ Detalle por Categoría',
+                  adultos: 'Detalle por Categoría'
                 })}
               </CardTitle>
+              <CardDescription>
+                {getTextByMode({
+                  niños: 'Lista de todas las bebidas que hemos comprado',
+                  jóvenes: 'Compras ordenadas por categoría de productos',
+                  adultos: 'Análisis de compras por categoría de productos'
+                })}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {purchasesByCategory.map((category, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="font-medium">{category.categoria}</div>
-                    <div className="text-right">
-                      <div className="font-bold">{formatCurrency(parseFloat(category.total))}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {(parseFloat(category.total) / parseFloat(totalAmount) * 100).toFixed(1)}%
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {category.categoria}
+                      </span>
+                      <span className="text-lg font-bold text-green-600">
+                        {formatCurrency(parseFloat(category.total))}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <div className="text-sm text-gray-500">
+                        {parseFloat(totalAmount) > 0 ?
+                          ((parseFloat(category.total) / parseFloat(totalAmount)) * 100).toFixed(1)
+                          : 0}% del total
                       </div>
                     </div>
                   </div>
@@ -258,69 +490,97 @@ export default function Purchases({
           </Card>
         )}
 
-        {/* Lista de compras */}
+        {/* Purchases Table */}
         <Card>
           <CardHeader>
-            <CardTitle>
+            <CardTitle className={getModeClasses()}>
               {getTextByMode({
-                niños: 'Lista de compras',
-                jóvenes: 'Historial de compras',
-                adultos: 'Detalle de compras'
+                niños: '📋 Lista de Todas las Compras',
+                jóvenes: '📋 Detalle de Compras',
+                adultos: 'Detalle de Compras'
               })}
             </CardTitle>
             <CardDescription>
               {getTextByMode({
-                niños: 'Todas las compras que hemos hecho',
-                jóvenes: 'Listado completo de compras realizadas',
-                adultos: 'Registro detallado de todas las órdenes de compra'
+                niños: 'Lista de todas las compras que hemos hecho',
+                jóvenes: 'Compras ordenadas por fecha',
+                adultos: 'Análisis detallado de todas las compras realizadas'
               })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {notas.map((nota) => (
+              {notas.map((nota, index) => (
                 <div key={nota.id} className="border rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <div className="font-semibold">Compra #{nota.id}</div>
-                      <div className="text-sm text-muted-foreground">{formatDate(nota.fecha)}</div>
-                      <div className="text-sm">
-                        <strong>Proveedor:</strong> {nota.proveedor.nombre}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                        <div className="font-semibold">{nota.proveedor.nombre}</div>
+                        <Badge variant="secondary">
+                          {nota.detalles.length} productos
+                        </Badge>
                       </div>
-                      {nota.proveedor.email && (
-                        <div className="text-sm text-muted-foreground">
-                          {nota.proveedor.email}
+                      <div className="text-sm text-muted-foreground mb-1">
+                        {nota.proveedor.email}
+                      </div>
+                      {nota.proveedor.telefono && (
+                        <div className="text-sm text-muted-foreground mb-1">
+                          {nota.proveedor.telefono}
+                        </div>
+                      )}
+                      <div className="text-sm text-muted-foreground">
+                        <strong>Fecha de compra:</strong> {formatDate(nota.fecha)}
+                      </div>
+                      {nota.observaciones && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          <strong>Observaciones:</strong> {nota.observaciones}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-lg">{formatCurrency(parseFloat(nota.total))}</div>
-                      <Badge variant="secondary">
+                      <div className="text-sm text-muted-foreground">
                         {nota.detalles.length} productos
-                      </Badge>
+                      </div>
                     </div>
                   </div>
                   
-                  {nota.observaciones && (
-                    <div className="mb-3 p-3 bg-muted rounded-md">
-                      <strong>Observaciones:</strong> {nota.observaciones}
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
-                    {nota.detalles.map((detalle) => (
-                      <div key={detalle.id} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                        <div className="flex-1">
-                          <div className="font-medium">{detalle.producto_almacen.producto.nombre}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {detalle.cantidad} x {formatCurrency(parseFloat(detalle.precio))}
-                          </div>
-                        </div>
-                        <div className="font-semibold">
-                          {formatCurrency(parseFloat(detalle.total))}
-                        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{nota.detalles.length}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {getTextByMode({
+                          niños: 'Productos',
+                          jóvenes: 'Productos',
+                          adultos: 'Productos'
+                        })}
                       </div>
-                    ))}
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {formatCurrency(parseFloat(nota.total) / nota.detalles.length)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {getTextByMode({
+                          niños: 'Promedio',
+                          jóvenes: 'Promedio por producto',
+                          adultos: 'Promedio por producto'
+                        })}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {formatCurrency(parseFloat(nota.total))}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {getTextByMode({
+                          niños: 'Total gastado',
+                          jóvenes: 'Valor total',
+                          adultos: 'Valor total'
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -331,7 +591,7 @@ export default function Purchases({
                 {getTextByMode({
                   niños: 'No hay compras para mostrar',
                   jóvenes: 'No se encontraron compras en este período',
-                  adultos: 'No hay órdenes de compra registradas para el período seleccionado'
+                  adultos: 'No hay datos de compras disponibles para el período seleccionado'
                 })}
               </div>
             )}

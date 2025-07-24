@@ -7,6 +7,21 @@ import { Download, Calendar, Users, DollarSign, ShoppingCart } from 'lucide-reac
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppModeText } from '@/hooks/useAppModeText';
 import { formatCurrency } from '@/lib/currency';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+);
 
 // Helper function to generate correct URLs for production
 const getAppUrl = (path: string) => {
@@ -50,7 +65,7 @@ export default function Clients({
     endDate: endDate || ''
   });
 
-  const { getTextByMode } = useAppModeText();
+  const { getTextByMode, getModeClasses } = useAppModeText();
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -90,10 +105,147 @@ export default function Clients({
 
   const getClientTypeColor = (type: string) => {
     switch (type) {
-      case 'VIP': return 'bg-purple-100 text-purple-800';
-      case 'Premium': return 'bg-blue-100 text-blue-800';
-      case 'Regular': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'VIP': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
+      case 'Premium': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+      case 'Regular': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  };
+
+  // Preparar datos para las gráficas
+  const clientTypes = clientes.reduce((acc, cliente) => {
+    const type = getClientType(cliente.numero_compras, cliente.total_compras);
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const clientTypeChartData = {
+    labels: Object.keys(clientTypes),
+    datasets: [
+      {
+        label: getTextByMode({
+          niños: 'Clientes por Tipo',
+          jóvenes: 'Clientes por Tipo',
+          adultos: 'Clientes por Tipo'
+        }),
+        data: Object.values(clientTypes),
+        backgroundColor: [
+          'rgba(139, 92, 246, 0.8)', // VIP - Purple
+          'rgba(59, 130, 246, 0.8)', // Premium - Blue
+          'rgba(16, 185, 129, 0.8)', // Regular - Green
+          'rgba(107, 114, 128, 0.8)', // Nuevo - Gray
+        ],
+        borderColor: [
+          'rgba(139, 92, 246, 1)',
+          'rgba(59, 130, 246, 1)',
+          'rgba(16, 185, 129, 1)',
+          'rgba(107, 114, 128, 1)',
+        ],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  // Gráfico de tendencias de compras por cliente
+  const topClients = clientes
+    .sort((a, b) => parseFloat(b.total_compras) - parseFloat(a.total_compras))
+    .slice(0, 10);
+
+  const topClientsChartData = {
+    labels: topClients.map(cliente => cliente.nombre.substring(0, 15) + '...'),
+    datasets: [
+      {
+        label: getTextByMode({
+          niños: 'Total de Compras por Cliente',
+          jóvenes: 'Total de Compras por Cliente',
+          adultos: 'Total de Compras por Cliente'
+        }),
+        data: topClients.map(cliente => parseFloat(cliente.total_compras)),
+        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  // Gráfico de dona para distribución de clientes activos vs inactivos
+  const clientesInactivos = totalClientes - clientesActivos;
+  const distributionChartData = {
+    labels: [
+      getTextByMode({
+        niños: 'Clientes Activos',
+        jóvenes: 'Clientes Activos',
+        adultos: 'Clientes Activos'
+      }),
+      getTextByMode({
+        niños: 'Clientes Inactivos',
+        jóvenes: 'Clientes Inactivos',
+        adultos: 'Clientes Inactivos'
+      }),
+    ],
+    datasets: [
+      {
+        data: [clientesActivos, clientesInactivos],
+        backgroundColor: [
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(239, 68, 68, 0.8)',
+        ],
+        borderColor: [
+          'rgba(16, 185, 129, 1)',
+          'rgba(239, 68, 68, 1)',
+        ],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: '#374151', // Color fijo para mejor legibilidad
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: '#374151',
+        },
+        grid: {
+          color: '#e5e7eb',
+        },
+      },
+      x: {
+        ticks: {
+          color: '#374151',
+        },
+        grid: {
+          color: '#e5e7eb',
+        },
+      },
+    },
+  };
+
+  const lineChartOptions = {
+    ...chartOptions,
+    scales: {
+      ...chartOptions.scales,
+      y: {
+        ...chartOptions.scales.y,
+        ticks: {
+          ...chartOptions.scales.y.ticks,
+          callback: function(value: any) {
+            return '$' + value.toLocaleString();
+          }
+        }
+      }
     }
   };
 
@@ -111,8 +263,8 @@ export default function Clients({
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{title}</h1>
-          <p className="text-muted-foreground">
+          <h1 className={`text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>{title}</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             {getTextByMode({
               niños: 'Conoce a nuestros clientes favoritos',
               jóvenes: 'Análisis de comportamiento de clientes',
@@ -222,10 +374,78 @@ export default function Clients({
           </Card>
         </div>
 
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Gráfico de barras - Clientes por tipo */}
+          <Card>
+            <CardHeader>
+              <CardTitle className={`flex items-center gap-2 ${getModeClasses()}`}>
+                📊 {getTextByMode({
+                  niños: 'Clientes por Tipo',
+                  jóvenes: 'Clientes por Tipo',
+                  adultos: 'Clientes por Tipo'
+                })}
+              </CardTitle>
+              <CardDescription>
+                Distribución de clientes según su nivel de compra
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <Bar data={clientTypeChartData} options={chartOptions} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Gráfico de línea - Top clientes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className={`flex items-center gap-2 ${getModeClasses()}`}>
+                📈 {getTextByMode({
+                  niños: 'Mejores Clientes',
+                  jóvenes: 'Top Clientes',
+                  adultos: 'Top Clientes'
+                })}
+              </CardTitle>
+              <CardDescription>
+                Los 10 clientes con mayor valor de compras
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <Line data={topClientsChartData} options={lineChartOptions} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Gráfico de dona - Distribución activos vs inactivos */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className={`flex items-center gap-2 ${getModeClasses()}`}>
+              🍩 {getTextByMode({
+                niños: 'Clientes Activos vs Inactivos',
+                jóvenes: 'Distribución de Clientes',
+                adultos: 'Distribución de Clientes'
+              })}
+            </CardTitle>
+            <CardDescription>
+              Proporción de clientes que han realizado compras
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-center">
+              <div className="w-80 h-80">
+                <Doughnut data={distributionChartData} options={chartOptions} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Lista de clientes */}
         <Card>
           <CardHeader>
-            <CardTitle>
+            <CardTitle className={getModeClasses()}>
               {getTextByMode({
                 niños: 'Nuestros clientes',
                 jóvenes: 'Ranking de clientes',

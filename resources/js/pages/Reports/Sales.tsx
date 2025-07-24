@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useAppMode } from '@/contexts/AppModeContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     BarChart3,
     Download,
@@ -14,6 +14,21 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+);
 
 // Helper function to generate correct URLs for production
 const getAppUrl = (path: string) => {
@@ -98,27 +113,21 @@ export default function SalesReport({
     const applyFilters = () => {
         router.get(getAppUrl('/reports/sales'), localFilters, {
             preserveState: true,
-            preserveScroll: true,
         });
     };
 
     const resetFilters = () => {
-        const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const resetFilters = {
-            start_date: firstDay.toISOString().split('T')[0],
-            end_date: today.toISOString().split('T')[0],
-        };
-        setLocalFilters(resetFilters);
-        router.get(getAppUrl('/reports/sales'), resetFilters, {
+        setLocalFilters({
+            start_date: '',
+            end_date: '',
+        });
+        router.get(getAppUrl('/reports/sales'), {}, {
             preserveState: true,
-            preserveScroll: true,
         });
     };
 
     const downloadPDF = () => {
-        const params = new URLSearchParams(localFilters as Record<string, string>);
-        window.open(`${getAppUrl('/reports/sales/pdf')}?${params.toString()}`, '_blank');
+        window.open(`${getAppUrl('/reports/sales/pdf')}?${new URLSearchParams(localFilters).toString()}`, '_blank');
     };
 
     const formatDate = (dateString: string) => {
@@ -126,76 +135,208 @@ export default function SalesReport({
     };
 
     const getStatusBadge = (status: string) => {
-        const statusMap = {
-            completada: { label: 'Completada', variant: 'default' as const },
-            pendiente: { label: 'Pendiente', variant: 'secondary' as const },
-            cancelada: { label: 'Cancelada', variant: 'destructive' as const },
+        const statusConfig = {
+            'pendiente': { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400', text: 'Pendiente' },
+            'completada': { color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400', text: 'Completada' },
+            'cancelada': { color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400', text: 'Cancelada' },
         };
-
-        const statusInfo = statusMap[status as keyof typeof statusMap] ||
-            { label: status, variant: 'secondary' as const };
-
-        return (
-            <Badge variant={statusInfo.variant}>
-                {statusInfo.label}
-            </Badge>
-        );
+        
+        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pendiente;
+        return <Badge className={config.color}>{config.text}</Badge>;
     };
 
-    return (
-        <DashboardLayout
-            title={getTextByMode({
-                niños: '💰 Reportes de Ventas Geniales',
-                jóvenes: '💰 Reportes de Ventas',
-                adultos: 'Reportes de Ventas'
-            })}
-        >
-            <Head title={getTextByMode({
-                niños: 'Ventas Geniales',
-                jóvenes: 'Reportes de Ventas',
-                adultos: 'Reportes de Ventas'
-            })} />
+    // Preparar datos para las gráficas
+    const categoryChartData = {
+        labels: salesByCategory.map(cat => cat.categoria),
+        datasets: [
+            {
+                label: getTextByMode({
+                    niños: 'Ventas por Categoría',
+                    jóvenes: 'Ventas por Categoría',
+                    adultos: 'Ventas por Categoría'
+                }),
+                data: salesByCategory.map(cat => cat.total),
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                ],
+                borderColor: [
+                    'rgba(59, 130, 246, 1)',
+                    'rgba(16, 185, 129, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(239, 68, 68, 1)',
+                    'rgba(139, 92, 246, 1)',
+                    'rgba(236, 72, 153, 1)',
+                ],
+                borderWidth: 2,
+            },
+        ],
+    };
 
-            <div className={`space-y-6 ${getModeClasses()}`}>
+    // Gráfico de tendencias de ventas por fecha
+    const salesByDate = sales.reduce((acc, sale) => {
+        const date = formatDate(sale.fecha);
+        acc[date] = (acc[date] || 0) + sale.total;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const trendChartData = {
+        labels: Object.keys(salesByDate).slice(-10), // Últimas 10 fechas
+        datasets: [
+            {
+                label: getTextByMode({
+                    niños: 'Tendencia de Ventas',
+                    jóvenes: 'Tendencia de Ventas',
+                    adultos: 'Tendencia de Ventas'
+                }),
+                data: Object.values(salesByDate).slice(-10),
+                borderColor: 'rgba(59, 130, 246, 1)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+            },
+        ],
+    };
+
+    // Gráfico de dona para distribución de estados
+    const salesByStatus = sales.reduce((acc, sale) => {
+        acc[sale.estado] = (acc[sale.estado] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const statusChartData = {
+        labels: Object.keys(salesByStatus).map(status => {
+            const statusMap = {
+                'pendiente': 'Pendiente',
+                'completada': 'Completada',
+                'cancelada': 'Cancelada'
+            };
+            return statusMap[status as keyof typeof statusMap] || status;
+        }),
+        datasets: [
+            {
+                data: Object.values(salesByStatus),
+                backgroundColor: [
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                ],
+                borderColor: [
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(16, 185, 129, 1)',
+                    'rgba(239, 68, 68, 1)',
+                ],
+                borderWidth: 2,
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top' as const,
+                labels: {
+                    color: settings.currentTheme === 'noche' ? '#f3f4f6' : '#374151',
+                },
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: settings.currentTheme === 'noche' ? '#f3f4f6' : '#374151',
+                },
+                grid: {
+                    color: settings.currentTheme === 'noche' ? '#374151' : '#e5e7eb',
+                },
+            },
+            x: {
+                ticks: {
+                    color: settings.currentTheme === 'noche' ? '#f3f4f6' : '#374151',
+                },
+                grid: {
+                    color: settings.currentTheme === 'noche' ? '#374151' : '#e5e7eb',
+                },
+            },
+        },
+    };
+
+    const lineChartOptions = {
+        ...chartOptions,
+        scales: {
+            ...chartOptions.scales,
+            y: {
+                ...chartOptions.scales.y,
+                ticks: {
+                    ...chartOptions.scales.y.ticks,
+                    callback: function(value: any) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    };
+
+    const title = getTextByMode({
+        niños: '📊 Reporte de Ventas',
+        jóvenes: '📊 Reporte de Ventas',
+        adultos: 'Reporte de Ventas'
+    });
+
+    return (
+        <DashboardLayout title={title}>
+            <Head title={title} />
+            
+            <div className="container mx-auto px-4 py-8">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <div className="flex items-center space-x-3 mb-2">
-                            <Link
-                                href="/reports"
-                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                <ArrowLeft className="h-5 w-5" />
-                            </Link>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                <div className="mb-8">
+                    <div className="flex items-center gap-4 mb-4">
+                        <Link href={getAppUrl('/reports')}>
+                            <Button variant="ghost" className="hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <ArrowLeft className="h-4 w-4 mr-2" />
                                 {getTextByMode({
-                                    niños: '💰 Reportes de Ventas Geniales',
-                                    jóvenes: '💰 Reportes de Ventas',
-                                    adultos: 'Reportes de Ventas'
+                                    niños: 'Volver a Reportes',
+                                    jóvenes: 'Volver a Reportes',
+                                    adultos: 'Volver a Reportes'
                                 })}
-                            </h1>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            {getTextByMode({
-                                niños: 'Ve todas las ventas súper geniales que hemos hecho',
-                                jóvenes: 'Análisis detallado de todas las ventas realizadas',
-                                adultos: 'Análisis detallado de ventas por período, categorías y rendimiento'
-                            })}
-                        </p>
+                            </Button>
+                        </Link>
                     </div>
-                    <Button onClick={downloadPDF} className="bg-red-600 hover:bg-red-700">
-                        <Download className="h-4 w-4 mr-2" />
-                        {getTextByMode({
-                            niños: 'Descargar PDF',
-                            jóvenes: 'Descargar PDF',
-                            adultos: 'Exportar PDF'
-                        })}
-                    </Button>
+                    
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className={`text-3xl font-bold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
+                                {title}
+                            </h1>
+                            <p className="text-gray-600 dark:text-gray-400 mt-2">
+                                {getTextByMode({
+                                    niños: '¡Mira cuántas bebidas hemos vendido!',
+                                    jóvenes: 'Análisis detallado de las ventas',
+                                    adultos: 'Análisis detallado de las ventas realizadas'
+                                })}
+                            </p>
+                        </div>
+                        <Button onClick={downloadPDF} className="bg-blue-600 hover:bg-blue-700">
+                            <Download className="h-4 w-4 mr-2" />
+                            {getTextByMode({
+                                niños: 'Descargar PDF',
+                                jóvenes: 'Descargar PDF',
+                                adultos: 'Descargar PDF'
+                            })}
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
-                    <div className="flex items-center space-x-2 mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 mb-6">
+                    <div className="flex items-center gap-2 mb-4">
                         <Filter className="h-5 w-5 text-gray-500" />
                         <h3 className="text-lg font-semibold">
                             {getTextByMode({
@@ -254,7 +395,7 @@ export default function SalesReport({
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
                         <div className="flex items-center justify-between">
                             <div>
@@ -304,14 +445,61 @@ export default function SalesReport({
                     </div>
                 </div>
 
-                {/* Sales by Category */}
-                {salesByCategory.length > 0 && (
+                {/* Charts Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Gráfico de barras - Ventas por categoría */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                        <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
                             {getTextByMode({
-                                niños: '🏷️ Ventas por Tipo de Bebida',
-                                jóvenes: '🏷️ Ventas por Categoría',
+                                niños: '📊 Ventas por Tipo de Bebida',
+                                jóvenes: '📊 Ventas por Categoría',
                                 adultos: 'Ventas por Categoría'
+                            })}
+                        </h3>
+                        <div className="h-80">
+                            <Bar data={categoryChartData} options={chartOptions} />
+                        </div>
+                    </div>
+
+                    {/* Gráfico de línea - Tendencia de ventas */}
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+                        <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '📈 Tendencia de Ventas',
+                                jóvenes: '📈 Tendencia de Ventas',
+                                adultos: 'Tendencia de Ventas'
+                            })}
+                        </h3>
+                        <div className="h-80">
+                            <Line data={trendChartData} options={lineChartOptions} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Gráfico de dona - Estados de ventas */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 mb-8">
+                    <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
+                        {getTextByMode({
+                            niños: '🍩 Estados de las Ventas',
+                            jóvenes: '🍩 Distribución por Estado',
+                            adultos: 'Distribución por Estado'
+                        })}
+                    </h3>
+                    <div className="flex justify-center">
+                        <div className="w-80 h-80">
+                            <Doughnut data={statusChartData} options={chartOptions} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sales by Category Cards */}
+                {salesByCategory.length > 0 && (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 mb-8">
+                        <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 ${getModeClasses()}`}>
+                            {getTextByMode({
+                                niños: '🏷️ Detalle por Tipo de Bebida',
+                                jóvenes: '🏷️ Detalle por Categoría',
+                                adultos: 'Detalle por Categoría'
                             })}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -341,7 +529,7 @@ export default function SalesReport({
                 {/* Sales Table */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 ${getModeClasses()}`}>
                             {getTextByMode({
                                 niños: '📋 Lista de Todas las Ventas',
                                 jóvenes: '📋 Detalle de Ventas',
