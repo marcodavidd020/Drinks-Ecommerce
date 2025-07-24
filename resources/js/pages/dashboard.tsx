@@ -244,12 +244,12 @@ export default function Dashboard({ stats, chartData, recentActivity, alerts }: 
                             jóvenes: '💰 Revenue',
                             adultos: 'Ingresos Totales'
                         })}
-                        value={new Intl.NumberFormat('es-CO', {
+                        value={new Intl.NumberFormat('es-BO', {
                             style: 'currency',
-                            currency: 'COP',
+                            currency: 'BOB',
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0
-                        }).format(stats.totalRevenue)}
+                        }).format(stats.totalRevenue).replace('BOB', 'Bs')}
                         subtitle={getTextByMode({
                             niños: `¡+${stats.growth.revenue}% más plata!`,
                             jóvenes: `+${stats.growth.revenue}% growth`,

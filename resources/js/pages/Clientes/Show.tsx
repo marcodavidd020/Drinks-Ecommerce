@@ -212,7 +212,7 @@ export default function ClienteShow({ cliente }: ClienteShowProps) {
                                             </p>
                                         </div>
                                         <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                                            <p className={`text-2xl font-bold text-green-600 dark:text-green-400 ${getModeClasses()}`}>$0</p>
+                                            <p className={`text-2xl font-bold text-green-600 dark:text-green-400 ${getModeClasses()}`}>Bs 0</p>
                                             <p className={`text-sm text-green-600 dark:text-green-400 ${getModeClasses()}`}>
                                                 {getTextByMode({
                                                     niños: 'Gastado',

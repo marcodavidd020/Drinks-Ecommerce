@@ -250,7 +250,7 @@ export default function Purchases({
         ticks: {
           ...chartOptions.scales.y.ticks,
           callback: function(value: any) {
-            return '$' + value.toLocaleString();
+            return 'Bs ' + value.toLocaleString();
           }
         }
       }

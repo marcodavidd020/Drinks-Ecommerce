@@ -56,10 +56,10 @@ export default function ProductoShow({ producto }: ProductoShowProps) {
     };
 
     const formatPrice = (precio: number) => {
-        return new Intl.NumberFormat('es-CO', {
+        return new Intl.NumberFormat('es-BO', {
             style: 'currency',
-            currency: 'COP',
-        }).format(precio);
+            currency: 'BOB',
+        }).format(precio).replace('BOB', 'Bs');
     };
 
     const getStockTotal = () => {

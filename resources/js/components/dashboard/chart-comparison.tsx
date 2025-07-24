@@ -85,22 +85,22 @@ export default function ChartComparison({
                             const total = dataArray.reduce((a: number, b: number) => a + b, 0);
                             const currentValue = context.parsed as number;
                             const percentage = ((currentValue * 100) / total).toFixed(1);
-                            return `${context.label}: ${new Intl.NumberFormat('es-CO', {
+                            return `${context.label}: ${new Intl.NumberFormat('es-BO', {
                                 style: 'currency',
-                                currency: 'COP',
+                                currency: 'BOB',
                                 minimumFractionDigits: 0
-                            }).format(currentValue)} (${percentage}%)`;
+                            }).format(currentValue).replace('BOB', 'Bs')} (${percentage}%)`;
                         } else {
                             let label = context.dataset.label || '';
                             if (label) {
                                 label += ': ';
                             }
                             if ((context.parsed as {y: number}).y !== null) {
-                                label += new Intl.NumberFormat('es-CO', {
+                                label += new Intl.NumberFormat('es-BO', {
                                     style: 'currency',
-                                    currency: 'COP',
+                                    currency: 'BOB',
                                     minimumFractionDigits: 0
-                                }).format((context.parsed as {y: number}).y);
+                                }).format((context.parsed as {y: number}).y).replace('BOB', 'Bs');
                             }
                             return label;
                         }
@@ -116,12 +116,12 @@ export default function ChartComparison({
                 },
                 ticks: {
                     callback: function(value: string | number) {
-                        return new Intl.NumberFormat('es-CO', {
+                        return new Intl.NumberFormat('es-BO', {
                             style: 'currency',
-                            currency: 'COP',
+                            currency: 'BOB',
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0
-                        }).format(Number(value));
+                        }).format(Number(value)).replace('BOB', 'Bs');
                     }
                 }
             },

@@ -117,11 +117,11 @@ export default function PromocionCreate({ productos }: PromocionCreateProps) {
                                 value={data.descuento}
                                 onChange={(e) => setData('descuento', e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
-                                placeholder="Ej: 20%, $5, 15% descuento, $10 pesos de descuento"
+                                placeholder="Ej: 20%, Bs 5, 15% descuento, Bs 10 de descuento"
                                 required
                             />
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                💡 Puedes usar: porcentajes (20%), montos fijos ($5, 10 bs, 15 pesos) o texto descriptivo
+                                💡 Puedes usar: porcentajes (20%), montos fijos (Bs 5, 10 bs, 15 pesos) o texto descriptivo
                             </p>
                             {errors.descuento && (
                                 <p className="mt-1 text-sm text-red-600">{errors.descuento}</p>

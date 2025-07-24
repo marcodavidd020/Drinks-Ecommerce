@@ -392,7 +392,7 @@ export default function InventoryReport({
                                         adultos: 'Valor Total del Inventario'
                                     })}
                                 </p>
-                                <p className="text-2xl font-bold">${inventoryStats.total_value.toLocaleString()}</p>
+                                <p className="text-2xl font-bold">Bs {inventoryStats.total_value.toLocaleString()}</p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-green-200" />
                         </div>
@@ -486,7 +486,7 @@ export default function InventoryReport({
                                     </div>
                                     <div className="text-sm text-gray-600 dark:text-gray-400">
                                         <p>Stock: {item.stock} unidades</p>
-                                        <p>Precio: ${item.precio_venta.toLocaleString()}</p>
+                                        <p>Precio: Bs {item.precio_venta.toLocaleString()}</p>
                                         {item.almacen && (
                                             <p>Almacén: {item.almacen.nombre}</p>
                                         )}
@@ -564,7 +564,7 @@ export default function InventoryReport({
                                                 {item.stock}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right font-semibold">
-                                                ${item.precio_venta.toLocaleString()}
+                                                Bs {item.precio_venta.toLocaleString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 {getStockBadge(item.stock, localFilters.low_stock_threshold)}

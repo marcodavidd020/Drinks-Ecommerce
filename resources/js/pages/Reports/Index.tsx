@@ -69,7 +69,7 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
             borderColor: 'border-blue-200 dark:border-blue-800',
             viewHref: getAppUrl('/reports/sales'),
             pdfHref: getAppUrl('/reports/sales/pdf'),
-            stats: `$${stats.total_sales.toLocaleString()}`,
+            stats: `Bs ${stats.total_sales.toLocaleString()}`,
             statsLabel: getTextByMode({
                 niños: 'Total de Ventas',
                 jóvenes: 'Total Ventas',
@@ -142,7 +142,7 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
             borderColor: 'border-red-200 dark:border-red-800',
             viewHref: getAppUrl('/reports/purchases'),
             pdfHref: getAppUrl('/reports/purchases/pdf'),
-            stats: `$${stats.total_purchases.toLocaleString()}`,
+            stats: `Bs ${stats.total_purchases.toLocaleString()}`,
             statsLabel: getTextByMode({
                 niños: 'Total Compras',
                 jóvenes: 'Total Compras',
@@ -196,7 +196,7 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
                                         adultos: 'Total Ventas'
                                     })}
                                 </p>
-                                <p className="text-2xl font-bold">${stats.total_sales.toLocaleString()}</p>
+                                <p className="text-2xl font-bold">Bs {stats.total_sales.toLocaleString()}</p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-blue-200" />
                         </div>
@@ -244,7 +244,7 @@ export default function ReportsIndex({ stats }: ReportsIndexProps) {
                                         adultos: 'Total Compras'
                                     })}
                                 </p>
-                                <p className="text-2xl font-bold">${stats.total_purchases.toLocaleString()}</p>
+                                <p className="text-2xl font-bold">Bs {stats.total_purchases.toLocaleString()}</p>
                             </div>
                             <ShoppingCart className="h-8 w-8 text-red-200" />
                         </div>

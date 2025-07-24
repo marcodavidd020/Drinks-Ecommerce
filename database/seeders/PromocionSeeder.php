@@ -51,7 +51,7 @@ class PromocionSeeder extends Seeder
                 'nombre' => 'Oferta Red Bull',
                 'fecha_inicio' => Carbon::now()->addDays(10),
                 'fecha_fin' => Carbon::now()->addDays(40),
-                'descuento' => '$5 de descuento',
+                'descuento' => 'Bs 5 de descuento',
                 'producto_codigo' => 'ENE001'
             ],
             [

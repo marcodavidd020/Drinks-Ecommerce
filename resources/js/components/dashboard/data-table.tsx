@@ -35,11 +35,11 @@ export default function DataTable({
             case 'date':
                 return new Date(value).toLocaleDateString('es-CO');
             case 'currency':
-                return new Intl.NumberFormat('es-CO', {
+                return new Intl.NumberFormat('es-BO', {
                     style: 'currency',
-                    currency: 'COP',
+                    currency: 'BOB',
                     minimumFractionDigits: 0
-                }).format(value);
+                }).format(value).replace('BOB', 'Bs');
             case 'number':
                 return new Intl.NumberFormat('es-CO').format(value);
             case 'badge': {

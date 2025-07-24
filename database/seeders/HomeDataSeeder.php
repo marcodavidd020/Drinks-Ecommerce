@@ -145,7 +145,7 @@ class HomeDataSeeder extends Seeder
                 'nombre' => '🍹 Combo Refrescante',
                 'fecha_inicio' => now(),
                 'fecha_fin' => now()->addDays(30),
-                'descuento' => '2 jugos naturales + 1 agua por $12.000',
+                'descuento' => '2 jugos naturales + 1 agua por Bs 12.000',
             ],
             [
                 'nombre' => '⚡ Happy Hour Energéticas',

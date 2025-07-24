@@ -277,7 +277,7 @@ export default function SalesReport({
                 ticks: {
                     ...chartOptions.scales.y.ticks,
                     callback: function(value: any) {
-                        return '$' + value.toLocaleString();
+                        return 'Bs ' + value.toLocaleString();
                     }
                 }
             }
@@ -406,7 +406,7 @@ export default function SalesReport({
                                         adultos: 'Total de Ventas'
                                     })}
                                 </p>
-                                <p className="text-2xl font-bold">${salesStats.total_sales.toLocaleString()}</p>
+                                <p className="text-2xl font-bold">Bs {salesStats.total_sales.toLocaleString()}</p>
                             </div>
                             <DollarSign className="h-8 w-8 text-green-200" />
                         </div>
@@ -438,7 +438,7 @@ export default function SalesReport({
                                         adultos: 'Promedio por Orden'
                                     })}
                                 </p>
-                                <p className="text-2xl font-bold">${salesStats.average_order_value.toLocaleString()}</p>
+                                <p className="text-2xl font-bold">Bs {salesStats.average_order_value.toLocaleString()}</p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-purple-200" />
                         </div>
@@ -510,7 +510,7 @@ export default function SalesReport({
                                             {category.categoria}
                                         </span>
                                         <span className="text-lg font-bold text-green-600">
-                                            ${category.total.toLocaleString()}
+                                            Bs {category.total.toLocaleString()}
                                         </span>
                                     </div>
                                     <div className="mt-2">
@@ -593,7 +593,7 @@ export default function SalesReport({
                                                 {sale.detalles?.length || 0}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right font-semibold">
-                                                ${sale.total.toLocaleString()}
+                                                Bs {sale.total.toLocaleString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 {getStatusBadge(sale.estado)}
