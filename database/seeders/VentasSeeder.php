@@ -108,7 +108,9 @@ class VentasSeeder extends Seeder
             'Venta promocional',
             'Cliente preferencial',
             'Entrega a domicilio',
-            'Pago contra entrega',
+            'Venta mayorista',
+            'Cliente corporativo',
+            'Promoción aplicada',
         ];
 
         return $observaciones[array_rand($observaciones)];

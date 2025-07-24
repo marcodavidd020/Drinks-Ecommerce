@@ -157,15 +157,19 @@ El sistema se instala con usuarios predefinidos:
   - Email: `super@admin.com`
   - Password: `password`
 
-- **Clientes de ejemplo:**
-  - Email: `juan.perez@example.com`
-  - Email: `maria.gonzalez@example.com`
-  - Password: `password123`
-
 - **Personal Administrativo:**
-  - Email: `roberto.sanchez@empresa.com` (Gerente)
-  - Email: `carmen.jimenez@empresa.com` (Gerente)
-  - Password: `admin123`
+  - Email: `admin@empresa.com` (Administrador General)
+  - Email: `empleado1@empresa.com` (Jefe de Operaciones)
+  - Email: `organizador@empresa.com` (Coordinador de Eventos)
+  - Password: `admin123` / `empleado123` / `organizador123`
+
+- **Clientes de ejemplo:**
+  - Email: `cliente1@example.com` (Juan Pérez Cliente)
+  - Email: `cliente2@example.com` (María González VIP)
+  - Email: `cliente3@example.com` (Carlos Rodríguez Empresa)
+  - Email: `cliente4@example.com` (Ana Martínez Frecuente)
+  - Email: `cliente5@example.com` (Luis López Regular)
+  - Password: `cliente123`
 
 ## 🧪 Testing
 
