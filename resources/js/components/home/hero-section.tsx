@@ -142,13 +142,13 @@ export default function HeroSection({ totalProductos, totalCategorias, totalProm
                         </Link>
 
                         <Link
-                            href="/catalogo/promociones"
+                            href="#bebidas-destacadas"
                             className={`border-2 border-white text-white hover:bg-white hover:text-cyan-800 dark:hover:bg-gray-800 dark:hover:text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm ${getModeClasses()}`}
                         >
                             {getTextByMode({
-                                niños: '🎁 ¡Ver Ofertas!',
-                                jóvenes: '🔥 Hot Deals',
-                                adultos: 'Ver Promociones'
+                                niños: '🎁 ¡Promociones Destacadas!',
+                                jóvenes: '🔥 Promociones Destacadas',
+                                adultos: 'Promociones Destacadas'
                             })}
                         </Link>
                     </div>

@@ -1,5 +1,4 @@
 import { useAppMode } from '@/contexts/AppModeContext';
-import { Link } from '@inertiajs/react';
 
 interface Categoria {
     id: number;
@@ -128,9 +127,8 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
         <div className={`w-full ${getModeClasses()}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {categorias.map((categoria, index) => (
-                    <Link
+                    <div
                         key={categoria.id}
-                        href={`/productos?categoria=${categoria.id}`}
                         className={`group relative overflow-hidden rounded-2xl transition-all duration-300 ${getHoverEffect()}`}
                     >
                         <div className={`bg-gradient-to-br ${getModeColors(index)} p-6 h-40 flex flex-col justify-between relative shadow-lg`}>
@@ -192,7 +190,7 @@ export default function CategoriesGrid({ categorias }: CategoriesGridProps) {
                                 <div className="absolute top-2 right-2 w-3 h-3 bg-white/40 dark:bg-white/30 rounded-full group-hover:scale-150 transition-transform"></div>
                             )}
                         </div>
-                    </Link>
+                    </div>
                 ))}
             </div>
 

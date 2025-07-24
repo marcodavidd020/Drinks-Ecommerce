@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/react';
 import HeroSection from '@/components/home/hero-section';
 import CategoriesGrid from '@/components/home/categories-grid';
 import ProductsFeatured from '@/components/home/products-featured';
-import PromotionsBanner from '@/components/home/promotions-banner';
 import StoreBenefits from '@/components/home/store-benefits';
 import { useAppMode } from '@/contexts/AppModeContext';
 
@@ -41,20 +40,7 @@ interface HomeProps {
         stock_total: number;
     }>;
 
-    // Promociones activas
-    promociones: Array<{
-        id: number;
-        nombre: string;
-        fecha_inicio: string;
-        fecha_fin: string;
-        descuento?: string;
-        productos?: Array<{
-            id: number;
-            nombre: string;
-            descuento_porcentaje?: number;
-            descuento_fijo?: number;
-        }>;
-    }>;
+
 
     // Productos más vendidos
     masVendidos: Array<{
@@ -78,7 +64,6 @@ export default function Home({
     stats,
     categorias,
     productosDestacados,
-    promociones,
     masVendidos
 }: HomeProps) {
     const { settings } = useAppMode();
@@ -111,13 +96,6 @@ export default function Home({
                     totalPromociones={stats.totalPromociones}
                 />
 
-                {/* Promociones Banner - Mejorado para dark/light mode */}
-                {promociones.length > 0 && (
-                    <div className="py-8 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 dark:from-purple-800 dark:via-pink-800 dark:to-indigo-900">
-                        <PromotionsBanner promociones={promociones} />
-                    </div>
-                )}
-
                 {/* Separador visual con animación - mejorado para dark mode */}
                 <div className="h-2 bg-gradient-to-r from-blue-400 via-cyan-500 to-emerald-500 dark:from-blue-600 dark:via-cyan-700 dark:to-emerald-700"></div>
 
@@ -145,7 +123,7 @@ export default function Home({
                 </section>
 
                 {/* Productos Destacados - Mejorado para dark/light mode */}
-                <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+                <section id="bebidas-destacadas" className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
                     <div className="container mx-auto px-4">
                         <div className="text-center mb-12">
                             <h2 className={`text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 ${getModeClasses()}`}>

@@ -19,9 +19,6 @@ class HomeController extends Controller
         // Obtener productos destacados (últimos agregados o con más stock)
         $productosDestacados = $this->getProductosDestacados();
 
-        // Obtener promociones activas
-        $promociones = $this->getPromocionesActivas();
-
         // Obtener productos más vendidos
         $masVendidos = $this->getProductosMasVendidos();
 
@@ -29,7 +26,6 @@ class HomeController extends Controller
             'stats' => $stats,
             'categorias' => $categorias,
             'productosDestacados' => $productosDestacados,
-            'promociones' => $promociones,
             'masVendidos' => $masVendidos,
         ]);
     }
@@ -133,28 +129,7 @@ class HomeController extends Controller
         }
     }
 
-    private function getPromocionesActivas()
-    {
-        try {
-            return DB::table('promocion')
-                ->leftJoin('producto', 'promocion.producto_id', '=', 'producto.id')
-                ->select(
-                    'promocion.id',
-                    'promocion.nombre',
-                    'promocion.fecha_inicio',
-                    'promocion.fecha_fin',
-                    'promocion.descuento',
-                    'producto.nombre as producto_nombre'
-                )
-                ->where('promocion.fecha_inicio', '<=', now())
-                ->where('promocion.fecha_fin', '>=', now())
-                ->limit(5)
-                ->get()
-                ->toArray();
-        } catch (\Exception $e) {
-            return [];
-        }
-    }
+
 
     private function getProductosMasVendidos()
     {
